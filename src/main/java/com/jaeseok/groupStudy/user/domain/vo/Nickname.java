@@ -1,6 +1,5 @@
 package com.jaeseok.groupStudy.user.domain.vo;
 
-import java.util.Objects;
 
 public record Nickname(String value) {
 
@@ -16,18 +15,5 @@ public record Nickname(String value) {
         if (value.length() > 10) {
             throw new IllegalArgumentException("닉네임은 10자 이하로 설정해주세요");
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Nickname)) return false;
-        Nickname other = (Nickname) o;
-        return this.value.equalsIgnoreCase(other.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(value);
     }
 }

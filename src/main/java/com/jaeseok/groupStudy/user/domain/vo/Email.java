@@ -19,21 +19,4 @@ public record Email(String value) {
     private boolean isValidFormat(String email) {
         return email.matches("^[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
     }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof Email)) {
-            return false;
-        }
-        Email other = (Email) o;
-        return this.value.equalsIgnoreCase(other.value);
-    }
-
-    @Override
-    public int hashCode() {
-        return value.toLowerCase().hashCode();
-    }
 }
