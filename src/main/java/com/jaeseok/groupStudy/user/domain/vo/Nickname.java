@@ -8,7 +8,7 @@ public record Nickname(String value) {
             throw new IllegalArgumentException("닉네임은 필수입니다.");
         }
 
-        if (value.length() < 5) {
+        if (value.length() < 2) {
             throw new IllegalArgumentException("닉네임이 너무 짧습니다.");
         }
 

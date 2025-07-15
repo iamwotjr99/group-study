@@ -10,10 +10,6 @@ public record Email(String value) {
         if (!isValidFormat(value)) {
             throw new IllegalArgumentException("유효하지 않는 이메일입니다.");
         }
-
-        if (value.length() < 5) {
-            throw new IllegalArgumentException("이메일 길이가 너무 짧습니다.");
-        }
     }
 
     private boolean isValidFormat(String email) {
