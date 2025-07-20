@@ -5,8 +5,11 @@ import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
 import lombok.Getter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-// 역할 - 일반 사용자 (시스템에 로그인한 사람)
-// 책임 - 닉네임, 비밀번호 검증, 닉네임 변경
+/**
+ * 역할 - 일반 사용자 (시스템에 로그인한 사람)
+ * 책임 - 닉네임, 비밀번호 검증, 닉네임 변경
+ * 협력 - 방장, 참여자
+ */
 @Getter
 public class User {
     private final Long id;
