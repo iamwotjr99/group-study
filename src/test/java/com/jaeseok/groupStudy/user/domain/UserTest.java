@@ -13,6 +13,7 @@ import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+@DisplayName("유저 도메인 테스트")
 class UserTest {
 
     Email email = new Email("test001@test.com");

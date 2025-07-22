@@ -12,7 +12,7 @@ public record Participant(Long userId, Long studyGroupId, ParticipantState state
     /**
      * approve(), reject(), kick() 함수는 participant의 상태를 바꾸는 기능만 제공
      * 상태를 바꾸는 책임은 애그리거트인 StudyGroup 에게 있음
-     * @return
+     * @return Participant
      */
     public Participant approve() {
         return withState(ParticipantState.APPROVED);
@@ -42,6 +42,11 @@ public record Participant(Long userId, Long studyGroupId, ParticipantState state
         return new Participant(this.userId, this.studyGroupId, state);
     }
 
+    /**
+     * 동일한(참여자의 id 와 스터디의 id)는 동일한 객체로 판단
+     * @param o   the reference object with which to compare.
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof Participant that)) {
@@ -51,6 +56,10 @@ public record Participant(Long userId, Long studyGroupId, ParticipantState state
                 that.studyGroupId);
     }
 
+    /**
+     * 동일한(참여자의 id 와 스터디의 id)는 동일한 해시코드를 가진다.
+     * @return
+     */
     @Override
     public int hashCode() {
         return Objects.hash(userId, studyGroupId);

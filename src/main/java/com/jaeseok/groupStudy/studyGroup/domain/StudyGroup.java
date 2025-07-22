@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
  * 협력 - 방장, 참여자
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
 public class StudyGroup {
     private final Long id;
     private final Long hostId;
@@ -40,7 +42,7 @@ public class StudyGroup {
     // 참여자 승인
     public Participant approveParticipant(Long hostId, Participant participant) {
         if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
-        if (participant.state() != ParticipantState.PENDING) throw new IllegalArgumentException("대기중인 유저가 아닙니다.");
+        if (participant.state() != ParticipantState.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
         if (isPull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
         participantSet.add(participant);
@@ -50,7 +52,7 @@ public class StudyGroup {
     // 참여자 거절
     public Participant rejectParticipant(Long hostId, Participant participant) {
         if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
-        if (participant.state() != ParticipantState.PENDING) throw new IllegalArgumentException("대기중인 유저가 아닙니다.");
+        if (participant.state() != ParticipantState.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         return participant.reject();
     }
@@ -58,7 +60,7 @@ public class StudyGroup {
     // 참여자 강퇴
     public Participant kickParticipant(Long hostId, Participant participant) {
         if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
-        if (participant.state() != ParticipantState.APPROVED) throw new IllegalArgumentException("참여중인 유저가 아닙니다.");
+        if (participant.state() != ParticipantState.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
 
         participantSet.remove(participant);
         return participant.kick();
