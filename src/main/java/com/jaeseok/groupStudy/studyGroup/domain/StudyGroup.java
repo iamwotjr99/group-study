@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.studyGroup.domain;
 
 import com.jaeseok.groupStudy.participant.domain.Participant;
 import com.jaeseok.groupStudy.participant.domain.ParticipantState;
+import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,39 +20,35 @@ import lombok.RequiredArgsConstructor;
 public class StudyGroup {
     private final Long id;
     private final Long hostId;
-    private final String title;
-    private final int capacity;
+    private final StudyGroupInfo studyGroupInfo;
     private Set<Participant> participantSet;
-    private final LocalDateTime deadline;
-    private final RecruitingPolicy policy;
-    private final GroupState state;
 
-    static public StudyGroup create(Long hostId, String title, int capacity, LocalDateTime deadline) {
-        return new StudyGroup(
-                null,
-                hostId,
-                title,
-                capacity,
-                new HashSet<>(),
-                deadline,
-                RecruitingPolicy.APPROVAL,
-                GroupState.RECRUITING
-        );
+
+    static public StudyGroup create(Long hostId, StudyGroupInfo studyGroupInfo) {
+        return new StudyGroup(null, hostId, studyGroupInfo, new HashSet<>());
+    }
+
+    // 테스트를 위한 메서드
+    static public StudyGroup createForTest(Long id, Long hostId, StudyGroupInfo studyGroupInfo) {
+        return new StudyGroup(id, hostId, studyGroupInfo, new HashSet<>());
     }
 
     // 참여자 승인
     public Participant approveParticipant(Long hostId, Participant participant) {
-        if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+        validateHost(hostId);
+        validateParticipantInThisGroup(participant);
         if (participant.state() != ParticipantState.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
         if (isPull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
-        participantSet.add(participant);
-        return participant.approve();
+        Participant approved = participant.approve();
+        participantSet.add(approved);
+        return approved;
     }
 
     // 참여자 거절
     public Participant rejectParticipant(Long hostId, Participant participant) {
-        if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+        validateHost(hostId);
+        validateParticipantInThisGroup(participant);
         if (participant.state() != ParticipantState.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         return participant.reject();
@@ -59,59 +56,56 @@ public class StudyGroup {
 
     // 참여자 강퇴
     public Participant kickParticipant(Long hostId, Participant participant) {
-        if (this.hostId != hostId) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+        validateHost(hostId);
+        validateParticipantInThisGroup(participant);
         if (participant.state() != ParticipantState.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
 
-        participantSet.remove(participant);
-        return participant.kick();
+        Participant kicked = participant.kick();
+        participantSet.remove(kicked);
+        return kicked;
     }
 
-    // 자동 승인제
-    public StudyGroup autoPolicy() {
-        return withPolicy(RecruitingPolicy.AUTO);
-    }
-
-    // 방장 승인제
-    public StudyGroup approvePolicy() {
-        return withPolicy(RecruitingPolicy.APPROVAL);
-    }
-
-    // 모집중
-    public StudyGroup recruit() {
-        return withState(GroupState.RECRUITING);
-    }
-
-    // 모집 마감
-    public StudyGroup close() {
-        return withState(GroupState.CLOSE);
-    }
-
-    // 스터디 진행중
-    public StudyGroup start() {
-        return withState(GroupState.START);
-    }
-
+    // 방이 꽉 찬 상태인지 확인
     public boolean isPull() {
-        return participantSet.size() == capacity;
+        return participantSet.size() == studyGroupInfo.getCapacity();
     }
 
-    private StudyGroup(Long id, Long hostId, String title, int capacity, Set<Participant> participantSet,
-                        LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
+    // 방장인지 권한 확인
+    private void validateHost(Long hostId) {
+        if (!hostId.equals(this.hostId)) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+    }
+
+    // 해당 참여자가 현재 StudyGroup의 소속인지 확인
+    private void validateParticipantInThisGroup(Participant participant) {
+        if (!participant.studyGroupId().equals(this.id)) {
+            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹에 속하고 있지 않습니다.");
+        }
+    }
+
+    public String getInfoTitle() {
+        return studyGroupInfo.getTitle();
+    }
+
+    public int getInfoCapacity() {
+        return studyGroupInfo.getCapacity();
+    }
+
+    public LocalDateTime getInfoDeadline() {
+        return studyGroupInfo.getDeadline();
+    }
+
+    public RecruitingPolicy getInfoPolicy() {
+        return studyGroupInfo.getPolicy();
+    }
+
+    public GroupState getInfoState() {
+        return studyGroupInfo.getState();
+    }
+
+    private StudyGroup(Long id, Long hostId, StudyGroupInfo studyGroupInfo, Set<Participant> participantSet) {
         this.id = id;
         this.hostId = hostId;
-        this.title = title;
-        this.capacity = capacity;
+        this.studyGroupInfo = studyGroupInfo;
         this.participantSet = participantSet;
-        this.deadline = deadline;
-        this.policy = policy;
-        this.state = state;
-    }
-
-    private StudyGroup withPolicy(RecruitingPolicy policy) {
-        return new StudyGroup(this.id, this.hostId, this.title, this.capacity, this.participantSet, this.deadline, policy, this.state);
-    }
-
-    private StudyGroup withState(GroupState state) {
-        return new StudyGroup(this.id, this.hostId, this.title, this.capacity, this.participantSet, this.deadline, this.policy, state);
     }
 }
