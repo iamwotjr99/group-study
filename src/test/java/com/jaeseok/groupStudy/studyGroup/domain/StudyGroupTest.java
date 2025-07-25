@@ -6,9 +6,10 @@ import com.jaeseok.groupStudy.participant.domain.Participant;
 import com.jaeseok.groupStudy.participant.domain.ParticipantState;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
-import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.convert.DataSizeUnit;
 
 @DisplayName("스터디 그룹 도메인 테스트")
 class StudyGroupTest {
@@ -17,9 +18,14 @@ class StudyGroupTest {
     private static final Long USER1_ID = 2L;
     private static final Long USER2_ID = 3L;
 
-    StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("Test Study", 5, LocalDateTime.now().plusDays(1));
-    StudyGroup studyGroup = StudyGroup.createForTest(1L, HOST_ID, studyGroupInfo);
 
+    StudyGroup studyGroup;
+
+    @BeforeEach
+    void setUp() {
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("Test Study", 5, LocalDateTime.now().plusDays(1));
+        studyGroup = StudyGroup.createForTest(1L, HOST_ID, studyGroupInfo);
+    }
 
     @Test
     @DisplayName("유저가 스터디 그룹을 만들 수 있다.")
@@ -81,13 +87,11 @@ class StudyGroupTest {
         // then
         assertEquals(USER1_ID, participant.userId());
         assertEquals(studyGroupId, participant.studyGroupId());
-        System.out.println("studyGroupId = " + studyGroupId);
-        System.out.println("participant.studyGroupId() = " + participant.studyGroupId());
         assertEquals(ParticipantState.PENDING, participant.state());
     }
 
     @Test
-    @DisplayName("스터디 그룹의 방장은 승인 대기 중인 참여자를 승인할 수 있다.")
+    @DisplayName("방장은 승인 대기 중인 참여자를 승인할 수 있다.")
     void givenParticipantApply_whenApproveParticipant_thenReturnApprovedParticipant() {
         // given
         Long studyGroupId = studyGroup.getId();
@@ -99,11 +103,13 @@ class StudyGroupTest {
         // then
         assertEquals(participant.userId(), approved.userId());
         assertEquals(participant.studyGroupId(), approved.studyGroupId());
+        assertEquals(1, studyGroup.getParticipantSet().size());
+        assertTrue(studyGroup.getParticipantSet().contains(approved));
         assertEquals(ParticipantState.APPROVED, approved.state());
     }
 
     @Test
-    @DisplayName("스터디 그룹의 방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
+    @DisplayName("방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
         Participant approved = new Participant(3L, studyGroup.getId(), ParticipantState.APPROVED);
@@ -122,7 +128,7 @@ class StudyGroupTest {
     }
 
     @Test
-    @DisplayName("스터디 그룹의 방장이 아닌 사람은 방장의 권한을 수행할 수 없다.")
+    @DisplayName("방장이 아닌 사람은 방장의 권한을 수행할 수 없다.")
     void givenNotHostIdAndParticipant_whenApproveAndRejectAndKick_thenThrowException() {
         // given
         Long notHostId = USER1_ID;
@@ -136,7 +142,7 @@ class StudyGroupTest {
     }
 
     @Test
-    @DisplayName("스터디 그룹의 방장은 승인 대기 중인 참여자를 거절할 수 있다.")
+    @DisplayName("방장은 승인 대기 중인 참여자를 거절할 수 있다.")
     void givenParticipantApply_whenRejectParticipant_thenRejectedParticipant() {
         // given
         Long studyGroupId = studyGroup.getId();
@@ -152,7 +158,7 @@ class StudyGroupTest {
     }
 
     @Test
-    @DisplayName("스터디 그룹의 방장이 승인 대기중이 아닌 참여자를 거절하려고 하면 예외를 던진다.")
+    @DisplayName("방장이 승인 대기중이 아닌 참여자를 거절하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenRejectParticipant_thenThrowException() {
         // given
         Participant approved = new Participant(3L, studyGroup.getId(), ParticipantState.APPROVED);
@@ -171,30 +177,36 @@ class StudyGroupTest {
     }
 
     @Test
-    void kickParticipant() {
+    @DisplayName("방장은 참여자를 강퇴할 수 있다.")
+    void givenApprovedParticipant_whenKickParticipant_thenKickedParticipant() {
+        // given
+        Participant participant = Participant.apply(USER1_ID, studyGroup.getId());
+        Participant approved = studyGroup.approveParticipant(HOST_ID, participant);
+
+        // when
+        Participant kicked = studyGroup.kickParticipant(HOST_ID, approved);
+
+        // then
+        assertEquals(USER1_ID, kicked.userId());
+        assertEquals(studyGroup.getId(), kicked.studyGroupId());
+        assertEquals(0, studyGroup.getParticipantSet().size());
+        assertFalse(studyGroup.getParticipantSet().contains(kicked));
+        assertEquals(ParticipantState.KICKED, kicked.state());
     }
 
     @Test
-    void autoPolicy() {
+    @DisplayName("방장이 참여중이 아닌 참여자를 강퇴하려고 하면 예외를 던진다.")
+    void givenNotApprovedParticipant_whenKickParticipant_thenThrowException() {
+        // given
+        Participant notApprovedParticipant = Participant.apply(USER1_ID, studyGroup.getId());
+
+        // when
+        // then
+        assertThrows(IllegalStateException.class, () -> studyGroup.kickParticipant(HOST_ID, notApprovedParticipant));
     }
 
     @Test
-    void approvePolicy() {
-    }
-
-    @Test
-    void recruit() {
-    }
-
-    @Test
-    void close() {
-    }
-
-    @Test
-    void start() {
-    }
-
-    @Test
+    @DisplayName("스터디 그룹의 capacity가 꽉 차면")
     void isPull() {
     }
 }

@@ -4,7 +4,6 @@ import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
