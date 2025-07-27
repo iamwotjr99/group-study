@@ -1,6 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.domain.vo;
 
-import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
+import com.jaeseok.groupStudy.studyGroup.domain.GroupStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -12,9 +12,9 @@ public class StudyGroupInfo {
     private final Integer capacity;
     private final LocalDateTime deadline;
     private final RecruitingPolicy policy;
-    private final GroupState state;
+    private final GroupStatus state;
 
-    private StudyGroupInfo(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
+    private StudyGroupInfo(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupStatus state) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("제목은 필수입니다.");
         }
@@ -33,7 +33,7 @@ public class StudyGroupInfo {
     }
 
     public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline) {
-        return new StudyGroupInfo(title, capacity, deadline, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
+        return new StudyGroupInfo(title, capacity, deadline, RecruitingPolicy.APPROVAL, GroupStatus.RECRUITING);
     }
 
     // 자동 승인제
@@ -48,24 +48,24 @@ public class StudyGroupInfo {
 
     // 모집중
     public StudyGroupInfo recruit() {
-        return withState(GroupState.RECRUITING);
+        return withState(GroupStatus.RECRUITING);
     }
 
     // 모집 마감
     public StudyGroupInfo close() {
-        return withState(GroupState.CLOSE);
+        return withState(GroupStatus.CLOSE);
     }
 
     // 스터디 진행중
     public StudyGroupInfo start() {
-        return withState(GroupState.START);
+        return withState(GroupStatus.START);
     }
 
     private StudyGroupInfo withPolicy(RecruitingPolicy policy) {
         return new StudyGroupInfo(this.title, this.capacity, this.deadline, policy, this.state);
     }
 
-    private StudyGroupInfo withState(GroupState state) {
+    private StudyGroupInfo withState(GroupStatus state) {
         return new StudyGroupInfo(this.title, this.capacity, this.deadline, this.policy, state);
     }
 

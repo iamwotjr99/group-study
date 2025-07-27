@@ -2,11 +2,11 @@ package com.jaeseok.groupStudy.participant.domain;
 
 import java.util.Objects;
 
-public record Participant(Long userId, Long studyGroupId, ParticipantState state) {
+public record Participant(Long userId, Long studyGroupId, ParticipantStatus state) {
 
     // 참여 신청
     public static Participant apply(Long participantId, Long studyGroupId) {
-        return new Participant(participantId, studyGroupId, ParticipantState.PENDING);
+        return new Participant(participantId, studyGroupId, ParticipantStatus.PENDING);
     }
 
     /**
@@ -15,30 +15,30 @@ public record Participant(Long userId, Long studyGroupId, ParticipantState state
      * @return Participant
      */
     public Participant approve() {
-        return withState(ParticipantState.APPROVED);
+        return withState(ParticipantStatus.APPROVED);
     }
 
     public Participant reject() {
-        return withState(ParticipantState.REJECTED);
+        return withState(ParticipantStatus.REJECTED);
     }
 
     public Participant kick() {
-        return withState(ParticipantState.KICKED);
+        return withState(ParticipantStatus.KICKED);
     }
 
     // 신청 취소
     public Participant cancel() {
-        if (this.state != ParticipantState.PENDING) throw new IllegalStateException("대기 상태에서만 취소할 수 있습니다.");
-        return withState(ParticipantState.CANCELED);
+        if (this.state != ParticipantStatus.PENDING) throw new IllegalStateException("대기 상태에서만 취소할 수 있습니다.");
+        return withState(ParticipantStatus.CANCELED);
     }
 
     // 스터디 나가기
     public Participant leave() {
-        if (this.state != ParticipantState.APPROVED) throw new IllegalStateException("승인된 상태에서만 탈퇴할 수 있습니다.");
-        return withState(ParticipantState.LEAVE);
+        if (this.state != ParticipantStatus.APPROVED) throw new IllegalStateException("승인된 상태에서만 탈퇴할 수 있습니다.");
+        return withState(ParticipantStatus.LEAVE);
     }
 
-    private Participant withState(ParticipantState state) {
+    private Participant withState(ParticipantStatus state) {
         return new Participant(this.userId, this.studyGroupId, state);
     }
 

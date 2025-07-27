@@ -1,6 +1,6 @@
 package com.jaeseok.groupStudy.participant.domain;
 
-public enum ParticipantState {
+public enum ParticipantStatus {
     PENDING,    // 대기중
     APPROVED,   // 승인됨
     REJECTED,   // 거절됨

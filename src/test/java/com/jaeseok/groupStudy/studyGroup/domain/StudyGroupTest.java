@@ -3,13 +3,12 @@ package com.jaeseok.groupStudy.studyGroup.domain;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.jaeseok.groupStudy.participant.domain.Participant;
-import com.jaeseok.groupStudy.participant.domain.ParticipantState;
+import com.jaeseok.groupStudy.participant.domain.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.convert.DataSizeUnit;
 
 @DisplayName("스터디 그룹 도메인 테스트")
 class StudyGroupTest {
@@ -41,7 +40,7 @@ class StudyGroupTest {
         assertEquals(info.getCapacity(), studyGroup.getInfoCapacity());
         assertEquals(info.getDeadline(), studyGroup.getInfoDeadline());
         assertEquals(RecruitingPolicy.APPROVAL, studyGroup.getInfoPolicy());
-        assertEquals(GroupState.RECRUITING, studyGroup.getInfoState());
+        assertEquals(GroupStatus.RECRUITING, studyGroup.getInfoState());
     }
 
     @Test
@@ -87,7 +86,7 @@ class StudyGroupTest {
         // then
         assertEquals(USER1_ID, participant.userId());
         assertEquals(studyGroupId, participant.studyGroupId());
-        assertEquals(ParticipantState.PENDING, participant.state());
+        assertEquals(ParticipantStatus.PENDING, participant.state());
     }
 
     @Test
@@ -105,18 +104,18 @@ class StudyGroupTest {
         assertEquals(participant.studyGroupId(), approved.studyGroupId());
         assertEquals(1, studyGroup.getParticipantSet().size());
         assertTrue(studyGroup.getParticipantSet().contains(approved));
-        assertEquals(ParticipantState.APPROVED, approved.state());
+        assertEquals(ParticipantStatus.APPROVED, approved.state());
     }
 
     @Test
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
-        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantState.APPROVED);
-        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantState.REJECTED);
-        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantState.CANCELED);
-        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantState.LEAVE);
-        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantState.KICKED);
+        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED);
+        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED);
+        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED);
+        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE);
+        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED);
 
         // when
         // then
@@ -154,18 +153,18 @@ class StudyGroupTest {
         // then
         assertEquals(participant.userId(), rejected.userId());
         assertEquals(participant.studyGroupId(), rejected.studyGroupId());
-        assertEquals(ParticipantState.REJECTED, rejected.state());
+        assertEquals(ParticipantStatus.REJECTED, rejected.state());
     }
 
     @Test
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 거절하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenRejectParticipant_thenThrowException() {
         // given
-        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantState.APPROVED);
-        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantState.REJECTED);
-        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantState.CANCELED);
-        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantState.LEAVE);
-        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantState.KICKED);
+        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED);
+        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED);
+        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED);
+        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE);
+        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED);
 
         // when
         // then
@@ -191,7 +190,7 @@ class StudyGroupTest {
         assertEquals(studyGroup.getId(), kicked.studyGroupId());
         assertEquals(0, studyGroup.getParticipantSet().size());
         assertFalse(studyGroup.getParticipantSet().contains(kicked));
-        assertEquals(ParticipantState.KICKED, kicked.state());
+        assertEquals(ParticipantStatus.KICKED, kicked.state());
     }
 
     @Test
