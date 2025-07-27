@@ -108,6 +108,23 @@ class StudyGroupTest {
     }
 
     @Test
+    @DisplayName("정원이 가득 찬 그룹에 참여자를 승인하려고하면 예외를 던진다.")
+    void givenPendingParticipantAndPullGroup_whenApproveParticipant_thenThrowException() {
+        // given
+        Long studyGroupId = studyGroup.getId();
+        for (int i = 0; i < 5; i++) {
+            Participant participant = Participant.apply(100L + i, studyGroupId);
+            studyGroup.approveParticipant(HOST_ID, participant);
+        }
+        Participant participant6 = Participant.apply(7L, studyGroupId);
+
+        // when
+        // then
+        assertEquals(5, studyGroup.getInfoCapacity());
+        assertThrows(IllegalArgumentException.class, () -> studyGroup.approveParticipant(HOST_ID, participant6));
+    }
+
+    @Test
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
@@ -202,10 +219,5 @@ class StudyGroupTest {
         // when
         // then
         assertThrows(IllegalStateException.class, () -> studyGroup.kickParticipant(HOST_ID, notApprovedParticipant));
-    }
-
-    @Test
-    @DisplayName("스터디 그룹의 capacity가 꽉 차면")
-    void isPull() {
     }
 }
