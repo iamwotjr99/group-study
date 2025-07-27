@@ -61,4 +61,4 @@
   - 협력: StudyGroup
   
 ### 도메인 모델 다이어그램
-![다이어그램] (docs/images/1차_다이어그램.png)
+![다이어그램](docs/images/1차_다이어그램.png)
