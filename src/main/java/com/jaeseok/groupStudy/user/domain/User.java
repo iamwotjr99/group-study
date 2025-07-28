@@ -24,6 +24,10 @@ public class User {
         return new User(null, userInfo);
     }
 
+    public static User from(Long id, UserInfo userInfo) {
+        return new User(id, userInfo);
+    }
+
     public boolean checkPassword(String rawValue, PasswordEncoder encoder) {
         return this.userInfo.password().passwordMatches(rawValue, encoder);
     }
