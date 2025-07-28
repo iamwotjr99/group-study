@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### application setting files ###
+/src/main/resources/application.properties
+/src/test/resources/application-test.yml
