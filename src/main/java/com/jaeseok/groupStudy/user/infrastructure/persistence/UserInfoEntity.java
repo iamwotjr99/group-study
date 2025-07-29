@@ -7,9 +7,11 @@ import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Embeddable
+@Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserInfoEntity {

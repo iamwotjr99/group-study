@@ -37,5 +37,17 @@ public class User {
         return new User(this.id ,userInfo.withNickname(newNickname));
     }
 
+    public String getUserInfoEmail() {
+        return this.userInfo.email().value();
+    }
+
+    public String getUserInfoNickname() {
+        return this.userInfo.nickname().value();
+    }
+
+    public String getUserInfoPassword() {
+        return this.userInfo.password().encodedValue();
+    }
+
 }
 
