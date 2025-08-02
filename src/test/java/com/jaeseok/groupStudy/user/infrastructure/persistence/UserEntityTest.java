@@ -8,6 +8,7 @@ import com.jaeseok.groupStudy.user.domain.vo.Nickname;
 import com.jaeseok.groupStudy.user.domain.vo.Password;
 import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
 import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,19 +17,30 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DataJpaTest
+@DisplayName("유저 영속성 객체 UserEntity 테스트")
 class UserEntityTest {
 
     @Autowired
     private EntityManager em;
 
-    PasswordEncoder encoder = new BCryptPasswordEncoder();
+    PasswordEncoder encoder;
 
-    Email email = new Email("test001@test.com");
-    Nickname nickname = new Nickname("테스터001");
+    Email email;
+    Nickname nickname;
 
-    String rawPassword = "asd1234";
-    String encodedPassword = encoder.encode(rawPassword);
-    Password password = new Password(encodedPassword);
+    String rawPassword;
+    String encodedPassword;
+    Password password;
+
+    @BeforeEach
+    void setUp() {
+        encoder = new BCryptPasswordEncoder();
+        email = new Email("test001@test.com");
+        nickname = new Nickname("테스터001");
+        rawPassword = "asd1234";
+        encodedPassword = encoder.encode(rawPassword);
+        password = new Password(encodedPassword);
+    }
 
     @Test
     @DisplayName("UserEntity 저장 및 조회 테스트")

@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.user.domain.vo.Email;
 import com.jaeseok.groupStudy.user.domain.vo.Nickname;
 import com.jaeseok.groupStudy.user.domain.vo.Password;
 import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.parameters.P;
@@ -16,14 +17,24 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @DisplayName("유저 도메인 테스트")
 class UserTest {
 
-    Email email = new Email("test001@test.com");
-    Nickname nickname = new Nickname("테스터001");
-    String rawPassword = "asd1234";
+    PasswordEncoder encoder;
 
-    PasswordEncoder encoder = new BCryptPasswordEncoder();
-    String encodedPassword = encoder.encode(rawPassword);
+    Email email;
+    Nickname nickname;
 
-    Password password = new Password(encodedPassword);
+    String rawPassword;
+    String encodedPassword;
+    Password password;
+
+    @BeforeEach
+    void setUp() {
+        encoder = new BCryptPasswordEncoder();
+        email = new Email("test001@test.com");
+        nickname = new Nickname("테스터001");
+        rawPassword = "asd1234";
+        encodedPassword = encoder.encode(rawPassword);
+        password = new Password(encodedPassword);
+    }
 
     @Test
     @DisplayName("이메일이 null, empty, length < 5, 유효하지 않은 포맷인 경우 예외")
