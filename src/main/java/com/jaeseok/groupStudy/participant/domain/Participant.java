@@ -43,10 +43,12 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
         return withState(ParticipantStatus.LEAVE);
     }
 
+    // 참여자가 방장인지 체크
     public boolean isHost() {
         return this.role == ParticipantRole.HOST;
     }
 
+    // 참여자가 멤버인지 체크
     public boolean isMember() {
         return this.role == ParticipantRole.MEMBER;
     }

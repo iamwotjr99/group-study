@@ -25,7 +25,7 @@ class StudyGroupTest {
     @BeforeEach
     void setUp() {
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("Test Study", 5, LocalDateTime.now().plusDays(1));
-        studyGroup = StudyGroup.createForTest(1L, HOST_ID, studyGroupInfo);
+        studyGroup = StudyGroup.createWithHost(1L, HOST_ID, studyGroupInfo);
     }
 
     @Test
@@ -33,14 +33,12 @@ class StudyGroupTest {
     void givenStudyGroupInfoWithHostId_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
         StudyGroupInfo info = StudyGroupInfo.of("Spring Study", 3, LocalDateTime.now().plusDays(1));
+
         // when
-        StudyGroup studyGroup = StudyGroup.create(HOST_ID, info);
+        StudyGroup studyGroup = StudyGroup.createWithHost(1L, HOST_ID, info);
 
         // then
-        assertEquals(HOST_ID, studyGroup.getHostId());
-        assertEquals(info, studyGroup.getStudyGroupInfo());
-
-        assertThat(studyGroup.getHostId()).isEqualTo(HOST_ID);
+        assertThat(studyGroup.getHost().userId()).isEqualTo(HOST_ID);
         assertThat(studyGroup.getStudyGroupInfo()).isEqualTo(info);
     }
 
@@ -103,14 +101,14 @@ class StudyGroupTest {
         // then
         assertEquals(participant.userId(), approved.userId());
         assertEquals(participant.studyGroupId(), approved.studyGroupId());
-        assertEquals(1, studyGroup.getParticipantSet().size());
+        assertEquals(2, studyGroup.getParticipantSet().size());
         assertTrue(studyGroup.getParticipantSet().contains(approved));
         assertEquals(ParticipantStatus.APPROVED, approved.status());
 
         assertThat(approved.userId()).isEqualTo(participant.userId());
         assertThat(approved.studyGroupId()).isEqualTo(participant.studyGroupId());
         assertThat(studyGroup.getParticipantSet())
-                .hasSize(1)
+                .hasSize(2)
                 .contains(approved);
         assertThat(approved.status()).isEqualTo(ParticipantStatus.APPROVED);
     }
@@ -120,7 +118,7 @@ class StudyGroupTest {
     void givenPendingParticipantAndPullGroup_whenApproveParticipant_thenThrowException() {
         // given
         Long studyGroupId = studyGroup.getId();
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             Participant participant = Participant.apply(100L + i, studyGroupId);
             studyGroup.approveParticipant(HOST_ID, participant);
         }
@@ -219,7 +217,7 @@ class StudyGroupTest {
         // then
         assertEquals(USER1_ID, kicked.userId());
         assertEquals(studyGroup.getId(), kicked.studyGroupId());
-        assertEquals(0, studyGroup.getParticipantSet().size());
+        assertEquals(1, studyGroup.getParticipantSet().size());
         assertFalse(studyGroup.getParticipantSet().contains(kicked));
         assertEquals(ParticipantStatus.KICKED, kicked.status());
     }

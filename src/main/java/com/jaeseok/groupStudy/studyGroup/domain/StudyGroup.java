@@ -19,18 +19,15 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class StudyGroup {
     private final Long id;
-    private final Long hostId;
     private final StudyGroupInfo studyGroupInfo;
     private Set<Participant> participantSet;
 
-
-    static public StudyGroup create(Long hostId, StudyGroupInfo studyGroupInfo) {
-        return new StudyGroup(null, hostId, studyGroupInfo, new HashSet<>());
-    }
-
-    // 테스트를 위한 메서드
-    static public StudyGroup createForTest(Long id, Long hostId, StudyGroupInfo studyGroupInfo) {
-        return new StudyGroup(id, hostId, studyGroupInfo, new HashSet<>());
+    // 스터디 그룹 생성시 방장도 추가
+    public static StudyGroup createWithHost(Long groupId, Long hostId, StudyGroupInfo info) {
+        Participant host = Participant.host(hostId, groupId);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(host);
+        return new StudyGroup(groupId, info, participants);
     }
 
     // 참여자 승인
@@ -70,15 +67,31 @@ public class StudyGroup {
         return participantSet.size() == studyGroupInfo.getCapacity();
     }
 
+    public Participant getHost() {
+        return participantSet.stream()
+                .filter(Participant::isHost)
+                .findFirst()
+                .get();
+    }
+
     // 방장인지 권한 확인
-    private void validateHost(Long hostId) {
-        if (!hostId.equals(this.hostId)) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+    private void validateHost(Long userId) {
+        Participant host = findParticipant(userId);
+        if (!host.isHost()) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+    }
+
+    // userId로 현재 StudyGroup의 참여자인지 탐색
+    private Participant findParticipant(Long userId) {
+        return participantSet.stream()
+                .filter(p -> p.userId().equals(userId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 스터디 그룹의 참여자가 아닙니다."));
     }
 
     // 해당 참여자가 현재 StudyGroup의 소속인지 확인
     private void validateParticipantInThisGroup(Participant participant) {
         if (!participant.studyGroupId().equals(this.id)) {
-            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹에 속하고 있지 않습니다.");
+            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹의 참여자가 아닙니다.");
         }
     }
 
@@ -102,9 +115,8 @@ public class StudyGroup {
         return studyGroupInfo.getState();
     }
 
-    private StudyGroup(Long id, Long hostId, StudyGroupInfo studyGroupInfo, Set<Participant> participantSet) {
+    private StudyGroup(Long id, StudyGroupInfo studyGroupInfo, Set<Participant> participantSet) {
         this.id = id;
-        this.hostId = hostId;
         this.studyGroupInfo = studyGroupInfo;
         this.participantSet = participantSet;
     }
