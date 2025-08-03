@@ -2,7 +2,7 @@ package com.jaeseok.groupStudy.participant.domain;
 
 import java.util.Objects;
 
-public record Participant(Long userId, Long studyGroupId, ParticipantStatus state) {
+public record Participant(Long userId, Long studyGroupId, ParticipantStatus status) {
 
     // 참여 신청
     public static Participant apply(Long participantId, Long studyGroupId) {
@@ -28,13 +28,13 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
 
     // 신청 취소
     public Participant cancel() {
-        if (this.state != ParticipantStatus.PENDING) throw new IllegalStateException("대기 상태에서만 취소할 수 있습니다.");
+        if (this.status != ParticipantStatus.PENDING) throw new IllegalStateException("대기 상태에서만 취소할 수 있습니다.");
         return withState(ParticipantStatus.CANCELED);
     }
 
     // 스터디 나가기
     public Participant leave() {
-        if (this.state != ParticipantStatus.APPROVED) throw new IllegalStateException("승인된 상태에서만 탈퇴할 수 있습니다.");
+        if (this.status != ParticipantStatus.APPROVED) throw new IllegalStateException("승인된 상태에서만 탈퇴할 수 있습니다.");
         return withState(ParticipantStatus.LEAVE);
     }
 

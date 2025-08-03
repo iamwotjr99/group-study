@@ -37,7 +37,7 @@ public class StudyGroup {
     public Participant approveParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
-        if (participant.state() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
+        if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
         if (isPull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
         Participant approved = participant.approve();
@@ -49,7 +49,7 @@ public class StudyGroup {
     public Participant rejectParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
-        if (participant.state() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
+        if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         return participant.reject();
     }
@@ -58,7 +58,7 @@ public class StudyGroup {
     public Participant kickParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
-        if (participant.state() != ParticipantStatus.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
+        if (participant.status() != ParticipantStatus.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
 
         Participant kicked = participant.kick();
         participantSet.remove(kicked);

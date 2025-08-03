@@ -1,6 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.domain;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.participant.domain.Participant;
 import com.jaeseok.groupStudy.participant.domain.ParticipantStatus;
@@ -36,11 +37,10 @@ class StudyGroupTest {
 
         // then
         assertEquals(HOST_ID, studyGroup.getHostId());
-        assertEquals(info.getTitle(), studyGroup.getInfoTitle());
-        assertEquals(info.getCapacity(), studyGroup.getInfoCapacity());
-        assertEquals(info.getDeadline(), studyGroup.getInfoDeadline());
-        assertEquals(RecruitingPolicy.APPROVAL, studyGroup.getInfoPolicy());
-        assertEquals(GroupStatus.RECRUITING, studyGroup.getInfoState());
+        assertEquals(info, studyGroup.getStudyGroupInfo());
+
+        assertThat(studyGroup.getHostId()).isEqualTo(HOST_ID);
+        assertThat(studyGroup.getStudyGroupInfo()).isEqualTo(info);
     }
 
     @Test
@@ -86,7 +86,7 @@ class StudyGroupTest {
         // then
         assertEquals(USER1_ID, participant.userId());
         assertEquals(studyGroupId, participant.studyGroupId());
-        assertEquals(ParticipantStatus.PENDING, participant.state());
+        assertEquals(ParticipantStatus.PENDING, participant.status());
     }
 
     @Test
@@ -104,7 +104,14 @@ class StudyGroupTest {
         assertEquals(participant.studyGroupId(), approved.studyGroupId());
         assertEquals(1, studyGroup.getParticipantSet().size());
         assertTrue(studyGroup.getParticipantSet().contains(approved));
-        assertEquals(ParticipantStatus.APPROVED, approved.state());
+        assertEquals(ParticipantStatus.APPROVED, approved.status());
+
+        assertThat(approved.userId()).isEqualTo(participant.userId());
+        assertThat(approved.studyGroupId()).isEqualTo(participant.studyGroupId());
+        assertThat(studyGroup.getParticipantSet())
+                .hasSize(1)
+                .contains(approved);
+        assertThat(approved.status()).isEqualTo(ParticipantStatus.APPROVED);
     }
 
     @Test
@@ -128,19 +135,25 @@ class StudyGroupTest {
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
-        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED);
-        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED);
-        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED);
-        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE);
-        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED);
+        Participant[] invalids = {
+                new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED),
+                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED),
+                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED),
+                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE),
+                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED)
+        };
 
         // when
         // then
-        assertThrows(IllegalStateException.class, () -> studyGroup.approveParticipant(HOST_ID, approved));
-        assertThrows(IllegalStateException.class, () -> studyGroup.approveParticipant(HOST_ID, rejected));
-        assertThrows(IllegalStateException.class, () -> studyGroup.approveParticipant(HOST_ID, canceled));
-        assertThrows(IllegalStateException.class, () -> studyGroup.approveParticipant(HOST_ID, leaved));
-        assertThrows(IllegalStateException.class, () -> studyGroup.approveParticipant(HOST_ID, kicked));
+        for (Participant p : invalids) {
+            IllegalStateException exception = assertThrows(IllegalStateException.class,
+                    () -> studyGroup.approveParticipant(HOST_ID, p));
+            assertEquals("대기중인 유저가 아닙니다.", exception.getMessage());
+
+            assertThatThrownBy(() -> studyGroup.approveParticipant(HOST_ID, p))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("대기중인 유저가 아닙니다.");
+        }
     }
 
     @Test
@@ -170,7 +183,7 @@ class StudyGroupTest {
         // then
         assertEquals(participant.userId(), rejected.userId());
         assertEquals(participant.studyGroupId(), rejected.studyGroupId());
-        assertEquals(ParticipantStatus.REJECTED, rejected.state());
+        assertEquals(ParticipantStatus.REJECTED, rejected.status());
     }
 
     @Test
@@ -207,7 +220,7 @@ class StudyGroupTest {
         assertEquals(studyGroup.getId(), kicked.studyGroupId());
         assertEquals(0, studyGroup.getParticipantSet().size());
         assertFalse(studyGroup.getParticipantSet().contains(kicked));
-        assertEquals(ParticipantStatus.KICKED, kicked.state());
+        assertEquals(ParticipantStatus.KICKED, kicked.status());
     }
 
     @Test
