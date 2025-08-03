@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.participant.domain.Participant;
+import com.jaeseok.groupStudy.participant.domain.ParticipantRole;
 import com.jaeseok.groupStudy.participant.domain.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
@@ -136,11 +137,11 @@ class StudyGroupTest {
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
         Participant[] invalids = {
-                new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED),
-                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED),
-                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED),
-                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE),
-                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED)
+                new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER),
+                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER),
+                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER),
+                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER),
+                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER)
         };
 
         // when
@@ -190,11 +191,11 @@ class StudyGroupTest {
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 거절하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenRejectParticipant_thenThrowException() {
         // given
-        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED);
-        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED);
-        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED);
-        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE);
-        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED);
+        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
+        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER);
+        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER);
+        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER);
+        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER);
 
         // when
         // then

@@ -2,11 +2,16 @@ package com.jaeseok.groupStudy.participant.domain;
 
 import java.util.Objects;
 
-public record Participant(Long userId, Long studyGroupId, ParticipantStatus status) {
+public record Participant(Long userId, Long studyGroupId, ParticipantStatus status, ParticipantRole role) {
 
-    // 참여 신청
+    // 참여 신청 Participant role: MEMBER
     public static Participant apply(Long participantId, Long studyGroupId) {
-        return new Participant(participantId, studyGroupId, ParticipantStatus.PENDING);
+        return new Participant(participantId, studyGroupId, ParticipantStatus.PENDING, ParticipantRole.MEMBER);
+    }
+
+    // 방 생성할 때 방장은 Participant role: HOST
+    public static Participant host(Long userId, Long studyGroupId) {
+        return new Participant(userId, studyGroupId, ParticipantStatus.APPROVED, ParticipantRole.HOST);
     }
 
     /**
@@ -38,8 +43,16 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
         return withState(ParticipantStatus.LEAVE);
     }
 
+    public boolean isHost() {
+        return this.role == ParticipantRole.HOST;
+    }
+
+    public boolean isMember() {
+        return this.role == ParticipantRole.MEMBER;
+    }
+
     private Participant withState(ParticipantStatus state) {
-        return new Participant(this.userId, this.studyGroupId, state);
+        return new Participant(this.userId, this.studyGroupId, state, this.role);
     }
 
     /**
