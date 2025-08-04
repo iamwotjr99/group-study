@@ -1,7 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.domain;
 
-import com.jaeseok.groupStudy.participant.domain.Participant;
-import com.jaeseok.groupStudy.participant.domain.ParticipantStatus;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -30,7 +30,7 @@ public class StudyGroup {
         return new StudyGroup(groupId, info, participants);
     }
 
-    // 참여자 승인
+    // 참여자를 승인
     public Participant approveParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
@@ -42,7 +42,7 @@ public class StudyGroup {
         return approved;
     }
 
-    // 참여자 거절
+    // 참여자를 거절
     public Participant rejectParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
@@ -51,7 +51,7 @@ public class StudyGroup {
         return participant.reject();
     }
 
-    // 참여자 강퇴
+    // 참여자를 강퇴
     public Participant kickParticipant(Long hostId, Participant participant) {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
@@ -61,6 +61,10 @@ public class StudyGroup {
         participantSet.remove(kicked);
         return kicked;
     }
+
+    // 참여자가 신청 취소
+
+    // 참여자가 퇴장
 
     // 방이 꽉 찬 상태인지 확인
     public boolean isPull() {

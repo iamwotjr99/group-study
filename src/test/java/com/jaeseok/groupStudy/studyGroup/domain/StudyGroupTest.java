@@ -3,9 +3,9 @@ package com.jaeseok.groupStudy.studyGroup.domain;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
-import com.jaeseok.groupStudy.participant.domain.Participant;
-import com.jaeseok.groupStudy.participant.domain.ParticipantRole;
-import com.jaeseok.groupStudy.participant.domain.ParticipantStatus;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;

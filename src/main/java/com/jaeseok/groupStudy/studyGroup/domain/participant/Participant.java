@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.participant.domain;
+package com.jaeseok.groupStudy.studyGroup.domain.participant;
 
 import java.util.Objects;
 

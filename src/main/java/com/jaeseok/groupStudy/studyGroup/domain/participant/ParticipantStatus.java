@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.participant.domain;
+package com.jaeseok.groupStudy.studyGroup.domain.participant;
 
 public enum ParticipantStatus {
     PENDING,    // 대기중
