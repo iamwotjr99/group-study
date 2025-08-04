@@ -99,12 +99,6 @@ class StudyGroupTest {
         Participant approved = studyGroup.approveParticipant(HOST_ID, participant);
 
         // then
-        assertEquals(participant.userId(), approved.userId());
-        assertEquals(participant.studyGroupId(), approved.studyGroupId());
-        assertEquals(2, studyGroup.getParticipantSet().size());
-        assertTrue(studyGroup.getParticipantSet().contains(approved));
-        assertEquals(ParticipantStatus.APPROVED, approved.status());
-
         assertThat(approved.userId()).isEqualTo(participant.userId());
         assertThat(approved.studyGroupId()).isEqualTo(participant.studyGroupId());
         assertThat(studyGroup.getParticipantSet())
@@ -134,7 +128,7 @@ class StudyGroupTest {
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 승인하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenApproveParticipant_thenThrowException() {
         // given
-        Participant[] invalids = {
+        Participant[] notPendingParticipant = {
                 new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER),
                 new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER),
                 new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER),
@@ -144,11 +138,7 @@ class StudyGroupTest {
 
         // when
         // then
-        for (Participant p : invalids) {
-            IllegalStateException exception = assertThrows(IllegalStateException.class,
-                    () -> studyGroup.approveParticipant(HOST_ID, p));
-            assertEquals("대기중인 유저가 아닙니다.", exception.getMessage());
-
+        for (Participant p : notPendingParticipant) {
             assertThatThrownBy(() -> studyGroup.approveParticipant(HOST_ID, p))
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessage("대기중인 유저가 아닙니다.");
@@ -189,19 +179,21 @@ class StudyGroupTest {
     @DisplayName("방장이 승인 대기중이 아닌 참여자를 거절하려고 하면 예외를 던진다.")
     void givenNotPendingParticipant_whenRejectParticipant_thenThrowException() {
         // given
-        Participant approved = new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
-        Participant rejected = new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER);
-        Participant canceled = new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER);
-        Participant leaved = new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER);
-        Participant kicked = new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER);
+        Participant[] notPendingParticipant = {
+                new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER),
+                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER),
+                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER),
+                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER),
+                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER)
+        };
 
         // when
         // then
-        assertThrows(IllegalStateException.class, () -> studyGroup.rejectParticipant(HOST_ID, approved));
-        assertThrows(IllegalStateException.class, () -> studyGroup.rejectParticipant(HOST_ID, rejected));
-        assertThrows(IllegalStateException.class, () -> studyGroup.rejectParticipant(HOST_ID, canceled));
-        assertThrows(IllegalStateException.class, () -> studyGroup.rejectParticipant(HOST_ID, leaved));
-        assertThrows(IllegalStateException.class, () -> studyGroup.rejectParticipant(HOST_ID, kicked));
+        for (Participant p : notPendingParticipant) {
+            assertThatThrownBy(() -> studyGroup.rejectParticipant(HOST_ID, p))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("대기중인 유저가 아닙니다.");
+        }
     }
 
     @Test
@@ -231,5 +223,105 @@ class StudyGroupTest {
         // when
         // then
         assertThrows(IllegalStateException.class, () -> studyGroup.kickParticipant(HOST_ID, notApprovedParticipant));
+    }
+
+    @Test
+    @DisplayName("참여자는 신청한 스터디에 신청 취소를 할 수 있다.")
+    void givenApplyParticipant_whenParticipantCancel_thenCanceledParticipant() {
+        // given
+        Participant appliedParticipant = Participant.apply(USER1_ID, studyGroup.getId());
+
+        // when
+        Participant canceledParticipant = studyGroup.participantCancel(appliedParticipant);
+
+        // then
+        assertThat(appliedParticipant.status()).isEqualTo(ParticipantStatus.PENDING);
+        assertThat(canceledParticipant.status()).isEqualTo(ParticipantStatus.CANCELED);
+    }
+
+    @Test
+    @DisplayName("해당 스터디 그룹에 신청하지 않은 참여자는 신청 취소할 수 없다.")
+    void givenAnotherPendingParticipant_whenParticipantCancel_thenThrowException() {
+        // given
+        Long anotherGroupId = 200L;
+
+        Participant appliedParticipant = Participant.apply(USER1_ID, anotherGroupId);
+
+        // when
+        // then
+        assertThatThrownBy(() -> studyGroup.participantCancel(appliedParticipant))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("해당 참여자는 이 스터디 그룹의 소속이 아닙니다.");
+    }
+
+    @Test
+    @DisplayName("승인 대기중이 아닌 참여자는 신청 취소할 수 없다.")
+    void givenNotPendingParticipant_whenParticipantCancel_thenThrowException() {
+        // given
+        Participant[] notPendingParticipant = {
+                new Participant(3L, studyGroup.getId(), ParticipantStatus.APPROVED, ParticipantRole.MEMBER),
+                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER),
+                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER),
+                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER),
+                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER)
+        };
+
+        // when
+        // then
+        for (Participant p : notPendingParticipant) {
+            assertThatThrownBy(() -> studyGroup.participantCancel(p))
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessage("대기중인 유저가 아닙니다.");
+        }
+    }
+
+    @Test
+    @DisplayName("참여자는 참여하고 있는 스터디를 나갈 수 있다.")
+    void givenApprovedParticipant_whenParticipantLeave_thenLeaveParticipant() {
+        // given
+        Participant appliedParticipant = Participant.apply(USER1_ID, studyGroup.getId());
+        Participant approvedParticipant = studyGroup.approveParticipant(HOST_ID, appliedParticipant);
+
+        // when
+        Participant leftParticipant = studyGroup.participantLeave(approvedParticipant);
+
+        // then
+        assertThat(appliedParticipant.status()).isEqualTo(ParticipantStatus.PENDING);
+        assertThat(approvedParticipant.status()).isEqualTo(ParticipantStatus.APPROVED);
+        assertThat(leftParticipant.status()).isEqualTo(ParticipantStatus.LEAVE);
+    }
+
+    @Test
+    @DisplayName("해당 스터디 그룹에 참여중이 아닌 참여자는 그룹을 나갈 수 없다.")
+    void givenNotApprovedParticipant_whenParticipantLeave_thenThrowException() {
+        // given
+        Participant[] notApprovedParticipant = {
+                new Participant(3L, studyGroup.getId(), ParticipantStatus.PENDING, ParticipantRole.MEMBER),
+                new Participant(4L, studyGroup.getId(), ParticipantStatus.REJECTED, ParticipantRole.MEMBER),
+                new Participant(5L, studyGroup.getId(), ParticipantStatus.CANCELED, ParticipantRole.MEMBER),
+                new Participant(6L, studyGroup.getId(), ParticipantStatus.LEAVE, ParticipantRole.MEMBER),
+                new Participant(7L, studyGroup.getId(), ParticipantStatus.KICKED, ParticipantRole.MEMBER)
+        };
+
+        // when
+        // then
+        for (Participant p : notApprovedParticipant) {
+            assertThatThrownBy(() -> studyGroup.participantLeave(p))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessage("해당 유저는 이 스터디 그룹의 참여자가 아닙니다.");
+        }
+    }
+
+    @Test
+    @DisplayName("해당 스터디 그룹의 방장은 그룹을 나갈 수 없다.")
+    void givenHost_whenParticipantLeave_thenThrowException() {
+        // given
+        Participant host = studyGroup.getHost();
+
+        // when
+        // then
+        assertThatThrownBy(() -> studyGroup.participantLeave(host))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("방장은 퇴장할 수 없습니다.");
     }
 }

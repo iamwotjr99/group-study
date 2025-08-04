@@ -63,14 +63,30 @@ public class StudyGroup {
     }
 
     // 참여자가 신청 취소
+    public Participant participantCancel(Participant participant) {
+        validateParticipantInThisGroup(participant);
+        if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
+
+        return participant.cancel();
+    }
 
     // 참여자가 퇴장
+    public Participant participantLeave(Participant participant) {
+        validateParticipantInThisGroup(participant);
+        findParticipant(participant.userId());
+        if (participant.isHost()) throw new IllegalArgumentException("방장은 퇴장할 수 없습니다.");
+
+        Participant left = participant.leave();
+        participantSet.remove(left);
+        return left;
+    }
 
     // 방이 꽉 찬 상태인지 확인
     public boolean isPull() {
         return participantSet.size() == studyGroupInfo.getCapacity();
     }
 
+    // 현재 스터디 그룹의 방장 리턴
     public Participant getHost() {
         return participantSet.stream()
                 .filter(Participant::isHost)
@@ -93,9 +109,10 @@ public class StudyGroup {
     }
 
     // 해당 참여자가 현재 StudyGroup의 소속인지 확인
+    // Pending(승인 대기) 상태여도 소속은 맞음
     private void validateParticipantInThisGroup(Participant participant) {
         if (!participant.studyGroupId().equals(this.id)) {
-            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹의 참여자가 아닙니다.");
+            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹의 소속이 아닙니다.");
         }
     }
 
