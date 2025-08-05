@@ -22,6 +22,10 @@ public class StudyGroup {
     private final StudyGroupInfo studyGroupInfo;
     private Set<Participant> participantSet;
 
+    public static StudyGroup of(Long id, StudyGroupInfo studyGroupInfo, Set<Participant> participants) {
+        return new StudyGroup(id, studyGroupInfo, participants);
+    }
+
     // 스터디 그룹 생성시 방장도 추가
     public static StudyGroup createWithHost(Long groupId, Long hostId, StudyGroupInfo info) {
         Participant host = Participant.host(hostId, groupId);
@@ -132,7 +136,7 @@ public class StudyGroup {
         return studyGroupInfo.getPolicy();
     }
 
-    public GroupStatus getInfoState() {
+    public GroupState getInfoState() {
         return studyGroupInfo.getState();
     }
 

@@ -1,6 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.domain.vo;
 
-import com.jaeseok.groupStudy.studyGroup.domain.GroupStatus;
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -12,9 +12,9 @@ public class StudyGroupInfo {
     private final Integer capacity;
     private final LocalDateTime deadline;
     private final RecruitingPolicy policy;
-    private final GroupStatus state;
+    private final GroupState state;
 
-    private StudyGroupInfo(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupStatus state) {
+    private StudyGroupInfo(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
         if (title == null || title.isBlank()) {
             throw new IllegalArgumentException("제목은 필수입니다.");
         }
@@ -32,8 +32,13 @@ public class StudyGroupInfo {
         this.state = state;
     }
 
-    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline) {
-        return new StudyGroupInfo(title, capacity, deadline, RecruitingPolicy.APPROVAL, GroupStatus.RECRUITING);
+    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
+        return new StudyGroupInfo(title, capacity, deadline, policy, state);
+    }
+
+    // 기본값 스터디 정보 생성(가입 방법: 승인제, 스터디 모집 상태: 모집중)
+    public static StudyGroupInfo defaultInfo(String title, Integer capacity, LocalDateTime deadline) {
+        return new StudyGroupInfo(title, capacity, deadline, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
     }
 
     // 자동 승인제
@@ -48,24 +53,24 @@ public class StudyGroupInfo {
 
     // 모집중
     public StudyGroupInfo recruit() {
-        return withState(GroupStatus.RECRUITING);
+        return withState(GroupState.RECRUITING);
     }
 
     // 모집 마감
     public StudyGroupInfo close() {
-        return withState(GroupStatus.CLOSE);
+        return withState(GroupState.CLOSE);
     }
 
     // 스터디 진행중
     public StudyGroupInfo start() {
-        return withState(GroupStatus.START);
+        return withState(GroupState.START);
     }
 
     private StudyGroupInfo withPolicy(RecruitingPolicy policy) {
         return new StudyGroupInfo(this.title, this.capacity, this.deadline, policy, this.state);
     }
 
-    private StudyGroupInfo withState(GroupStatus state) {
+    private StudyGroupInfo withState(GroupState state) {
         return new StudyGroupInfo(this.title, this.capacity, this.deadline, this.policy, state);
     }
 

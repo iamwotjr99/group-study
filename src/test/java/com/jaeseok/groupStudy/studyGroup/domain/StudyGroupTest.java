@@ -24,7 +24,7 @@ class StudyGroupTest {
 
     @BeforeEach
     void setUp() {
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("Test Study", 5, LocalDateTime.now().plusDays(1));
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("Test Study", 5, LocalDateTime.now().plusDays(1));
         studyGroup = StudyGroup.createWithHost(1L, HOST_ID, studyGroupInfo);
     }
 
@@ -32,7 +32,7 @@ class StudyGroupTest {
     @DisplayName("유저가 스터디 그룹을 만들 수 있다.")
     void givenStudyGroupInfoWithHostId_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
-        StudyGroupInfo info = StudyGroupInfo.of("Spring Study", 3, LocalDateTime.now().plusDays(1));
+        StudyGroupInfo info = StudyGroupInfo.defaultInfo("Spring Study", 3, LocalDateTime.now().plusDays(1));
 
         // when
         StudyGroup studyGroup = StudyGroup.createWithHost(1L, HOST_ID, info);
@@ -48,8 +48,8 @@ class StudyGroupTest {
         // given
         // when
         // then
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of(null, 3, LocalDateTime.now().plusDays(1)));
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of("", 3, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo(null, 3, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo("", 3, LocalDateTime.now().plusDays(1)));
     }
 
     @Test
@@ -58,7 +58,7 @@ class StudyGroupTest {
         // given
         // when
         // then
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of("aaaabbbbccccddddeeeef", 3, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo("aaaabbbbccccddddeeeef", 3, LocalDateTime.now().plusDays(1)));
     }
 
     @Test
@@ -67,9 +67,9 @@ class StudyGroupTest {
         // given
         // when
         // then
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of("SpringStudy", null, LocalDateTime.now().plusDays(1)));
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of("SpringStudy", 0, LocalDateTime.now().plusDays(1)));
-        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.of("SpringStudy", 1, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo("SpringStudy", null, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo("SpringStudy", 0, LocalDateTime.now().plusDays(1)));
+        assertThrows(IllegalArgumentException.class, () -> StudyGroupInfo.defaultInfo("SpringStudy", 1, LocalDateTime.now().plusDays(1)));
     }
 
     @Test

@@ -21,7 +21,7 @@ class ParticipantTest {
 
     @BeforeEach
     void setUp() {
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("Test Study", 5, LocalDateTime.now().plusDays(1));
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("Test Study", 5, LocalDateTime.now().plusDays(1));
         studyGroup = StudyGroup.createWithHost(1L, HOST_ID, studyGroupInfo);
     }
 

@@ -5,7 +5,7 @@ package com.jaeseok.groupStudy.studyGroup.domain;
  * CLOSE : 모집 마감
  * START : 진행중
  */
-public enum GroupStatus {
+public enum GroupState {
     RECRUITING,
     CLOSE,
     START

@@ -4,6 +4,10 @@ import java.util.Objects;
 
 public record Participant(Long userId, Long studyGroupId, ParticipantStatus status, ParticipantRole role) {
 
+    public static Participant of(Long userId, Long studyGroupId, ParticipantStatus status, ParticipantRole role) {
+        return new Participant(userId, studyGroupId, status, role);
+    }
+
     // 참여 신청 Participant role: MEMBER
     public static Participant apply(Long participantId, Long studyGroupId) {
         return new Participant(participantId, studyGroupId, ParticipantStatus.PENDING, ParticipantRole.MEMBER);
@@ -15,7 +19,7 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
     }
 
     /**
-     * approve(), reject(), kick() 함수는 participant의 상태를 바꾸는 기능만 제공
+     * approve(), reject(), kick(), cancel(), leave() 함수는 participant의 상태를 바꾸는 기능만 제공
      * 상태를 바꾸는 책임은 애그리거트인 StudyGroup 에게 있음
      * @return Participant
      */
