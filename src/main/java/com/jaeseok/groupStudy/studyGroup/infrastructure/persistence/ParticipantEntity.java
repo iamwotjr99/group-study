@@ -11,12 +11,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 @Entity
-@Table(name = "participant")
+@Table(
+        name = "participant",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "study_group_id"})
+)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class ParticipantEntity {
     @Id

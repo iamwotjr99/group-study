@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.Collections;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,6 @@ public class StudyGroupEntity {
 
     // 도메인 변환 (참여자 리스트를 외부에서 주입받음)
     public StudyGroup toDomain(Set<Participant> participants) {
-        return StudyGroup.of(this.id, this.infoEntity.toDomain(), participants);
+        return StudyGroup.of(this.id, this.infoEntity.toDomain(), Collections.unmodifiableSet(participants));
     }
 }

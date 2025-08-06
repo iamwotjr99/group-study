@@ -4,6 +4,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.AccessLevel;
@@ -39,7 +40,7 @@ public class StudyGroup {
         validateHost(hostId);
         validateParticipantInThisGroup(participant);
         if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
-        if (isPull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
+        if (isFull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
         Participant approved = participant.approve();
         participantSet.add(approved);
@@ -86,7 +87,7 @@ public class StudyGroup {
     }
 
     // 방이 꽉 찬 상태인지 확인
-    public boolean isPull() {
+    public boolean isFull() {
         return participantSet.size() == studyGroupInfo.getCapacity();
     }
 
@@ -95,7 +96,7 @@ public class StudyGroup {
         return participantSet.stream()
                 .filter(Participant::isHost)
                 .findFirst()
-                .get();
+                .orElseThrow(() -> new IllegalStateException("방장이 없습니다."));
     }
 
     // 방장인지 권한 확인
@@ -118,6 +119,10 @@ public class StudyGroup {
         if (!participant.studyGroupId().equals(this.id)) {
             throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹의 소속이 아닙니다.");
         }
+    }
+
+    public Set<Participant> getParticipants() {
+        return Collections.unmodifiableSet(participantSet);
     }
 
     public String getInfoTitle() {
