@@ -10,7 +10,9 @@ import jakarta.persistence.Enumerated;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @Embeddable
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudyGroupInfoEntity {
