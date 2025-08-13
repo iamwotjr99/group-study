@@ -20,7 +20,8 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
 
     /**
      * approve(), reject(), kick(), cancel(), leave() 함수는 participant의 상태를 바꾸는 기능만 제공
-     * 상태를 바꾸는 책임은 애그리거트인 StudyGroup 에게 있음
+     * 상태를 바꾸는 책임은 애그리거트인 StudyGroup 에게 있음,
+     * 상태에 대한 예외도 상태 일관성 처리를 위해 애그리거트인 StudyGroup 에게 있음
      * @return Participant
      */
     public Participant approve() {
@@ -37,13 +38,11 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
 
     // 신청 취소
     public Participant cancel() {
-        if (this.status != ParticipantStatus.PENDING) throw new IllegalStateException("대기 상태에서만 취소할 수 있습니다.");
         return withState(ParticipantStatus.CANCELED);
     }
 
     // 스터디 나가기
     public Participant leave() {
-        if (this.status != ParticipantStatus.APPROVED) throw new IllegalStateException("승인된 상태에서만 탈퇴할 수 있습니다.");
         return withState(ParticipantStatus.LEAVE);
     }
 
