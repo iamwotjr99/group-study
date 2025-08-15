@@ -60,6 +60,11 @@ public record Participant(Long userId, Long studyGroupId, ParticipantStatus stat
         return new Participant(this.userId, this.studyGroupId, state, this.role);
     }
 
+    // studyGroupId가 정해졌을 때, 그 ID를 가진 새 Participant 객체를 반환하는 메서드
+    public Participant withStudyGroupId(Long studyGroupId) {
+        return new Participant(this.userId, studyGroupId, this.status, this.role);
+    }
+
     /**
      * 동일한(참여자의 id 와 스터디의 id)는 동일한 객체로 판단
      * @param o   the reference object with which to compare.

@@ -12,7 +12,9 @@ import java.util.Collections;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "study_group")
 @AllArgsConstructor(access = AccessLevel.PROTECTED)

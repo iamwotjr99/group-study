@@ -30,7 +30,7 @@ class StudyGroupInfoEntityTest {
 
     @Test
     @DisplayName("toDomain 하면, Entity의 내용으로 Domain이 생성된다.")
-    void givenStudyGroupInfoEntity_whenFromDomain_thenReturnDomainVO() {
+    void givenStudyGroupInfoEntity_whenToDomain_thenReturnDomainVO() {
         // given
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("테스트그룹 제목 001", 5,
                 LocalDateTime.now().plusDays(1));

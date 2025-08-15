@@ -45,7 +45,11 @@ public class ParticipantEntity {
 
     public static ParticipantEntity fromDomain(Participant participant) {
         // id = null 인 이유는 fromDomain 메서드가 사용될 떄는 participant가 신규 저장될 때 이므로 이때는 JPA가 자동 생성 해준다.
-        return new ParticipantEntity(null, participant.userId(), participant.studyGroupId(), participant.status(), participant.role());
+        return new ParticipantEntity(null,
+                participant.userId(),
+                participant.studyGroupId(),
+                participant.status(),
+                participant.role());
     }
 
     public Participant toDomain() {

@@ -30,11 +30,13 @@ public class StudyGroup {
     }
 
     // 스터디 그룹 생성시 방장도 추가
-    public static StudyGroup createWithHost(Long groupId, Long hostId, StudyGroupInfo info) {
-        Participant host = Participant.host(hostId, groupId);
+    public static StudyGroup createWithHost(Long hostId, StudyGroupInfo info) {
+        Long newGroupId = null; // 신규 그룹이라 ID null, JPA를 통해 DB에 저장될때 생성
+
+        Participant host = Participant.host(hostId, newGroupId);
         Set<Participant> participants = new HashSet<>();
         participants.add(host);
-        return new StudyGroup(groupId, info, participants);
+        return new StudyGroup(newGroupId, info, participants);
     }
 
     public void apply(Long userId) {
@@ -47,63 +49,60 @@ public class StudyGroup {
     }
 
     // 참여자를 승인
-    public Participant approveParticipant(Long hostId, Participant participant) {
+    public void approveParticipant(Long hostId, Long applicantId) {
         validateHost(hostId);
-        validateParticipantInThisGroup(participant);
+
+        Participant participant = findParticipant(applicantId);
         if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
         if (isFull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
         this.participantSet.remove(participant);
         Participant approved = participant.approve();
         this.participantSet.add(approved);
-        return approved;
     }
 
     // 참여자를 거절
-    public Participant rejectParticipant(Long hostId, Participant participant) {
+    public void rejectParticipant(Long hostId, Long rejectedId) {
         validateHost(hostId);
-        validateParticipantInThisGroup(participant);
+        Participant participant = findParticipant(rejectedId);
+
         if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         this.participantSet.remove(participant);
         Participant rejected = participant.reject();
         this.participantSet.add(rejected);
-        return rejected;
     }
 
     // 참여자를 강퇴
-    public Participant kickParticipant(Long hostId, Participant participant) {
+    public void kickParticipant(Long hostId, Long kickedId) {
         validateHost(hostId);
-        validateParticipantInThisGroup(participant);
+        Participant participant = findParticipant(kickedId);
+
         if (participant.status() != ParticipantStatus.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
 
         this.participantSet.remove(participant);
         Participant kicked = participant.kick();
         this.participantSet.add(kicked);
-        return kicked;
     }
 
     // 참여자가 신청 취소
-    public Participant participantCancel(Participant participant) {
-        validateParticipantInThisGroup(participant);
+    public void participantApplyCancel(Long participantId) {
+        Participant participant = findParticipant(participantId);
         if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         this.participantSet.remove(participant);
         Participant cancelled = participant.cancel();
         this.participantSet.add(cancelled);
-        return cancelled;
     }
 
     // 참여자가 퇴장
-    public Participant participantLeave(Participant participant) {
-        validateParticipantInThisGroup(participant);
-        findParticipant(participant.userId());
+    public void participantLeave(Long participantId) {
+        Participant participant = findParticipant(participantId);
         if (participant.isHost()) throw new IllegalArgumentException("방장은 퇴장할 수 없습니다.");
 
         this.participantSet.remove(participant);
         Participant left = participant.leave();
         this.participantSet.add(left);
-        return left;
     }
 
     // 방이 꽉 찬 상태인지 확인
@@ -147,17 +146,9 @@ public class StudyGroup {
                 .anyMatch(p -> p.userId().equals(userId));
     }
 
-    // 해당 참여자가 현재 StudyGroup의 소속인지 확인
-    // Pending(승인 대기) 상태여도 소속은 맞음
-    private void validateParticipantInThisGroup(Participant participant) {
-        if (!participant.studyGroupId().equals(this.id)) {
-            throw new IllegalArgumentException("해당 참여자는 이 스터디 그룹의 소속이 아닙니다.");
-        }
-    }
-
-    public Set<Participant> getParticipants() {
-        return Collections.unmodifiableSet(participantSet);
-    }
+//    public Set<Participant> getParticipants() {
+//        return Collections.unmodifiableSet(participantSet);
+//    }
 
     public String getInfoTitle() {
         return studyGroupInfo.getTitle();
@@ -178,5 +169,4 @@ public class StudyGroup {
     public GroupState getInfoState() {
         return studyGroupInfo.getState();
     }
-
 }

@@ -3,6 +3,8 @@ package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence;
 import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 @DataJpaTest
+@DisplayName("Participant Entity 테스트")
 class ParticipantEntityTest {
 
     @Autowired
@@ -30,7 +33,7 @@ class ParticipantEntityTest {
         // when
         em.persist(participantEntity);
         em.flush();
-        em.close();
+        em.clear();
 
         ParticipantEntity found = em.find(ParticipantEntity.class,
                 participantEntity.getId());
@@ -82,6 +85,22 @@ class ParticipantEntityTest {
     @Test
     @DisplayName("userId, studyGroupId가 같으면 동일한 Participant Entity로 판단")
     void givenSameParticipant_whenEqualsAndHashCode_thenReturnTrue() {
+        // given
+        Participant participant1 = Participant.of(USER_ID, STUDY_GROUP_ID,
+                ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
+        Participant participant2 = Participant.of(USER_ID, STUDY_GROUP_ID,
+                ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
+
+        ParticipantEntity participantEntity1 = ParticipantEntity.fromDomain(participant1);
+        ParticipantEntity participantEntity2 = ParticipantEntity.fromDomain(participant2);
+
+        // when
+        boolean equals = participantEntity1.equals(participantEntity2);
+        boolean hashCode = participantEntity1.hashCode() == participantEntity2.hashCode();
+
+        // then
+        assertThat(equals).isTrue();
+        assertThat(hashCode).isTrue();
 
     }
 }

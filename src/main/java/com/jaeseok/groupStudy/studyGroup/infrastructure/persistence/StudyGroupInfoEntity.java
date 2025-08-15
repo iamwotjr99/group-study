@@ -10,11 +10,13 @@ import jakarta.persistence.Enumerated;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @Embeddable
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
+@EqualsAndHashCode
 public class StudyGroupInfoEntity {
     @Column(name = "title")
     private String title;
