@@ -7,16 +7,21 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
+@Builder
 @Getter
 @Entity
 @Table(
@@ -32,8 +37,9 @@ public class ParticipantEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "study_group_id")
-    private Long studyGroupId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "study_group_id")
+    private StudyGroupEntity studyGroupEntity;
 
     @Enumerated(value = EnumType.STRING)
     private ParticipantStatus status;
@@ -43,17 +49,18 @@ public class ParticipantEntity {
 
     protected ParticipantEntity() {}
 
-    public static ParticipantEntity fromDomain(Participant participant) {
-        // id = null 인 이유는 fromDomain 메서드가 사용될 떄는 participant가 신규 저장될 때 이므로 이때는 JPA가 자동 생성 해준다.
-        return new ParticipantEntity(null,
-                participant.userId(),
-                participant.studyGroupId(),
-                participant.status(),
-                participant.role());
+    public static ParticipantEntity fromDomain(Participant participant, StudyGroupEntity studyGroupEntity) {
+        return ParticipantEntity.builder()
+                .id(null)
+                .userId(participant.userId())
+                .studyGroupEntity(studyGroupEntity)
+                .status(participant.status())
+                .role(participant.role())
+                .build();
     }
 
     public Participant toDomain() {
-        return Participant.of(this.userId, this.studyGroupId, this.status, this.role);
+        return Participant.of(this.userId, this.studyGroupEntity.getId(), this.status, this.role);
     }
 
     @Override
@@ -61,12 +68,12 @@ public class ParticipantEntity {
         if (!(o instanceof ParticipantEntity that)) {
             return false;
         }
-        return Objects.equals(userId, that.userId) && Objects.equals(studyGroupId,
-                that.studyGroupId);
+        return Objects.equals(userId, that.userId) && Objects.equals(this.studyGroupEntity.getId(),
+                that.studyGroupEntity.getId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, studyGroupId);
+        return Objects.hash(userId, studyGroupEntity.getId());
     }
 }
