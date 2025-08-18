@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.user.domain.vo.Email;
 import com.jaeseok.groupStudy.user.domain.vo.Nickname;
 import com.jaeseok.groupStudy.user.domain.vo.Password;
 import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
+import com.jaeseok.groupStudy.user.infrastructure.persistence.entity.UserEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

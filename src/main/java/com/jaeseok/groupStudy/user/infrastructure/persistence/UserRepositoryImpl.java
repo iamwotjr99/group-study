@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.user.infrastructure.persistence;
 
 import com.jaeseok.groupStudy.user.domain.User;
 import com.jaeseok.groupStudy.user.domain.UserRepository;
+import com.jaeseok.groupStudy.user.infrastructure.persistence.entity.UserEntity;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;

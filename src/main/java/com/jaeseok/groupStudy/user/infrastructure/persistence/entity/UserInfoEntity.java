@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.user.infrastructure.persistence;
+package com.jaeseok.groupStudy.user.infrastructure.persistence.entity;
 
 import com.jaeseok.groupStudy.user.domain.vo.Email;
 import com.jaeseok.groupStudy.user.domain.vo.Nickname;

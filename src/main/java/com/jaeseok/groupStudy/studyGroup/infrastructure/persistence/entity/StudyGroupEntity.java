@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence;
+package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity;
 
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;

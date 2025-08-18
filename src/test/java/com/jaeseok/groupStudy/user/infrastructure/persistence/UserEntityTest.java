@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.user.domain.vo.Email;
 import com.jaeseok.groupStudy.user.domain.vo.Nickname;
 import com.jaeseok.groupStudy.user.domain.vo.Password;
 import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
+import com.jaeseok.groupStudy.user.infrastructure.persistence.entity.UserEntity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -46,22 +47,23 @@ class UserEntityTest {
     @DisplayName("UserEntity 저장 및 조회 테스트")
     void givenUserEntity_whenSaveAndFound_thenEqual() {
         // given
-        UserInfoEntity userInfoEntity = new UserInfoEntity("test1@test.est", "nickname", "pw");
-        UserEntity userEntity = new UserEntity(null, userInfoEntity);
+        UserInfo userInfo = new UserInfo(email, nickname, password);
+        User user = User.createUser(userInfo);
+        UserEntity userEntity = UserEntity.fromDomain(user);
 
         // when
         em.persist(userEntity);
         em.flush();
         em.clear();
 
-        UserEntity found = em.find(UserEntity.class, userEntity.id);
+        UserEntity found = em.find(UserEntity.class, userEntity.getId());
 
         // then
         assertThat(found).isNotNull();
-        assertThat(found.id).isEqualTo(userEntity.id);
-        assertThat(found.getUserInfoEntity().getEmail()).isEqualTo("test1@test.est");
-        assertThat(found.getUserInfoEntity().getNickname()).isEqualTo("nickname");
-        assertThat(found.getUserInfoEntity().getPassword()).isEqualTo("pw");
+        assertThat(found.getId()).isEqualTo(userEntity.getId());
+        assertThat(found.getUserInfoEntity().getEmail()).isEqualTo(email.value());
+        assertThat(found.getUserInfoEntity().getNickname()).isEqualTo(nickname.value());
+        assertThat(found.getUserInfoEntity().getPassword()).isEqualTo(password.encodedValue());
     }
 
     @Test
@@ -84,8 +86,9 @@ class UserEntityTest {
     @DisplayName("UserEntity -> User 매핑 테스트")
     void givenUserEntity_whenToDomain_thenMappedCorrectly() {
         // given
-        UserInfoEntity userInfoEntity = new UserInfoEntity("test1@test.est", "nickname", "pw");
-        UserEntity userEntity = new UserEntity(null, userInfoEntity);
+        UserInfo userInfo = new UserInfo(email, nickname, password);
+        User user = User.createUser(userInfo);
+        UserEntity userEntity = UserEntity.fromDomain(user);
 
         // when
         User domain = userEntity.toDomain();

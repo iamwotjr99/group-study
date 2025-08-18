@@ -3,6 +3,7 @@ package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence;
 import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupInfoEntity;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

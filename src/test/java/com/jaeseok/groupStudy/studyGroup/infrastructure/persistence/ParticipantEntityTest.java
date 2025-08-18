@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.ParticipantEntity;
 import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
