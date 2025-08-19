@@ -22,12 +22,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 class ParticipantEntityTest {
 
     @Autowired
-    private EntityManager em;
+    EntityManager em;
 
-    private final Long HOST_ID = 1L;
-    private final Long USER_ID = 2L;
+    final Long HOST_ID = 1L;
+    final Long USER_ID = 2L;
 
-    private StudyGroupEntity studyGroupEntity;
+    StudyGroupEntity studyGroupEntity;
 
     @BeforeEach
     void setUp() {

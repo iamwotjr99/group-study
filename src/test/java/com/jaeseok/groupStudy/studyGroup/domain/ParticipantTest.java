@@ -11,11 +11,11 @@ import org.junit.jupiter.api.Test;
 
 class ParticipantTest {
 
-    private static final Long HOST_ID = 1L;
-    private static final Long USER_ID = 2L;
-    private static final Long STUDY_GROUP_ID = 100L;
+    final Long HOST_ID = 1L;
+    final Long USER_ID = 2L;
+    final Long STUDY_GROUP_ID = 100L;
 
-    private Participant participant;
+    Participant participant;
 
     @BeforeEach
     void setUp() {

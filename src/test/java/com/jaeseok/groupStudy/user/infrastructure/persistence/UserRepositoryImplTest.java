@@ -25,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class UserRepositoryImplTest {
 
     @Autowired
-    UserRepositoryImpl userRepository;
+    UserRepository userRepository;
 
     PasswordEncoder encoder;
 

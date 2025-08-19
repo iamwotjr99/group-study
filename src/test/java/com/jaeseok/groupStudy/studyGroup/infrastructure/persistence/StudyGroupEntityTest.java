@@ -18,10 +18,10 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 public class StudyGroupEntityTest {
 
     @Autowired
-    private EntityManager em;
+    EntityManager em;
 
-    private final Long HOST_ID = 1L;
-    private final Long USER_ID = 2L;
+    final Long HOST_ID = 1L;
+    final Long USER_ID = 2L;
 
     @Test
     @DisplayName("StudyGroupEntity 저장 및 조회 테스트")

@@ -22,7 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class UserEntityTest {
 
     @Autowired
-    private EntityManager em;
+    EntityManager em;
 
     PasswordEncoder encoder;
 

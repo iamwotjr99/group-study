@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test;
 @DisplayName("StudyGroupInfo 테스트")
 class StudyGroupInfoTest {
 
-    private StudyGroupInfo info;
+    StudyGroupInfo info;
+
     @BeforeEach
     void setUp() {
         info = StudyGroupInfo.of("테스트 방 제목",
@@ -90,7 +91,8 @@ class StudyGroupInfoTest {
         StudyGroupInfo autoPolicy = info.autoPolicy();
 
         // then
-        assertThat(autoPolicy.getPolicy()).isEqualTo(RecruitingPolicy.AUTO);
+        assertThat(autoPolicy.getPolicy()).isEqualTo(
+                RecruitingPolicy.AUTO);
     }
 
     @Test
@@ -101,7 +103,8 @@ class StudyGroupInfoTest {
         StudyGroupInfo approvePolicy = info.approvePolicy();
 
         // then
-        assertThat(approvePolicy.getPolicy()).isEqualTo(RecruitingPolicy.APPROVAL);
+        assertThat(approvePolicy.getPolicy()).isEqualTo(
+                RecruitingPolicy.APPROVAL);
     }
 
     @Test
@@ -112,7 +115,8 @@ class StudyGroupInfoTest {
         StudyGroupInfo recruit = info.recruit();
 
         // then
-        assertThat(recruit.getState()).isEqualTo(GroupState.RECRUITING);
+        assertThat(recruit.getState()).isEqualTo(
+                GroupState.RECRUITING);
     }
 
     @Test

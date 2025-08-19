@@ -15,9 +15,9 @@ import org.junit.jupiter.api.Test;
 @DisplayName("스터디 그룹 도메인 테스트")
 class StudyGroupTest {
 
-    private static final Long HOST_ID = 1L;
-    private static final Long USER1_ID = 2L;
-    private static final Long USER2_ID = 3L;
+    final Long HOST_ID = 1L;
+    final Long USER1_ID = 2L;
+    final Long USER2_ID = 3L;
 
 
     StudyGroup studyGroup;
