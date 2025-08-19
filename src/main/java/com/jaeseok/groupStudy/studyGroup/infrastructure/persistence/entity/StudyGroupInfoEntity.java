@@ -47,6 +47,14 @@ public class StudyGroupInfoEntity {
         );
     }
 
+    public void updateFromDomain(StudyGroupInfo info) {
+        this.title = info.getTitle();
+        this.capacity = info.getCapacity();
+        this.deadline = info.getDeadline();
+        this.policy = info.getPolicy();
+        this.state = info.getState();
+    }
+
     public StudyGroupInfo toDomain() {
         return StudyGroupInfo.of(this.title, this.capacity, this.deadline, this.policy, this.state);
     }

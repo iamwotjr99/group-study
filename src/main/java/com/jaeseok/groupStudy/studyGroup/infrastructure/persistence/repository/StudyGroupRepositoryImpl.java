@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class StudyGroupRepositoryImpl implements StudyGroupRepository {
 
+
     private final JpaStudyGroupRepository jpaStudyGroupRepository;
 
     @Override
@@ -27,5 +28,15 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
                 .stream()
                 .map(StudyGroupEntity::toDomain)
                 .findFirst();
+    }
+
+    @Override
+    public StudyGroup update(StudyGroup studyGroup) {
+        StudyGroupEntity studyGroupEntity = jpaStudyGroupRepository.findById(studyGroup.getId())
+                .orElseThrow(() -> new IllegalArgumentException("업데이트할 스터디 그룹을 찾을 수 없습니다."));
+
+        studyGroupEntity.updateFromDomain(studyGroup);
+
+        return studyGroupEntity.toDomain();
     }
 }

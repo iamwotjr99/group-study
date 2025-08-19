@@ -63,6 +63,10 @@ public class ParticipantEntity {
         return Participant.of(this.userId, this.studyGroupEntity.getId(), this.status, this.role);
     }
 
+    public void updateStatus(ParticipantStatus status) {
+        this.status = status;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof ParticipantEntity that)) {
