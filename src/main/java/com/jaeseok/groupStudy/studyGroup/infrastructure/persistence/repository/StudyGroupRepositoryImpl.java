@@ -14,14 +14,17 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
     private final JpaStudyGroupRepository jpaStudyGroupRepository;
 
     @Override
-    public void save(StudyGroup studyGroup) {
+    public StudyGroup save(StudyGroup studyGroup) {
         StudyGroupEntity studyGroupEntity = StudyGroupEntity.fromDomain(studyGroup);
-        jpaStudyGroupRepository.save(studyGroupEntity);
+        StudyGroupEntity savedEntity = jpaStudyGroupRepository.save(studyGroupEntity);
+
+        return savedEntity.toDomain();
     }
 
     @Override
     public Optional<StudyGroup> findById(Long id) {
-        return jpaStudyGroupRepository.findById(id).stream()
+        return jpaStudyGroupRepository.findByIdWithParticipants(id)
+                .stream()
                 .map(StudyGroupEntity::toDomain)
                 .findFirst();
     }
