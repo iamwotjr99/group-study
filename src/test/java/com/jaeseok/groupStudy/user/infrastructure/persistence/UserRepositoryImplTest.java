@@ -28,29 +28,17 @@ class UserRepositoryImplTest {
     @Autowired
     UserRepository userRepository;
 
-    PasswordEncoder encoder;
-
-    Email email;
-    Nickname nickname;
-
-    String rawPassword;
-    String encodedPassword;
-    Password password;
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     User user1;
-    UserInfo userInfo1;
 
     @BeforeEach
     void setUp() {
-        encoder = new BCryptPasswordEncoder();
-        email = new Email("test001@test.com");
-        nickname = new Nickname("테스터001");
-        rawPassword = "asd1234";
-        encodedPassword = encoder.encode(rawPassword);
-        password = new Password(encodedPassword);
+        String rawEmail = "test001@test.com";
+        String rawNickname = "테스터001";
+        String encodedPassword = encoder.encode("asd1234");
 
-        userInfo1 = new UserInfo(email, nickname, password);
-        user1 = User.createUser(userInfo1);
+        user1 = User.createUser(rawEmail, rawNickname, encodedPassword);
     }
 
     @Test

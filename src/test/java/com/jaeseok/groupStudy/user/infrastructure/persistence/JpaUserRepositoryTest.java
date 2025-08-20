@@ -23,28 +23,17 @@ class JpaUserRepositoryTest {
     @Autowired
     JpaUserRepository jpaUserRepository;
 
-    PasswordEncoder encoder;
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    Email email;
-    Nickname nickname;
-
-    String rawPassword;
-    String encodedPassword;
-    Password password;
-
-    UserInfo userInfo1;
     User user1;
 
     @BeforeEach
     void setUp() {
-        encoder = new BCryptPasswordEncoder();
-        email = new Email("test001@test.com");
-        nickname = new Nickname("테스터001");
-        rawPassword = "asd1234";
-        encodedPassword = encoder.encode(rawPassword);
-        password = new Password(encodedPassword);
-        userInfo1 = new UserInfo(email, nickname, password);
-        user1 = User.createUser(userInfo1);
+        String rawEmail = "test001@test.com";
+        String rawNickname = "테스터001";
+        String encodedPassword = encoder.encode("asd1234");
+
+        user1 = User.createUser(rawEmail, rawNickname, encodedPassword);
     }
 
     @Test

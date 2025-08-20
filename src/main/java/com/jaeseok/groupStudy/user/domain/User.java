@@ -20,7 +20,8 @@ public class User {
         this.userInfo = userInfo;
     }
 
-    public static User createUser(UserInfo userInfo) {
+    public static User createUser(String email, String nickname, String encodedPassword) {
+        UserInfo userInfo = UserInfo.of(email, nickname, encodedPassword);
         return new User(null, userInfo);
     }
 

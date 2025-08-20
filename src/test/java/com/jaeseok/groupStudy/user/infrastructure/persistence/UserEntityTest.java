@@ -3,13 +3,8 @@ package com.jaeseok.groupStudy.user.infrastructure.persistence;
 import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.user.domain.User;
-import com.jaeseok.groupStudy.user.domain.vo.Email;
-import com.jaeseok.groupStudy.user.domain.vo.Nickname;
-import com.jaeseok.groupStudy.user.domain.vo.Password;
-import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
 import com.jaeseok.groupStudy.user.infrastructure.persistence.entity.UserEntity;
 import jakarta.persistence.EntityManager;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,31 +19,18 @@ class UserEntityTest {
     @Autowired
     EntityManager em;
 
-    PasswordEncoder encoder;
-
-    Email email;
-    Nickname nickname;
-
-    String rawPassword;
-    String encodedPassword;
-    Password password;
-
-    @BeforeEach
-    void setUp() {
-        encoder = new BCryptPasswordEncoder();
-        email = new Email("test001@test.com");
-        nickname = new Nickname("테스터001");
-        rawPassword = "asd1234";
-        encodedPassword = encoder.encode(rawPassword);
-        password = new Password(encodedPassword);
-    }
+    PasswordEncoder encoder = new BCryptPasswordEncoder();
 
     @Test
     @DisplayName("UserEntity 저장 및 조회 테스트")
     void givenUserEntity_whenSaveAndFound_thenEqual() {
         // given
-        UserInfo userInfo = new UserInfo(email, nickname, password);
-        User user = User.createUser(userInfo);
+        String rawEmail = "test001@test.com";
+        String rawNickname = "테스터001";
+        String encodedPassword = encoder.encode("asd1234");
+
+        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+
         UserEntity userEntity = UserEntity.fromDomain(user);
 
         // when
@@ -61,17 +43,21 @@ class UserEntityTest {
         // then
         assertThat(found).isNotNull();
         assertThat(found.getId()).isEqualTo(userEntity.getId());
-        assertThat(found.getUserInfoEntity().getEmail()).isEqualTo(email.value());
-        assertThat(found.getUserInfoEntity().getNickname()).isEqualTo(nickname.value());
-        assertThat(found.getUserInfoEntity().getPassword()).isEqualTo(password.encodedValue());
+        assertThat(found.getUserInfoEntity().getEmail()).isEqualTo(rawEmail);
+        assertThat(found.getUserInfoEntity().getNickname()).isEqualTo(rawNickname);
+
+        assertThat(found.getUserInfoEntity().getPassword()).isEqualTo(encodedPassword);
     }
 
     @Test
     @DisplayName("User -> UserEntity 매핑 테스트")
     void givenUser_whenFromDomain_thenMappedCorrectly() {
         // given
-        UserInfo userInfo = new UserInfo(email, nickname, password);
-        User user = User.createUser(userInfo);
+        String rawEmail = "test001@test.com";
+        String rawNickname = "테스터001";
+        String encodedPassword = encoder.encode("asd1234");
+
+        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
 
         // when
         UserEntity userEntity = UserEntity.fromDomain(user);
@@ -86,8 +72,12 @@ class UserEntityTest {
     @DisplayName("UserEntity -> User 매핑 테스트")
     void givenUserEntity_whenToDomain_thenMappedCorrectly() {
         // given
-        UserInfo userInfo = new UserInfo(email, nickname, password);
-        User user = User.createUser(userInfo);
+        String rawEmail = "test001@test.com";
+        String rawNickname = "테스터001";
+        String encodedPassword = encoder.encode("asd1234");
+
+        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+
         UserEntity userEntity = UserEntity.fromDomain(user);
 
         // when
