@@ -83,8 +83,8 @@ class JpaUserRepositoryTest {
     }
 
     @Test
-    @DisplayName("JPA를 통해 해당 nickname이 DB에 존재 유무를 알 수 있다.")
-    void givenNickname_thenExistByNickname_thenReturnTrueOrFalse() {
+    @DisplayName("JPA를 통해 해당 nickname이 DB에 존재하는지 알 수 있다.")
+    void givenNickname_whenExistByNickname_thenReturnTrueOrFalse() {
         // given
         UserEntity userEntity = UserEntity.fromDomain(user1);
         UserEntity savedUserEntity = jpaUserRepository.save(userEntity);
@@ -94,8 +94,31 @@ class JpaUserRepositoryTest {
         String notExistNickname = "존재x닉네임";
 
         // when
+        boolean existed = jpaUserRepository.existsByUserInfoEntity_Nickname(existNickname);
+        boolean notExisted = jpaUserRepository.existsByUserInfoEntity_Nickname(notExistNickname);
+
         // then
-        assertThat(jpaUserRepository.existsByUserInfoEntity_Nickname(existNickname)).isTrue();
-        assertThat(jpaUserRepository.existsByUserInfoEntity_Nickname(notExistNickname)).isFalse();
+        assertThat(existed).isTrue();
+        assertThat(notExisted).isFalse();
+    }
+
+    @Test
+    @DisplayName("JPA를 통해 해당 Email이 DB에 존재하는지 알 수 있다.")
+    void givenEmail_whenExistByEmail_thenReturnTrueOrFalse() {
+        // given
+        UserEntity userEntity = UserEntity.fromDomain(user1);
+        UserEntity savedUserEntity = jpaUserRepository.save(userEntity);
+        User user = savedUserEntity.toDomain();
+
+        String existEmail = user.getUserInfoEmail();
+        String notExistEmail = "NotExistEmail@notexist.com";
+
+        // when
+        boolean existed = jpaUserRepository.existsByUserInfoEntity_Email(existEmail);
+        boolean notExisted = jpaUserRepository.existsByUserInfoEntity_Email(notExistEmail);
+
+        // then
+        assertThat(existed).isTrue();
+        assertThat(notExisted).isFalse();
     }
 }

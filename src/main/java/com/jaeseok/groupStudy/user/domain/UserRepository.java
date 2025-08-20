@@ -6,4 +6,5 @@ public interface UserRepository {
     User save(User user);
     Optional<User> findById(Long userId);
     boolean existByNickname(String nickname);
+    boolean existByEmail(String email);
 }

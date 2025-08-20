@@ -9,6 +9,7 @@ import com.jaeseok.groupStudy.user.domain.vo.Email;
 import com.jaeseok.groupStudy.user.domain.vo.Nickname;
 import com.jaeseok.groupStudy.user.domain.vo.Password;
 import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
+import java.util.Optional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -85,14 +86,41 @@ class UserRepositoryImplTest {
     @DisplayName("특정 Nickname 값이 DB에 있는지 확인할 수 있다.")
     void givenNickname_whenExistNickname_thenReturnTrueOrFalse() {
         // given
-        User savedUser = userRepository.save(user1);
+        User save = userRepository.save(user1);
 
-        String existNickname = savedUser.getUserInfoNickname();
+        User foundUser = userRepository.findById(save.getId())
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
+
+        String existNickname = foundUser.getUserInfoNickname();
         String notExistNickname = "존재x닉네임";
 
         // when
+        boolean existed = userRepository.existByNickname(existNickname);
+        boolean notExisted = userRepository.existByNickname(notExistNickname);
+
         // then
-        assertThat(userRepository.existByNickname(existNickname)).isTrue();
-        assertThat(userRepository.existByNickname(notExistNickname)).isFalse();
+        assertThat(existed).isTrue();
+        assertThat(notExisted).isFalse();
+    }
+
+    @Test
+    @DisplayName("특정 Email 값이 DB에 있는지 확인할 수 있다.")
+    void givenEmail_whenExistEmail_thenReturnTrueOrFalse() {
+        // given
+        User save = userRepository.save(user1);
+
+        User foundUser = userRepository.findById(save.getId())
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
+
+        String existEmail = foundUser.getUserInfoEmail();
+        String notExistEmail = "NotExistEmail@notexist.com";
+
+        // when
+        boolean existed = userRepository.existByEmail(existEmail);
+        boolean notExisted = userRepository.existByEmail(notExistEmail);
+
+        // then
+        assertThat(existed).isTrue();
+        assertThat(notExisted).isFalse();
     }
 }
