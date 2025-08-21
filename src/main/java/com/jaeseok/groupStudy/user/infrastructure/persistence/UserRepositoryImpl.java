@@ -25,6 +25,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaUserRepository.findByUserInfoEntity_Email(email).map(UserEntity::toDomain);
+    }
+
+    @Override
     public boolean existByNickname(String nickname) {
         return jpaUserRepository.existsByUserInfoEntity_Nickname(nickname);
     }

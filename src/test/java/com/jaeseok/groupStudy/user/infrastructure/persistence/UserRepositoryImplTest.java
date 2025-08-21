@@ -38,7 +38,7 @@ class UserRepositoryImplTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        user1 = User.createUser(rawEmail, rawNickname, encodedPassword);
+        user1 = User.createUser(rawNickname, rawEmail, encodedPassword);
     }
 
     @Test
@@ -55,7 +55,7 @@ class UserRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("User를 DB에서 조회할 수 있다.")
+    @DisplayName("User를 DB에서 아이디로 조회할 수 있다.")
     void givenUserId_whenFindById_thenReturnUser() {
         // given
         User savedUser = userRepository.save(user1);
@@ -63,6 +63,23 @@ class UserRepositoryImplTest {
 
         // when
         User foundUser = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
+
+        // then
+        assertThat(foundUser.getId()).isEqualTo(userId);
+        assertThat(foundUser.getUserInfo()).isEqualTo(savedUser.getUserInfo());
+    }
+
+    @Test
+    @DisplayName("User를 DB에서 이메일로 조회할 수 있다.")
+    void givenEmail_whenFindByEmail_thenReturnUser() {
+        // given
+        User savedUser = userRepository.save(user1);
+        Long userId = savedUser.getId();
+        String email = savedUser.getUserInfoEmail();
+
+        // when
+        User foundUser = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // then

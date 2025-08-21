@@ -33,7 +33,7 @@ class JpaUserRepositoryTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        user1 = User.createUser(rawEmail, rawNickname, encodedPassword);
+        user1 = User.createUser(rawNickname, rawEmail, encodedPassword);
     }
 
     @Test
@@ -68,6 +68,25 @@ class JpaUserRepositoryTest {
 
         // then
         assertThat(foundUser.getId()).isEqualTo(userId);
+        assertThat(foundUser.getUserInfo()).isEqualTo(user.getUserInfo());
+    }
+
+    @Test
+    @DisplayName("JPA를 통해 email로 User를 조회할 수 있다.")
+    void givenEmail_whenFindByEmail_thenReturnUser() {
+        // given
+        UserEntity userEntity = UserEntity.fromDomain(user1);
+        UserEntity savedUserEntity = jpaUserRepository.save(userEntity);
+        User user = savedUserEntity.toDomain();
+        String email = user.getUserInfoEmail();
+
+        // when
+        UserEntity foundUserEntity = jpaUserRepository.findByUserInfoEntity_Email(email)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        User foundUser = foundUserEntity.toDomain();
+
+        // then
+        assertThat(foundUser.getId()).isEqualTo(user.getId());
         assertThat(foundUser.getUserInfo()).isEqualTo(user.getUserInfo());
     }
 
