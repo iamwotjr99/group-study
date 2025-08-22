@@ -4,8 +4,8 @@ import com.jaeseok.groupStudy.auth.application.dto.LoginRequest;
 import com.jaeseok.groupStudy.auth.application.dto.LoginResponse;
 import com.jaeseok.groupStudy.auth.application.dto.SignUpRequest;
 import com.jaeseok.groupStudy.auth.application.dto.SignUpResponse;
-import com.jaeseok.groupStudy.user.domain.User;
-import com.jaeseok.groupStudy.user.domain.UserRepository;
+import com.jaeseok.groupStudy.member.domain.Member;
+import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,15 +15,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
     public LoginResponse login(LoginRequest dto) {
-        User user = userRepository.findByEmail(dto.email())
+        Member member = memberRepository.findByEmail(dto.email())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
 
-        if (!user.checkPassword(dto.rawPassword(), passwordEncoder)) {
+        if (!member.checkPassword(dto.rawPassword(), passwordEncoder)) {
             throw new IllegalArgumentException("비밀번호가 틀렸습니다.");
         }
 
@@ -37,8 +37,8 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(dto.rawPassword());
 
-        User user = User.createUser(dto.nickname(), dto.email(), encodedPassword);
-        User saved = userRepository.save(user);
+        Member member = Member.createMember(dto.nickname(), dto.email(), encodedPassword);
+        Member saved = memberRepository.save(member);
 
         return SignUpResponse.builder()
                 .id(saved.getId())
@@ -47,13 +47,13 @@ public class AuthService {
     }
 
     public void isDuplicatedEmail(String email) {
-        if (userRepository.existByEmail(email)) {
+        if (memberRepository.existByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
     }
 
     public void isDuplicatedNickname(String nickname) {
-        if (userRepository.existByNickname(nickname)) {
+        if (memberRepository.existByNickname(nickname)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }
 

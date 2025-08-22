@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.user.domain.vo;
+package com.jaeseok.groupStudy.member.domain.vo;
 
 public record Email(String value) {
 

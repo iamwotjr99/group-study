@@ -1,9 +1,9 @@
-package com.jaeseok.groupStudy.user.infrastructure.persistence.entity;
+package com.jaeseok.groupStudy.member.infrastructure.persistence.entity;
 
-import com.jaeseok.groupStudy.user.domain.vo.Email;
-import com.jaeseok.groupStudy.user.domain.vo.Nickname;
-import com.jaeseok.groupStudy.user.domain.vo.Password;
-import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
+import com.jaeseok.groupStudy.member.domain.vo.Email;
+import com.jaeseok.groupStudy.member.domain.vo.Nickname;
+import com.jaeseok.groupStudy.member.domain.vo.Password;
+import com.jaeseok.groupStudy.member.domain.vo.MemberInfo;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -14,21 +14,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserInfoEntity {
+public class MemberInfoEntity {
     private String email;
     private String nickname;
     private String password;
 
-    public static UserInfoEntity fromDomain(UserInfo info) {
-        return new UserInfoEntity(
+    public static MemberInfoEntity fromDomain(MemberInfo info) {
+        return new MemberInfoEntity(
                 info.email().value(),
                 info.nickname().value(),
                 info.password().encodedValue()
         );
     }
 
-    public UserInfo toDomain() {
-        return new UserInfo(
+    public MemberInfo toDomain() {
+        return new MemberInfo(
                 new Email(this.email),
                 new Nickname(this.nickname),
                 new Password(this.password)

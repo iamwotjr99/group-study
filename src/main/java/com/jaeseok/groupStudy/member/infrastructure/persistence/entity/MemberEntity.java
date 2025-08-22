@@ -1,6 +1,6 @@
-package com.jaeseok.groupStudy.user.infrastructure.persistence.entity;
+package com.jaeseok.groupStudy.member.infrastructure.persistence.entity;
 
-import com.jaeseok.groupStudy.user.domain.User;
+import com.jaeseok.groupStudy.member.domain.Member;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,20 +17,20 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+public class MemberEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @Embedded
-    UserInfoEntity userInfoEntity;
+    MemberInfoEntity memberInfoEntity;
 
-    public static UserEntity fromDomain(User domain) {
-        return new UserEntity(domain.getId(), UserInfoEntity.fromDomain(domain.getUserInfo()));
+    public static MemberEntity fromDomain(Member domain) {
+        return new MemberEntity(domain.getId(), MemberInfoEntity.fromDomain(domain.getMemberInfo()));
     }
 
-    public User toDomain() {
-        return User.from(this.id, this.userInfoEntity.toDomain());
+    public Member toDomain() {
+        return Member.from(this.id, this.memberInfoEntity.toDomain());
     }
 }

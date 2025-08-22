@@ -1,18 +1,18 @@
-package com.jaeseok.groupStudy.user.domain;
+package com.jaeseok.groupStudy.member.domain;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.jaeseok.groupStudy.user.domain.vo.Email;
-import com.jaeseok.groupStudy.user.domain.vo.Nickname;
-import com.jaeseok.groupStudy.user.domain.vo.Password;
+import com.jaeseok.groupStudy.member.domain.vo.Email;
+import com.jaeseok.groupStudy.member.domain.vo.Nickname;
+import com.jaeseok.groupStudy.member.domain.vo.Password;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DisplayName("유저 도메인 테스트")
-class UserTest {
+class MemberTest {
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -75,19 +75,19 @@ class UserTest {
 
     @Test
     @DisplayName("User는 유효한 유저 정보가 들어오면 유저를 생성할 수 있다.")
-    void givenValidUserInfo_whenCreateUser_thenReturnUser() {
+    void givenValidUserInfo_whencreateMember_thenReturnUser() {
         // given
         String rawEmail = "test001@test.com";
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
         // when
-        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+        Member member = Member.createMember(rawNickname, rawEmail, encodedPassword);
 
         // then
-        assertThat(user.getUserInfoEmail()).isEqualTo(rawEmail);
-        assertThat(user.getUserInfoNickname()).isEqualTo(rawNickname);
-        assertThat(user.getUserInfoPassword()).isEqualTo(encodedPassword);
+        assertThat(member.getUserInfoEmail()).isEqualTo(rawEmail);
+        assertThat(member.getUserInfoNickname()).isEqualTo(rawNickname);
+        assertThat(member.getUserInfoPassword()).isEqualTo(encodedPassword);
     }
 
     @Test
@@ -98,12 +98,12 @@ class UserTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+        Member member = Member.createMember(rawNickname, rawEmail, encodedPassword);
 
         String givenPassword = "asd1234";
 
         // when
-        boolean result = user.checkPassword(givenPassword, encoder);
+        boolean result = member.checkPassword(givenPassword, encoder);
 
         // then
         assertTrue(result);
@@ -118,12 +118,12 @@ class UserTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+        Member member = Member.createMember(rawNickname, rawEmail, encodedPassword);
 
         String givenPassword = "invalid_password";
 
         // when
-        boolean result = user.checkPassword(givenPassword, encoder);
+        boolean result = member.checkPassword(givenPassword, encoder);
 
         // then
         assertFalse(result);
@@ -137,13 +137,13 @@ class UserTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+        Member member = Member.createMember(rawNickname, rawEmail, encodedPassword);
 
         // when
-        User changedNicknameUser = user.changeNickname("닉네임변경001");
+        Member changedNicknameMember = member.changeNickname("닉네임변경001");
 
         // then
-        assertEquals(new Nickname("닉네임변경001"), changedNicknameUser.getUserInfo().nickname());
+        assertEquals(new Nickname("닉네임변경001"), changedNicknameMember.getMemberInfo().nickname());
     }
 
     @Test
@@ -154,12 +154,12 @@ class UserTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        User user = User.createUser(rawEmail, rawNickname, encodedPassword);
+        Member member = Member.createMember(rawNickname, rawEmail, encodedPassword);
 
         // when
         // then
         assertThrows(IllegalArgumentException.class, () -> {
-            user.changeNickname("닉네임변경테스터001");
+            member.changeNickname("닉네임변경테스터001");
         });
     }
 }

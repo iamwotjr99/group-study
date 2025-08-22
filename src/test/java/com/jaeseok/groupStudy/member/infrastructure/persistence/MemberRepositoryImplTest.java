@@ -1,16 +1,9 @@
-package com.jaeseok.groupStudy.user.infrastructure.persistence;
+package com.jaeseok.groupStudy.member.infrastructure.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 
-import com.jaeseok.groupStudy.user.domain.User;
-import com.jaeseok.groupStudy.user.domain.UserRepository;
-import com.jaeseok.groupStudy.user.domain.vo.Email;
-import com.jaeseok.groupStudy.user.domain.vo.Nickname;
-import com.jaeseok.groupStudy.user.domain.vo.Password;
-import com.jaeseok.groupStudy.user.domain.vo.UserInfo;
-import java.util.Optional;
-import org.assertj.core.api.Assertions;
+import com.jaeseok.groupStudy.member.domain.Member;
+import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,16 +14,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @DataJpaTest
-@Import({UserRepositoryImpl.class})
+@Import({MemberRepositoryImpl.class})
 @DisplayName("UserRepository 구현체 테스트")
-class UserRepositoryImplTest {
+class MemberRepositoryImplTest {
 
     @Autowired
-    UserRepository userRepository;
+    MemberRepository memberRepository;
 
     PasswordEncoder encoder = new BCryptPasswordEncoder();
 
-    User user1;
+    Member member1;
 
     @BeforeEach
     void setUp() {
@@ -38,70 +31,70 @@ class UserRepositoryImplTest {
         String rawNickname = "테스터001";
         String encodedPassword = encoder.encode("asd1234");
 
-        user1 = User.createUser(rawNickname, rawEmail, encodedPassword);
+        member1 = Member.createMember(rawNickname, rawEmail, encodedPassword);
     }
 
     @Test
     @DisplayName("User를 DB에 저장할 수 있다.")
     void givenUser_whenSave_thenSaveInDB() {
         // given
-        User user = user1;
+        Member member = member1;
 
         // when
-        User savedUser = userRepository.save(user);
+        Member savedMember = memberRepository.save(member);
 
         // then
-        assertThat(savedUser.getUserInfo()).isEqualTo(user.getUserInfo());
+        assertThat(savedMember.getMemberInfo()).isEqualTo(member.getMemberInfo());
     }
 
     @Test
     @DisplayName("User를 DB에서 아이디로 조회할 수 있다.")
     void givenUserId_whenFindById_thenReturnUser() {
         // given
-        User savedUser = userRepository.save(user1);
-        Long userId = savedUser.getId();
+        Member savedMember = memberRepository.save(member1);
+        Long userId = savedMember.getId();
 
         // when
-        User foundUser = userRepository.findById(userId)
+        Member foundMember = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // then
-        assertThat(foundUser.getId()).isEqualTo(userId);
-        assertThat(foundUser.getUserInfo()).isEqualTo(savedUser.getUserInfo());
+        assertThat(foundMember.getId()).isEqualTo(userId);
+        assertThat(foundMember.getMemberInfo()).isEqualTo(savedMember.getMemberInfo());
     }
 
     @Test
     @DisplayName("User를 DB에서 이메일로 조회할 수 있다.")
     void givenEmail_whenFindByEmail_thenReturnUser() {
         // given
-        User savedUser = userRepository.save(user1);
-        Long userId = savedUser.getId();
-        String email = savedUser.getUserInfoEmail();
+        Member savedMember = memberRepository.save(member1);
+        Long userId = savedMember.getId();
+        String email = savedMember.getUserInfoEmail();
 
         // when
-        User foundUser = userRepository.findByEmail(email)
+        Member foundMember = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
         // then
-        assertThat(foundUser.getId()).isEqualTo(userId);
-        assertThat(foundUser.getUserInfo()).isEqualTo(savedUser.getUserInfo());
+        assertThat(foundMember.getId()).isEqualTo(userId);
+        assertThat(foundMember.getMemberInfo()).isEqualTo(savedMember.getMemberInfo());
     }
 
     @Test
     @DisplayName("특정 Nickname 값이 DB에 있는지 확인할 수 있다.")
     void givenNickname_whenExistNickname_thenReturnTrueOrFalse() {
         // given
-        User save = userRepository.save(user1);
+        Member save = memberRepository.save(member1);
 
-        User foundUser = userRepository.findById(save.getId())
+        Member foundMember = memberRepository.findById(save.getId())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
-        String existNickname = foundUser.getUserInfoNickname();
+        String existNickname = foundMember.getUserInfoNickname();
         String notExistNickname = "존재x닉네임";
 
         // when
-        boolean existed = userRepository.existByNickname(existNickname);
-        boolean notExisted = userRepository.existByNickname(notExistNickname);
+        boolean existed = memberRepository.existByNickname(existNickname);
+        boolean notExisted = memberRepository.existByNickname(notExistNickname);
 
         // then
         assertThat(existed).isTrue();
@@ -112,17 +105,17 @@ class UserRepositoryImplTest {
     @DisplayName("특정 Email 값이 DB에 있는지 확인할 수 있다.")
     void givenEmail_whenExistEmail_thenReturnTrueOrFalse() {
         // given
-        User save = userRepository.save(user1);
+        Member save = memberRepository.save(member1);
 
-        User foundUser = userRepository.findById(save.getId())
+        Member foundMember = memberRepository.findById(save.getId())
                 .orElseThrow(() -> new RuntimeException("유저가 존재하지 않습니다."));
 
-        String existEmail = foundUser.getUserInfoEmail();
+        String existEmail = foundMember.getUserInfoEmail();
         String notExistEmail = "NotExistEmail@notexist.com";
 
         // when
-        boolean existed = userRepository.existByEmail(existEmail);
-        boolean notExisted = userRepository.existByEmail(notExistEmail);
+        boolean existed = memberRepository.existByEmail(existEmail);
+        boolean notExisted = memberRepository.existByEmail(notExistEmail);
 
         // then
         assertThat(existed).isTrue();
