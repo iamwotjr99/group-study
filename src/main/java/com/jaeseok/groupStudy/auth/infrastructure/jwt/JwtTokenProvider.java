@@ -1,5 +1,6 @@
 package com.jaeseok.groupStudy.auth.infrastructure.jwt;
 
+import com.jaeseok.groupStudy.auth.application.TokenProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -19,7 +20,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class JwtTokenProvider implements TokenProvider {
 
     private final Key key;
     private final long accessTokenValidationInMilliSec;
@@ -37,6 +38,7 @@ public class JwtTokenProvider {
         this.userDetailsService = userDetailsService;
     }
 
+    @Override
     public String generateToken(Authentication authentication) {
         String memberEmail = authentication.getName();
 
@@ -50,6 +52,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
+    @Override
     public Authentication getAuthentication(String accessToken) {
         String email = Jwts.parser()
                 .setSigningKey(this.key)
@@ -63,6 +66,7 @@ public class JwtTokenProvider {
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
+    @Override
     public boolean validateToken(String token) {
         try {
             Jwts.parser()
