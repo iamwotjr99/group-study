@@ -21,14 +21,14 @@ public class MemberDetailsService implements UserDetailsService {
         String email = username;
 
         Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 유저입니다."));
 
         return createMemberDetails(member);
     }
 
     private UserDetails createMemberDetails(Member member) {
         return User.builder()
-                .username(String.valueOf(member.getId()))
+                .username(String.valueOf(member.getId())) // 바뀌기 쉬운 이메일보다 바뀔 가능성이 없는 id로 name 설정
                 .password(member.getUserInfoPassword())
                 .authorities(Collections.emptyList())
                 .build();

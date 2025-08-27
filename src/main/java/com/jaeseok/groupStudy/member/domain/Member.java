@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.member.domain;
 
 import com.jaeseok.groupStudy.member.domain.vo.Nickname;
 import com.jaeseok.groupStudy.member.domain.vo.MemberInfo;
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.crypto.password.PasswordEncoder;
 

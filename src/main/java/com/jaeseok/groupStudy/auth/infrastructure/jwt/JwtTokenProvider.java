@@ -40,13 +40,13 @@ public class JwtTokenProvider implements TokenProvider {
 
     @Override
     public String generateToken(Authentication authentication) {
-        String memberEmail = authentication.getName();
+        String memberId = authentication.getName();
 
         long now = new Date().getTime();
         Date accessTokenExpiresIn = new Date(now + this.accessTokenValidationInMilliSec);
 
         return Jwts.builder()
-                .subject(memberEmail)
+                .subject(memberId)
                 .expiration(accessTokenExpiresIn)
                 .signWith(this.key)
                 .compact();
