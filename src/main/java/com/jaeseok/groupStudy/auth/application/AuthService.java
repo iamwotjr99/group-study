@@ -1,10 +1,10 @@
 package com.jaeseok.groupStudy.auth.application;
 
-import com.jaeseok.groupStudy.auth.application.dto.LoginRequest;
-import com.jaeseok.groupStudy.auth.application.dto.LoginResponse;
-import com.jaeseok.groupStudy.auth.application.dto.SignUpRequest;
-import com.jaeseok.groupStudy.auth.application.dto.SignUpResponse;
-import com.jaeseok.groupStudy.auth.infrastructure.jwt.JwtTokenProvider;
+import com.jaeseok.groupStudy.auth.application.dto.LoginInfo;
+import com.jaeseok.groupStudy.auth.application.dto.LoginQuery;
+import com.jaeseok.groupStudy.auth.application.dto.SignUpCommand;
+import com.jaeseok.groupStudy.auth.application.dto.SignUpInfo;
+import com.jaeseok.groupStudy.auth.presentation.dto.LoginResponse;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import jakarta.transaction.Transactional;
@@ -24,40 +24,47 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public LoginResponse login(LoginRequest dto) {
+    public LoginInfo login(LoginQuery query) {
         Authentication authenticationToken = new UsernamePasswordAuthenticationToken(
-                dto.email(), dto.rawPassword());
+                query.email(), query.rawPassword());
 
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-        String token = tokenProvider.generateToken(authentication);
+        String accessToken = tokenProvider.generateToken(authentication);
 
-        return new LoginResponse(token);
+        return new LoginInfo(accessToken);
     }
 
     @Transactional
-    public SignUpResponse signUp(SignUpRequest dto) {
-        isDuplicatedEmail(dto.email());
-        isDuplicatedNickname(dto.nickname());
+    public SignUpInfo signUp(SignUpCommand cmd) {
+        isDuplicatedEmail(cmd.email());
+        isDuplicatedNickname(cmd.nickname());
 
-        String encodedPassword = passwordEncoder.encode(dto.rawPassword());
+        String encodedPassword = passwordEncoder.encode(cmd.rawPassword());
 
-        Member member = Member.createMember(dto.nickname(), dto.email(), encodedPassword);
+        Member member = Member.createMember(cmd.nickname(), cmd.email(), encodedPassword);
         Member saved = memberRepository.save(member);
 
-        return SignUpResponse.builder()
-                .id(saved.getId())
-                .message("회원가입 성공!")
-                .build();
+        return new SignUpInfo(saved.getId());
     }
 
-    public void isDuplicatedEmail(String email) {
+    // 중복 이메일 체크 API용 메서드
+    public boolean checkEmailDuplicate(String email) {
+        return memberRepository.existByEmail(email);
+    }
+
+    // 중복 닉네임 체크 API용 메서드
+    public boolean checkNicknameDuplicate(String nickname) {
+        return memberRepository.existByNickname(nickname);
+    }
+
+    private void isDuplicatedEmail(String email) {
         if (memberRepository.existByEmail(email)) {
             throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
     }
 
-    public void isDuplicatedNickname(String nickname) {
+    private void isDuplicatedNickname(String nickname) {
         if (memberRepository.existByNickname(nickname)) {
             throw new IllegalArgumentException("이미 사용 중인 닉네임입니다.");
         }

@@ -3,10 +3,14 @@ package com.jaeseok.groupStudy.auth.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-import com.jaeseok.groupStudy.auth.application.dto.LoginRequest;
-import com.jaeseok.groupStudy.auth.application.dto.LoginResponse;
-import com.jaeseok.groupStudy.auth.application.dto.SignUpRequest;
-import com.jaeseok.groupStudy.auth.application.dto.SignUpResponse;
+import com.jaeseok.groupStudy.auth.application.dto.LoginInfo;
+import com.jaeseok.groupStudy.auth.application.dto.LoginQuery;
+import com.jaeseok.groupStudy.auth.application.dto.SignUpCommand;
+import com.jaeseok.groupStudy.auth.application.dto.SignUpInfo;
+import com.jaeseok.groupStudy.auth.presentation.dto.LoginRequest;
+import com.jaeseok.groupStudy.auth.presentation.dto.LoginResponse;
+import com.jaeseok.groupStudy.auth.presentation.dto.SignUpRequest;
+import com.jaeseok.groupStudy.auth.presentation.dto.SignUpResponse;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import com.jaeseok.groupStudy.member.domain.vo.MemberInfo;
@@ -45,26 +49,29 @@ class AuthServiceTest {
     @DisplayName("회원가입 정보로 회원가입에 성공한다.")
     void givenSignUpRequest_whenSignUp_thenReturnSuccess() {
         // given
-        SignUpRequest dto = new SignUpRequest("testUser", "test@email.com", "test1234");
+        SignUpRequest request = new SignUpRequest("testUser", "test@email.com", "test1234");
 
         Member savedMember = Member.from(1L,
-                MemberInfo.of(dto.nickname(), dto.email(), dto.rawPassword()));
+                MemberInfo.of(request.nickname(), request.email(), request.rawPassword()));
 
-        when(memberRepository.existByEmail(dto.email())).thenReturn(false);
-        when(memberRepository.existByNickname(dto.nickname())).thenReturn(false);
-        when(passwordEncoder.encode(dto.rawPassword())).thenReturn("encodedPassword");
+        SignUpCommand command = request.toCommand();
+
+        when(memberRepository.existByEmail(command.email())).thenReturn(false);
+        when(memberRepository.existByNickname(command.nickname())).thenReturn(false);
+        when(passwordEncoder.encode(command.rawPassword())).thenReturn("encodedPassword");
         when(memberRepository.save(any(Member.class))).thenReturn(savedMember);
 
         // when
-        SignUpResponse signUpResponse = authService.signUp(dto);
+        SignUpInfo signUpInfo = authService.signUp(command);
+        SignUpResponse signUpResponse = SignUpResponse.from(signUpInfo);
 
         // then
         assertThat(signUpResponse.id()).isEqualTo(savedMember.getId());
         assertThat(signUpResponse.message()).isEqualTo("회원가입 성공!");
 
-        verify(memberRepository, times(1)).existByEmail(dto.email());
-        verify(memberRepository, times(1)).existByNickname(dto.nickname());
-        verify(passwordEncoder, times(1)).encode(dto.rawPassword());
+        verify(memberRepository, times(1)).existByEmail(command.email());
+        verify(memberRepository, times(1)).existByNickname(command.nickname());
+        verify(passwordEncoder, times(1)).encode(command.rawPassword());
         verify(memberRepository, times(1)).save(any(Member.class));
     }
 
@@ -73,10 +80,11 @@ class AuthServiceTest {
     void givenSignUpRequest_whenIsDuplicatedEmail_thenThrowException() {
         // given
         SignUpRequest request = new SignUpRequest("testUser", "test@email.com", "test1234");
+        SignUpCommand command = request.toCommand();
 
         // when
         when(memberRepository.existByEmail(request.email())).thenReturn(true);
-        assertThatThrownBy(() -> authService.signUp(request))
+        assertThatThrownBy(() -> authService.signUp(command))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 사용 중인 이메일입니다.");
 
@@ -89,11 +97,12 @@ class AuthServiceTest {
     void givenSignUpRequest_whenIsDuplicatedNickname_thenThrowException() {
         // given
         SignUpRequest request = new SignUpRequest("testUser", "test@email.com", "test1234");
+        SignUpCommand command = request.toCommand();
 
         // when
         when(memberRepository.existByNickname(request.nickname())).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.signUp(request))
+        assertThatThrownBy(() -> authService.signUp(command))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("이미 사용 중인 닉네임입니다.");
 
@@ -107,6 +116,8 @@ class AuthServiceTest {
         // given
         LoginRequest request = new LoginRequest("test@email.com", "test1234");
 
+        LoginQuery query = request.toQuery();
+
         Authentication mockAuthenticationObj = mock(Authentication.class);
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -114,7 +125,8 @@ class AuthServiceTest {
         when(tokenProvider.generateToken(mockAuthenticationObj)).thenReturn("access-token");
 
         // when
-        LoginResponse loginResponse = authService.login(request);
+        LoginInfo loginInfo = authService.login(query);
+        LoginResponse loginResponse = LoginResponse.from(loginInfo);
 
         // then
         assertThat(loginResponse.token()).isEqualTo("access-token");
@@ -130,12 +142,14 @@ class AuthServiceTest {
         // given
         LoginRequest request = new LoginRequest("noExist@email.com", "test5678");
 
+        LoginQuery query = request.toQuery();
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new UsernameNotFoundException("존재하지 않는 유저입니다."));
 
         // when
         // then
-        assertThatThrownBy(() -> authService.login(request))
+        assertThatThrownBy(() -> authService.login(query))
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage("존재하지 않는 유저입니다.");
 
