@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jaeseok.groupStudy.auth.application.dto.LoginInfo;
 
 public record LoginResponse(
-        @JsonProperty("access-token")
+        @JsonProperty("access_token")
         String token,
         String message
 ) {

@@ -67,7 +67,7 @@ class AuthServiceTest {
 
         // then
         assertThat(signUpResponse.id()).isEqualTo(savedMember.getId());
-        assertThat(signUpResponse.message()).isEqualTo("회원가입 성공!");
+        assertThat(signUpResponse.message()).isEqualTo("회원가입에 성공했습니다.");
 
         verify(memberRepository, times(1)).existByEmail(command.email());
         verify(memberRepository, times(1)).existByNickname(command.nickname());

@@ -6,11 +6,11 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 public record SignUpRequest(
         @NotBlank(message = "닉네임은 필수입니다.")
-        @Min(value = 2, message = "닉네임은 2자 이상어야합니다.")
-        @Max(value = 10, message = "닉네임은 10자 이하여야합니다.")
+        @Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하여야 합니다.")
         @JsonProperty("nickname")
         String nickname,
 
