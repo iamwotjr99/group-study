@@ -2,11 +2,13 @@ package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,5 +104,34 @@ class StudyGroupRepositoryImplTest {
                 .hasSize(3)
                 .extracting(Participant::userId)
                 .containsExactlyInAnyOrder(1L, 2L, 3L);
+    }
+
+    @Test
+    @DisplayName("GroupState.Recruiting인 StudyGroup을 조회할 수 있다.")
+    void givenRecruitingState_whenFindByState_thenReturnRecruitingStudyGroup() {
+        // given
+        StudyGroupInfo studyGroupInfo_1 = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
+                LocalDateTime.now().plusDays(1));
+
+        StudyGroupInfo studyGroupInfo_2 = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 002", 3,
+                LocalDateTime.now().plusDays(1));
+
+        StudyGroup studyGroup1 = StudyGroup.createWithHost(HOST_ID, studyGroupInfo_1);
+        StudyGroup studyGroup2 = StudyGroup.createWithHost(USER_1_ID, studyGroupInfo_2);
+
+        studyGroupRepository.save(studyGroup1);
+        studyGroupRepository.save(studyGroup2);
+
+        GroupState state = GroupState.RECRUITING;
+
+        // when
+        List<StudyGroup> recruitingGroup = studyGroupRepository.findByState(state);
+
+        // then
+        assertThat(recruitingGroup)
+                .isNotNull()
+                .hasSize(2)
+                .extracting(StudyGroup::getInfoTitle)
+                .containsExactlyInAnyOrder("스터디 그룹 테스트 001", "스터디 그룹 테스트 002");
     }
 }

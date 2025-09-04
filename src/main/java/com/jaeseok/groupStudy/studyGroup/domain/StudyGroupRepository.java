@@ -6,6 +6,6 @@ import java.util.Optional;
 public interface StudyGroupRepository {
     StudyGroup save(StudyGroup studyGroup);
     Optional<StudyGroup> findById(Long id);
-    List<StudyGroup> findByRecruiting();
+    List<StudyGroup> findByState(GroupState state);
     StudyGroup update(StudyGroup studyGroup);
 }

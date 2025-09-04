@@ -56,7 +56,7 @@ public class StudyGroupInfoEntity {
     }
 
     public StudyGroupInfo toDomain() {
-        return StudyGroupInfo.of(this.title, this.capacity, this.deadline, this.policy, this.state);
+        return StudyGroupInfo.of(this.title, this.capacity, this.deadline, this.policy);
     }
 
 }

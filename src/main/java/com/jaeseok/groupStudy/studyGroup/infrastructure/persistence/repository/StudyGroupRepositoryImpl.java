@@ -1,8 +1,10 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository;
 
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -28,6 +30,14 @@ public class StudyGroupRepositoryImpl implements StudyGroupRepository {
                 .stream()
                 .map(StudyGroupEntity::toDomain)
                 .findFirst();
+    }
+
+    @Override
+    public List<StudyGroup> findByState(GroupState state) {
+        return jpaStudyGroupRepository.findByState(state)
+                .stream()
+                .map(StudyGroupEntity::toDomain)
+                .toList();
     }
 
     @Override
