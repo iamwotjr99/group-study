@@ -18,8 +18,7 @@ class StudyGroupInfoTest {
         info = StudyGroupInfo.of("테스트 방 제목",
                 5,
                 LocalDateTime.now().plusDays(10),
-                RecruitingPolicy.APPROVAL,
-                GroupState.RECRUITING
+                RecruitingPolicy.APPROVAL
         );
     }
 
@@ -123,8 +122,10 @@ class StudyGroupInfoTest {
     @DisplayName("close()으로 그룹 상태를 CLOSE(모집 마감)으로 바꿀 수 있다.")
     void givenStudyGroupInfo_whenClose_thenReturnCloseState() {
         // given
+        StudyGroupInfo start = info.start();
+
         // when
-        StudyGroupInfo close = info.close();
+        StudyGroupInfo close = start.close();
 
         // then
         assertThat(close.getState()).isEqualTo(GroupState.CLOSE);
@@ -146,8 +147,8 @@ class StudyGroupInfoTest {
     void givenSameInfo_whenEqualsAndHashCode_thenReturnTrue() {
         // given
         LocalDateTime deadLine = LocalDateTime.now().plusDays(1);
-        StudyGroupInfo info1 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
-        StudyGroupInfo info2 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
+        StudyGroupInfo info1 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL);
+        StudyGroupInfo info2 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL);
 
         // when
         boolean equals = info1.equals(info2);
