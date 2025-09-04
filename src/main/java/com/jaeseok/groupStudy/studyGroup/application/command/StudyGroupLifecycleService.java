@@ -1,8 +1,8 @@
 package com.jaeseok.groupStudy.studyGroup.application.command;
 
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupCloseCommand;
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupCreateCommand;
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupStartCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 
 public interface StudyGroupLifecycleService {
 
@@ -11,17 +11,17 @@ public interface StudyGroupLifecycleService {
      * @param cmd - StudyGroupCreateCommand(hostId, info)
      * @return 생성된 스터디 그룹 ID
      */
-    Long createStudyGroup(StudyGroupCreateCommand cmd);
+    Long createStudyGroup(CreateStudyGroupCommand cmd);
 
     /**
      * 스터디 그룹의 상태를 "진행중"으로 변경
      * @param cmd - StudyGroupStartCommand(studyGroupId, hostId)
      */
-    void startStudyGroup(StudyGroupStartCommand cmd);
+    void startStudyGroup(StartStudyGroupCommand cmd);
 
     /**
      * 스터디 그룹의 상태를 "종료"로 변경
      * @param cmd - StudyGroupCloseCommand(StudyGroupId, hostId)
      */
-    void closeStudyGroup(StudyGroupCloseCommand cmd);
+    void closeStudyGroup(CloseStudyGroupCommand cmd);
 }

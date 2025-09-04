@@ -1,8 +1,8 @@
 package com.jaeseok.groupStudy.studyGroup.application.command;
 
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupCloseCommand;
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupCreateCommand;
-import com.jaeseok.groupStudy.studyGroup.application.command.dto.StudyGroupStartCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,7 +18,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
 
     // 스터디 그룹을 생성
     @Override
-    public Long createStudyGroup(StudyGroupCreateCommand cmd) {
+    public Long createStudyGroup(CreateStudyGroupCommand cmd) {
         StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.info());
 
         StudyGroup saved = studyGroupRepository.save(studyGroup);
@@ -28,7 +28,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     // 스터디 그룹을 시작: 모집중 -> 진행중
     @Transactional
     @Override
-    public void startStudyGroup(StudyGroupStartCommand cmd) {
+    public void startStudyGroup(StartStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
 
@@ -39,7 +39,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     // 스터디 그룹을 종료: 진행중 -> 종료
     @Transactional
     @Override
-    public void closeStudyGroup(StudyGroupCloseCommand cmd) {
+    public void closeStudyGroup(CloseStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
 
