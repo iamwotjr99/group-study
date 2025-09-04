@@ -32,8 +32,8 @@ public class StudyGroupInfo {
         this.state = state;
     }
 
-    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
-        return new StudyGroupInfo(title, capacity, deadline, policy, state);
+    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy) {
+        return new StudyGroupInfo(title, capacity, deadline, policy, GroupState.RECRUITING);
     }
 
     // 기본값 스터디 정보 생성(가입 방법: 승인제, 스터디 모집 상태: 모집중)
@@ -56,13 +56,19 @@ public class StudyGroupInfo {
         return withState(GroupState.RECRUITING);
     }
 
-    // 모집 마감
+    // 스터디 종료
     public StudyGroupInfo close() {
+        if (this.state != GroupState.START) {
+            throw new IllegalStateException("진행중인 스터디만 종료할 수 있습니다.");
+        }
         return withState(GroupState.CLOSE);
     }
 
     // 스터디 진행중
     public StudyGroupInfo start() {
+        if (this.state != GroupState.RECRUITING) {
+            throw new IllegalStateException("모집중인 스터디만 시작할 수 있습니다.");
+        }
         return withState(GroupState.START);
     }
 

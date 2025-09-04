@@ -20,10 +20,16 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class StudyGroup {
     private final Long id;
-    private final StudyGroupInfo studyGroupInfo;
+    private StudyGroupInfo studyGroupInfo;
 
     // PENDING, APPROVED 유저 모두 관리
     private final Set<Participant> participantSet;
+
+    private StudyGroup(Long id, StudyGroupInfo info, Set<Participant> participants) {
+        this.id = id;
+        this.studyGroupInfo = info;
+        this.participantSet = participants;
+    }
 
     public static StudyGroup of(Long id, StudyGroupInfo studyGroupInfo, Set<Participant> participants) {
         return new StudyGroup(id, studyGroupInfo, participants);
@@ -39,6 +45,7 @@ public class StudyGroup {
         return new StudyGroup(newGroupId, info, participants);
     }
 
+    // 스터디 그룹에 참여 신청
     public void apply(Long userId) {
         if (existsParticipant(userId)) {
             throw new IllegalArgumentException("이미 신청중이거나 참여중인 스터디 그룹입니다.");
@@ -57,6 +64,7 @@ public class StudyGroup {
         if (isFull()) throw new IllegalArgumentException("현재 방 인원이 가득 찼습니다.");
 
         this.participantSet.remove(participant);
+
         Participant approved = participant.approve();
         this.participantSet.add(approved);
     }
@@ -69,6 +77,7 @@ public class StudyGroup {
         if (participant.status() != ParticipantStatus.PENDING) throw new IllegalStateException("대기중인 유저가 아닙니다.");
 
         this.participantSet.remove(participant);
+
         Participant rejected = participant.reject();
         this.participantSet.add(rejected);
     }
@@ -81,6 +90,7 @@ public class StudyGroup {
         if (participant.status() != ParticipantStatus.APPROVED) throw new IllegalStateException("참여중인 유저가 아닙니다.");
 
         this.participantSet.remove(participant);
+
         Participant kicked = participant.kick();
         this.participantSet.add(kicked);
     }
@@ -105,6 +115,28 @@ public class StudyGroup {
         this.participantSet.add(left);
     }
 
+    // 현재 스터디 그룹의 방장 리턴
+    public Participant getHost() {
+        return participantSet.stream()
+                .filter(Participant::isHost)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("방장이 없습니다."));
+    }
+
+    // 스터디 그룹 진행 시작 (모집중 -> 진행중)
+    public void start(Long hostId) {
+        validateHost(hostId);
+
+        this.studyGroupInfo = this.studyGroupInfo.start();
+    }
+
+    // 스터디 그룹 종료 (진행중 -> 종료)
+    public void close(Long hostId) {
+        validateHost(hostId);
+
+        this.studyGroupInfo = this.studyGroupInfo.close();
+    }
+
     // 방이 꽉 찬 상태인지 확인
     private boolean isFull() {
         return getApprovedParticipantCount() == this.getInfoCapacity();
@@ -115,15 +147,6 @@ public class StudyGroup {
         return (int) this.participantSet.stream()
                 .filter(p -> p.status() == ParticipantStatus.APPROVED)
                 .count();
-    }
-
-
-    // 현재 스터디 그룹의 방장 리턴
-    public Participant getHost() {
-        return participantSet.stream()
-                .filter(Participant::isHost)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("방장이 없습니다."));
     }
 
     // 방장인지 권한 확인
@@ -146,9 +169,6 @@ public class StudyGroup {
                 .anyMatch(p -> p.userId().equals(userId));
     }
 
-//    public Set<Participant> getParticipants() {
-//        return Collections.unmodifiableSet(participantSet);
-//    }
 
     public String getInfoTitle() {
         return studyGroupInfo.getTitle();
