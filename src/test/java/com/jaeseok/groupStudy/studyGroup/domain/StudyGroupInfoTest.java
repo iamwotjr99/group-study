@@ -119,7 +119,7 @@ class StudyGroupInfoTest {
     }
 
     @Test
-    @DisplayName("close()으로 그룹 상태를 CLOSE(모집 마감)으로 바꿀 수 있다.")
+    @DisplayName("close()으로 그룹 상태를 CLOSE(종료)으로 바꿀 수 있다.")
     void givenStudyGroupInfo_whenClose_thenReturnCloseState() {
         // given
         StudyGroupInfo start = info.start();

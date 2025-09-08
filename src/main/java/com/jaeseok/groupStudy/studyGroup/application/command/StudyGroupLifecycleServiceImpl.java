@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.studyGroup.application.command;
 
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
@@ -18,11 +19,11 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
 
     // 스터디 그룹을 생성
     @Override
-    public Long createStudyGroup(CreateStudyGroupCommand cmd) {
+    public CreateStudyGroupInfo createStudyGroup(CreateStudyGroupCommand cmd) {
         StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.info());
 
         StudyGroup saved = studyGroupRepository.save(studyGroup);
-        return saved.getId();
+        return new CreateStudyGroupInfo(saved.getId());
     }
 
     // 스터디 그룹을 시작: 모집중 -> 진행중
