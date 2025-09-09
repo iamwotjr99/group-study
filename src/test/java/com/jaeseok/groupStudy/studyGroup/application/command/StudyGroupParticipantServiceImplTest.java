@@ -199,6 +199,8 @@ class StudyGroupParticipantServiceImplTest {
         assertThatThrownBy(() -> studyGroupParticipantService.leaveStudyGroup(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장은 퇴장할 수 없습니다.");
+
+        verify(studyGroupRepository, never()).update(studyGroup);
     }
 
     private void assertParticipantStatus(ArgumentCaptor<StudyGroup> captor, Long assertTargetId, ParticipantStatus status) {
