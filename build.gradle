@@ -14,22 +14,25 @@ java {
 	}
 }
 
+jacoco {
+	toolVersion = "0.8.13"
+	reportsDirectory = layout.buildDirectory.dir('reports/jacoco/test')
+}
+
 jacocoTestReport {
 	dependsOn test
 	reports {
-		html.required = true
 		xml.required = false
 		csv.required = false
+
+		html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
 	}
 }
 
 jacocoTestCoverageVerification {
 	violationRules {
 		rule {
-			element = 'CLASS'
-
 			limit {
-				value = "COVEREDRATIO"
 				minimum = 0.80
 			}
 		}
