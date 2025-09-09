@@ -39,5 +39,6 @@ out/
 ### application setting files ###
 /src/main/resources/application.yml
 /src/test/resources/application-test.yml
+lombok.config
 
-../
+.DS_Store
