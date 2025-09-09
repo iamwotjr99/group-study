@@ -40,5 +40,4 @@ out/
 /src/main/resources/application.yml
 /src/test/resources/application-test.yml
 
-../../build.gradle
-../../.DS_Store
+/build
