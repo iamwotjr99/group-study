@@ -1,5 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity;
 
+import com.jaeseok.groupStudy.studyGroup.common.BaseTimeEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
@@ -29,7 +30,7 @@ import lombok.Getter;
         uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "study_group_id"})
 )
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class ParticipantEntity {
+public class ParticipantEntity extends BaseTimeEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

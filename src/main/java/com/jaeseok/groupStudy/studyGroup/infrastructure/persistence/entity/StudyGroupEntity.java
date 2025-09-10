@@ -1,5 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity;
 
+import com.jaeseok.groupStudy.studyGroup.common.BaseTimeEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import jakarta.persistence.CascadeType;
@@ -24,7 +25,7 @@ import lombok.Getter;
 @Entity
 @Table(name = "study_group")
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class StudyGroupEntity {
+public class StudyGroupEntity extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
