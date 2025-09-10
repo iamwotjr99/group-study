@@ -1,6 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity;
 
-import com.jaeseok.groupStudy.studyGroup.common.BaseTimeEntity;
+import com.jaeseok.groupStudy.common.BaseTimeEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import jakarta.persistence.CascadeType;
@@ -9,10 +9,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;

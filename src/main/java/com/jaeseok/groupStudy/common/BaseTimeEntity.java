@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.studyGroup.common;
+package com.jaeseok.groupStudy.common;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;

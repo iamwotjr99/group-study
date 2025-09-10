@@ -1,6 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity;
 
-import com.jaeseok.groupStudy.studyGroup.common.BaseTimeEntity;
+import com.jaeseok.groupStudy.common.BaseTimeEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
