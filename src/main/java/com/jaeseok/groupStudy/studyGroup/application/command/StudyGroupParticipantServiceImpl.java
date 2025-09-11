@@ -4,7 +4,8 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApplyStudyGroup
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CancelStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.LeaveStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.StudyGroupRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,33 +20,40 @@ public class StudyGroupParticipantServiceImpl implements StudyGroupParticipantSe
     @Transactional
     @Override
     public void applyForStudyGroup(ApplyStudyGroupCommand cmd) {
-        StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
+        StudyGroupEntity studyGroupEntity = studyGroupRepository.findById(cmd.studyGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+
+        StudyGroup studyGroup = studyGroupEntity.toDomain();
 
         studyGroup.apply(cmd.applicantId());
 
-        studyGroupRepository.update(studyGroup);
+        studyGroupEntity.updateFromDomain(studyGroup);
     }
 
     @Transactional
     @Override
     public void cancelApplication(CancelStudyGroupCommand cmd) {
-        StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
+        StudyGroupEntity studyGroupEntity = studyGroupRepository.findById(cmd.studyGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+
+        StudyGroup studyGroup = studyGroupEntity.toDomain();
 
         studyGroup.participantApplyCancel(cmd.applicantId());
 
-        studyGroupRepository.update(studyGroup);
+        studyGroupEntity.updateFromDomain(studyGroup);
     }
 
     @Transactional
     @Override
     public void leaveStudyGroup(LeaveStudyGroupCommand cmd) {
-        StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
+        StudyGroupEntity studyGroupEntity = studyGroupRepository.findById(cmd.studyGroupId())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+
+        StudyGroup studyGroup = studyGroupEntity.toDomain();
 
         studyGroup.participantLeave(cmd.participantId());
 
-        studyGroupRepository.update(studyGroup);
+        studyGroupEntity.updateFromDomain(studyGroup);
     }
+
 }

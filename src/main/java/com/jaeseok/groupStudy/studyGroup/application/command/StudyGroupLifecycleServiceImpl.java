@@ -5,7 +5,8 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGrou
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.StudyGroupRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,8 +22,9 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     @Override
     public CreateStudyGroupInfo createStudyGroup(CreateStudyGroupCommand cmd) {
         StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.info());
+        StudyGroupEntity studyGroupEntity = StudyGroupEntity.fromDomain(studyGroup);
 
-        StudyGroup saved = studyGroupRepository.save(studyGroup);
+        StudyGroupEntity saved = studyGroupRepository.save(studyGroupEntity);
         return new CreateStudyGroupInfo(saved.getId());
     }
 
@@ -30,21 +32,27 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     @Transactional
     @Override
     public void startStudyGroup(StartStudyGroupCommand cmd) {
-        StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
+        StudyGroupEntity studyGroupEntity = studyGroupRepository.findById(cmd.studyGroupId())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+
+        StudyGroup studyGroup = studyGroupEntity.toDomain();
 
         studyGroup.start(cmd.hostId());
-        studyGroupRepository.update(studyGroup);
+
+        studyGroupEntity.updateFromDomain(studyGroup);
     }
 
     // 스터디 그룹을 종료: 진행중 -> 종료
     @Transactional
     @Override
     public void closeStudyGroup(CloseStudyGroupCommand cmd) {
-        StudyGroup studyGroup = studyGroupRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
+        StudyGroupEntity studyGroupEntity = studyGroupRepository.findById(cmd.studyGroupId())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+
+        StudyGroup studyGroup = studyGroupEntity.toDomain();
 
         studyGroup.close(cmd.hostId());
-        studyGroupRepository.update(studyGroup);
+
+        studyGroupEntity.updateFromDomain(studyGroup);
     }
 }
