@@ -10,12 +10,11 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroup
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
-import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -38,7 +37,7 @@ class StudyGroupLifecycleServiceImplTest {
     StudyGroupLifecycleServiceImpl studyGroupLifecycleService;
 
     @Mock
-    StudyGroupRepository studyGroupRepository;
+    StudyGroupCommandRepository studyGroupCommandRepository;
 
     final Long HOST_ID = 1L;
 
@@ -53,7 +52,7 @@ class StudyGroupLifecycleServiceImplTest {
 
         Long fakeStudyGroupId = 100L;
         StudyGroup willCreatedStudyGroup = StudyGroup.of(fakeStudyGroupId, cmd.info(), Collections.EMPTY_SET);
-        given(studyGroupRepository.save(any(StudyGroup.class))).willReturn(willCreatedStudyGroup);
+        given(studyGroupCommandRepository.save(any(StudyGroup.class))).willReturn(willCreatedStudyGroup);
 
         // when
         CreateStudyGroupInfo createStudyGroupInfo = studyGroupLifecycleService.createStudyGroup(cmd);
@@ -63,7 +62,7 @@ class StudyGroupLifecycleServiceImplTest {
         assertThat(createStudyGroupInfo.studyGroupId()).isEqualTo(willCreatedStudyGroup.getId());
 
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).save(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).save(studyGroupCaptor.capture());
 
         StudyGroup capturedStudyGroup = studyGroupCaptor.getValue();
         assertThat(capturedStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
@@ -87,7 +86,7 @@ class StudyGroupLifecycleServiceImplTest {
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId,
                 hostId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
 
         // when
@@ -95,8 +94,8 @@ class StudyGroupLifecycleServiceImplTest {
 
         // then
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).findById(fakeStudyGroupId);
-        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).findById(fakeStudyGroupId);
+        verify(studyGroupCommandRepository, times(1)).update(studyGroupCaptor.capture());
 
         StudyGroup studyGroupCaptorValue = studyGroupCaptor.getValue();
         assertThat(studyGroupCaptorValue.getInfoState()).isEqualTo(GroupState.START);
@@ -111,15 +110,15 @@ class StudyGroupLifecycleServiceImplTest {
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(hostId,
                 notExistStudyGroupId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.empty());
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("존재하지 않는 스터디 그룹");
 
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
@@ -142,15 +141,15 @@ class StudyGroupLifecycleServiceImplTest {
 
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId, notHostUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
@@ -169,7 +168,7 @@ class StudyGroupLifecycleServiceImplTest {
         StudyGroupInfo studyGroupInfo = recruitingInfo.start();
         StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
-        given(studyGroupRepository.findById(fakeStudyGroupId)).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(fakeStudyGroupId)).willReturn(Optional.of(studyGroup));
 
         CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId,
                 hostId);
@@ -179,8 +178,8 @@ class StudyGroupLifecycleServiceImplTest {
 
         // then
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).findById(fakeStudyGroupId);
-        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).findById(fakeStudyGroupId);
+        verify(studyGroupCommandRepository, times(1)).update(studyGroupCaptor.capture());
 
         StudyGroup studyGroupCaptorValue = studyGroupCaptor.getValue();
         assertThat(studyGroupCaptorValue.getInfoState()).isEqualTo(GroupState.CLOSE);
@@ -195,15 +194,15 @@ class StudyGroupLifecycleServiceImplTest {
         CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(hostId,
                 notExistStudyGroupId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.empty());
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessageContaining("존재하지 않는 스터디 그룹");
 
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
@@ -228,14 +227,14 @@ class StudyGroupLifecycleServiceImplTest {
 
         CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId, notHostUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 }

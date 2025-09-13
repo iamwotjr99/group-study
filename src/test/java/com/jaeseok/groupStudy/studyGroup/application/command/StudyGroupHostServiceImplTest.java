@@ -1,7 +1,6 @@
 package com.jaeseok.groupStudy.studyGroup.application.command;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApproveStudyGroupCommand;
@@ -9,7 +8,7 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.KickStudyGroupC
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.RejectStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
@@ -18,13 +17,11 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -37,7 +34,7 @@ class StudyGroupHostServiceImplTest {
     StudyGroupHostServiceImpl studyGroupHostService;
 
     @Mock
-    StudyGroupRepository studyGroupRepository;
+    StudyGroupCommandRepository studyGroupCommandRepository;
 
     final Long HOST_ID = 1L;
     final Long USER_ID = 2L;
@@ -71,15 +68,15 @@ class StudyGroupHostServiceImplTest {
         ApproveStudyGroupCommand cmd = new ApproveStudyGroupCommand(
                 studyGroupId, hostId, applicantUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when
         studyGroupHostService.approveApplication(cmd);
 
         // then
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, times(1)).update(studyGroupCaptor.capture());
 
         assertParticipantStatus(studyGroupCaptor, applicantUserId, ParticipantStatus.APPROVED);
     }
@@ -97,14 +94,14 @@ class StudyGroupHostServiceImplTest {
         ApproveStudyGroupCommand cmd = new ApproveStudyGroupCommand(studyGroupId, notHostUserId,
                 applicantUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -118,14 +115,14 @@ class StudyGroupHostServiceImplTest {
         ApproveStudyGroupCommand cmd = new ApproveStudyGroupCommand(studyGroupId, hostId,
                 notPendingUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("대기중인 유저가 아닙니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -144,14 +141,14 @@ class StudyGroupHostServiceImplTest {
 
         ApproveStudyGroupCommand cmd = new ApproveStudyGroupCommand(studyGroupId, hostId, applicantId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("가득 찼습니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -167,15 +164,15 @@ class StudyGroupHostServiceImplTest {
         RejectStudyGroupCommand cmd = new RejectStudyGroupCommand(studyGroupId,
                 hostId, applicantUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when
         studyGroupHostService.rejectApplication(cmd);
 
         // then
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, times(1)).update(studyGroupCaptor.capture());
 
         assertParticipantStatus(studyGroupCaptor, applicantUserId, ParticipantStatus.REJECTED);
     }
@@ -192,14 +189,14 @@ class StudyGroupHostServiceImplTest {
 
         RejectStudyGroupCommand cmd = new RejectStudyGroupCommand(studyGroupId, notHostUserId, applicantId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.rejectApplication(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -213,13 +210,13 @@ class StudyGroupHostServiceImplTest {
         RejectStudyGroupCommand cmd = new RejectStudyGroupCommand(studyGroupId,
                 hostId, notPendingUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.rejectApplication(cmd))
                 .isInstanceOf(IllegalStateException.class)
                         .hasMessageContaining("대기중인 유저가 아닙니다.");
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -236,15 +233,15 @@ class StudyGroupHostServiceImplTest {
         KickStudyGroupCommand cmd = new KickStudyGroupCommand(studyGroupId,
                 hostId, participantId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when
         studyGroupHostService.kickParticipation(cmd);
 
         // then
         ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
-        verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
+        verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
+        verify(studyGroupCommandRepository, times(1)).update(studyGroupCaptor.capture());
 
         assertParticipantStatus(studyGroupCaptor, participantId, ParticipantStatus.KICKED);
     }
@@ -263,14 +260,14 @@ class StudyGroupHostServiceImplTest {
         KickStudyGroupCommand cmd = new KickStudyGroupCommand(studyGroupId,
                 notHostUserId, approvedId);
 
-        given(studyGroupRepository.findById(studyGroupId)).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(studyGroupId)).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.kickParticipation(cmd))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     @Test
@@ -286,14 +283,14 @@ class StudyGroupHostServiceImplTest {
         KickStudyGroupCommand cmd = new KickStudyGroupCommand(studyGroupId,
                 hostId, applicantId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.kickParticipation(cmd))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("참여중인 유저가 아닙니다.");
 
-        verify(studyGroupRepository, never()).update(studyGroup);
+        verify(studyGroupCommandRepository, never()).update(studyGroup);
     }
 
     private void assertParticipantStatus(ArgumentCaptor<StudyGroup> captor, Long assertTargetId, ParticipantStatus status) {

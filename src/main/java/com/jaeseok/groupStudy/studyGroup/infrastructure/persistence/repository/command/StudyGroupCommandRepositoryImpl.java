@@ -1,48 +1,38 @@
-package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository;
+package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.command;
 
-import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
-import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class StudyGroupRepositoryImpl implements StudyGroupRepository {
+public class StudyGroupCommandRepositoryImpl implements StudyGroupCommandRepository {
 
 
-    private final JpaStudyGroupRepository jpaStudyGroupRepository;
+    private final JpaStudyGroupCommandRepository jpaStudyGroupCommandRepository;
 
     @Override
     public StudyGroup save(StudyGroup studyGroup) {
         StudyGroupEntity studyGroupEntity = StudyGroupEntity.fromDomain(studyGroup);
-        StudyGroupEntity savedEntity = jpaStudyGroupRepository.save(studyGroupEntity);
+        StudyGroupEntity savedEntity = jpaStudyGroupCommandRepository.save(studyGroupEntity);
 
         return savedEntity.toDomain();
     }
 
     @Override
     public Optional<StudyGroup> findById(Long id) {
-        return jpaStudyGroupRepository.findByIdWithParticipants(id)
+        return jpaStudyGroupCommandRepository.findByIdWithParticipants(id)
                 .stream()
                 .map(StudyGroupEntity::toDomain)
                 .findFirst();
     }
 
     @Override
-    public List<StudyGroup> findByState(GroupState state) {
-        return jpaStudyGroupRepository.findByState(state)
-                .stream()
-                .map(StudyGroupEntity::toDomain)
-                .toList();
-    }
-
-    @Override
     public StudyGroup update(StudyGroup studyGroup) {
-        StudyGroupEntity studyGroupEntity = jpaStudyGroupRepository.findById(studyGroup.getId())
+        StudyGroupEntity studyGroupEntity = jpaStudyGroupCommandRepository.findById(studyGroup.getId())
                 .orElseThrow(() -> new IllegalArgumentException("업데이트할 스터디 그룹을 찾을 수 없습니다."));
 
         studyGroupEntity.updateFromDomain(studyGroup);

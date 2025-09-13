@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository;
+package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.command;
 
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface JpaStudyGroupRepository extends JpaRepository<StudyGroupEntity, Long> {
+public interface JpaStudyGroupCommandRepository extends JpaRepository<StudyGroupEntity, Long> {
     @Query("SELECT "
             + "sg"
             + " FROM StudyGroupEntity sg"
