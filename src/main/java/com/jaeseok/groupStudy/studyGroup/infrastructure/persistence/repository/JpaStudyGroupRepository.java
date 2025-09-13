@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface StudyGroupRepository extends JpaRepository<StudyGroupEntity, Long> {
+public interface JpaStudyGroupRepository extends JpaRepository<StudyGroupEntity, Long> {
     @Query("SELECT "
             + "sg"
             + " FROM StudyGroupEntity sg"
@@ -21,5 +21,5 @@ public interface StudyGroupRepository extends JpaRepository<StudyGroupEntity, Lo
             + "sg"
             + " FROM StudyGroupEntity sg"
             + " WHERE sg.infoEntity.state = :state")
-    List<StudyGroupEntity> findByStatus(@Param("state") GroupState state);
+    List<StudyGroupEntity> findByState(@Param("state") GroupState state);
 }

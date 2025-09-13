@@ -10,21 +10,18 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroup
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.ParticipantEntity;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupInfoEntity;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -44,76 +41,32 @@ class StudyGroupLifecycleServiceImplTest {
     StudyGroupRepository studyGroupRepository;
 
     final Long HOST_ID = 1L;
-    final Long USER_ID = 2L;
-    final Long STUDY_GROUP_ID = 100L;
-    StudyGroupEntity studyGroupEntity;
-
-    @BeforeEach
-    void setUp() {
-        StudyGroupInfoEntity infoEntity = StudyGroupInfoEntity.builder()
-                .title("테스트 스터디 그룹 001")
-                .capacity(3)
-                .deadline(LocalDateTime.now().plusDays(1))
-                .policy(RecruitingPolicy.APPROVAL)
-                .state(GroupState.RECRUITING)
-                .build();
-        this.studyGroupEntity = StudyGroupEntity.builder()
-                .id(STUDY_GROUP_ID)
-                .infoEntity(infoEntity)
-                .participantEntitySet(new HashSet<>())
-                .build();
-
-        ParticipantEntity hostEntity = ParticipantEntity.builder()
-                .userId(HOST_ID)
-                .studyGroupEntity(studyGroupEntity)
-                .status(ParticipantStatus.APPROVED)
-                .role(ParticipantRole.HOST)
-                .build();
-
-        ParticipantEntity userEntity = ParticipantEntity.builder()
-                .userId(USER_ID)
-                .studyGroupEntity(studyGroupEntity)
-                .status(ParticipantStatus.APPROVED)
-                .role(ParticipantRole.MEMBER)
-                .build();
-
-        this.studyGroupEntity.getParticipantEntitySet().add(hostEntity);
-        this.studyGroupEntity.getParticipantEntitySet().add(userEntity);
-    }
 
     @Test
     @DisplayName("스터디 그룹 생성 명령이 주어지면 스터디 그룹을 생성한다.")
     void givenCreateCommand_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
-
-        CreateStudyGroupCommand cmd = new CreateStudyGroupCommand(HOST_ID, studyGroupInfo);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+        CreateStudyGroupCommand cmd = new CreateStudyGroupCommand(HOST_ID,
+                studyGroupInfo);
 
         Long fakeStudyGroupId = 100L;
-        StudyGroupEntity willCreateStudyGroupEntity = StudyGroupEntity.builder()
-                .id(fakeStudyGroupId)
-                .infoEntity(StudyGroupInfoEntity.fromDomain(studyGroupInfo))
-                .participantEntitySet(new HashSet<>())
-                .build();
-        given(studyGroupRepository.save(any(StudyGroupEntity.class))).willReturn(willCreateStudyGroupEntity);
+        StudyGroup willCreatedStudyGroup = StudyGroup.of(fakeStudyGroupId, cmd.info(), Collections.EMPTY_SET);
+        given(studyGroupRepository.save(any(StudyGroup.class))).willReturn(willCreatedStudyGroup);
 
         // when
         CreateStudyGroupInfo createStudyGroupInfo = studyGroupLifecycleService.createStudyGroup(cmd);
 
         // then
         assertThat(createStudyGroupInfo.studyGroupId()).isNotNull();
-        assertThat(createStudyGroupInfo.studyGroupId()).isEqualTo(willCreateStudyGroupEntity.getId());
+        assertThat(createStudyGroupInfo.studyGroupId()).isEqualTo(willCreatedStudyGroup.getId());
 
-        ArgumentCaptor<StudyGroupEntity> studyGroupEntityCaptor = ArgumentCaptor.forClass(StudyGroupEntity.class);
-        verify(studyGroupRepository, times(1)).save(studyGroupEntityCaptor.capture());
+        ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
+        verify(studyGroupRepository, times(1)).save(studyGroupCaptor.capture());
 
-        StudyGroupEntity capturedStudyGroupEntity = studyGroupEntityCaptor.getValue();
-        assertThat(capturedStudyGroupEntity.getInfoEntity()).isEqualTo(willCreateStudyGroupEntity.getInfoEntity());
-        assertThat(capturedStudyGroupEntity.getParticipantEntitySet())
-                .hasSize(1)
-                .extracting(ParticipantEntity::getUserId, ParticipantEntity::getRole)
-                .containsExactly(tuple(HOST_ID, ParticipantRole.HOST));
+        StudyGroup capturedStudyGroup = studyGroupCaptor.getValue();
+        assertThat(capturedStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
     }
 
     @Test
@@ -123,18 +76,30 @@ class StudyGroupLifecycleServiceImplTest {
         Long fakeStudyGroupId = 100L;
         Long hostId = HOST_ID;
 
-        StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId, hostId);
+        Participant host = Participant.host(hostId, fakeStudyGroupId);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(host);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroupEntity));
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+        StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
+
+        StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId,
+                hostId);
+
+        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
 
         // when
         studyGroupLifecycleService.startStudyGroup(cmd);
 
         // then
+        ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
         verify(studyGroupRepository, times(1)).findById(fakeStudyGroupId);
+        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
 
-        assertThat(studyGroupEntity.getInfoEntity().getState()).isEqualTo(GroupState.START);
+        StudyGroup studyGroupCaptorValue = studyGroupCaptor.getValue();
+        assertThat(studyGroupCaptorValue.getInfoState()).isEqualTo(GroupState.START);
     }
 
     @Test
@@ -151,22 +116,33 @@ class StudyGroupLifecycleServiceImplTest {
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("존재하지 않는 스터디그룹 입니다.");
+                .hasMessageContaining("존재하지 않는 스터디 그룹");
 
         verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verifyNoMoreInteractions(studyGroupRepository);
+        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
     @DisplayName("방장이 아닌 사용자가 스터디 시작을 시도하면 예외를 발생시킨다.")
     void givenNotHostUser_whenStartStudyGroup_thenThrowException() {
         // given
-        Long notHostUserId = USER_ID;
+        Long notHostUserId = 404L;
+        Long hostId = HOST_ID;
         Long fakeStudyGroupId = 100L;
+
+        Participant host = Participant.host(hostId, fakeStudyGroupId);
+        Participant member = Participant.of(notHostUserId, fakeStudyGroupId, ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(host);
+        participants.add(member);
+
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+        StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId, notHostUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroupEntity));
+        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
@@ -174,7 +150,7 @@ class StudyGroupLifecycleServiceImplTest {
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verifyNoMoreInteractions(studyGroupRepository);
+        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
@@ -184,29 +160,30 @@ class StudyGroupLifecycleServiceImplTest {
         Long fakeStudyGroupId = 100L;
         Long hostId = HOST_ID;
 
-        CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId, hostId);
+        Participant host = Participant.host(hostId, fakeStudyGroupId);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(host);
 
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
+        StudyGroupInfo recruitingInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+        StudyGroupInfo studyGroupInfo = recruitingInfo.start();
+        StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
-        StudyGroupInfo startInfo = studyGroupInfo.start();
+        given(studyGroupRepository.findById(fakeStudyGroupId)).willReturn(Optional.of(studyGroup));
 
-        StudyGroupEntity startStatusStudyGroupEntity = StudyGroupEntity.builder()
-                .id(fakeStudyGroupId)
-                .infoEntity(StudyGroupInfoEntity.fromDomain(startInfo))
-                .participantEntitySet(studyGroupEntity.getParticipantEntitySet())
-                .build();
-
-
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(startStatusStudyGroupEntity));
+        CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId,
+                hostId);
 
         // when
         studyGroupLifecycleService.closeStudyGroup(cmd);
 
         // then
+        ArgumentCaptor<StudyGroup> studyGroupCaptor = ArgumentCaptor.forClass(StudyGroup.class);
         verify(studyGroupRepository, times(1)).findById(fakeStudyGroupId);
+        verify(studyGroupRepository, times(1)).update(studyGroupCaptor.capture());
 
-        assertThat(startStatusStudyGroupEntity.getInfoEntity().getState()).isEqualTo(GroupState.CLOSE);
+        StudyGroup studyGroupCaptorValue = studyGroupCaptor.getValue();
+        assertThat(studyGroupCaptorValue.getInfoState()).isEqualTo(GroupState.CLOSE);
     }
 
     @Test
@@ -223,33 +200,35 @@ class StudyGroupLifecycleServiceImplTest {
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
                 .isInstanceOf(EntityNotFoundException.class)
-                .hasMessageContaining("존재하지 않는 스터디그룹 입니다.");
+                .hasMessageContaining("존재하지 않는 스터디 그룹");
 
         verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verifyNoMoreInteractions(studyGroupRepository);
+        verify(studyGroupRepository, never()).update(any(StudyGroup.class));
     }
 
     @Test
     @DisplayName("방장이 아닌 사용자가 스터디 종료를 시도하면 예외를 발생시킨다.")
     void givenNotHostUser_whenCloseStudyGroup_thenThrowException() {
         // given
-        Long notHostUserId = USER_ID;
+        Long notHostUserId = 404L;
+        Long hostId = HOST_ID;
         Long fakeStudyGroupId = 100L;
 
+        Participant host = Participant.host(hostId, fakeStudyGroupId);
+        Participant participant = Participant.of(notHostUserId, fakeStudyGroupId,
+                ParticipantStatus.APPROVED, ParticipantRole.MEMBER);
+        Set<Participant> participants = new HashSet<>();
+        participants.add(host);
+        participants.add(participant);
 
         StudyGroupInfo recruitingInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
         StudyGroupInfo startGroupInfo = recruitingInfo.start();
-
-        StudyGroupEntity startStatusStudyGroupEntity = StudyGroupEntity.builder()
-                .id(fakeStudyGroupId)
-                .infoEntity(StudyGroupInfoEntity.fromDomain(startGroupInfo))
-                .participantEntitySet(studyGroupEntity.getParticipantEntitySet())
-                .build();
+        StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, startGroupInfo, participants);
 
         CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId, notHostUserId);
 
-        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(startStatusStudyGroupEntity));
+        given(studyGroupRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
@@ -257,6 +236,6 @@ class StudyGroupLifecycleServiceImplTest {
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupRepository, times(1)).findById(cmd.studyGroupId());
-        verifyNoMoreInteractions(studyGroupRepository);
+        verify(studyGroupRepository, never()).update(studyGroup);
     }
 }

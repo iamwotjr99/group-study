@@ -10,13 +10,11 @@ import jakarta.persistence.Enumerated;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @Embeddable
-@Builder
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode
 public class StudyGroupInfoEntity {
@@ -58,7 +56,7 @@ public class StudyGroupInfoEntity {
     }
 
     public StudyGroupInfo toDomain() {
-        return StudyGroupInfo.of(this.title, this.capacity, this.deadline, this.policy, this.state);
+        return StudyGroupInfo.of(this.title, this.capacity, this.deadline, this.policy);
     }
 
 }

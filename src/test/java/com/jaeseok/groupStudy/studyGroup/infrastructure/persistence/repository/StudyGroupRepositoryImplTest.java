@@ -3,21 +3,21 @@ package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository;
 import static org.assertj.core.api.Assertions.*;
 
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
-import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
-import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
-import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.ParticipantEntity;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupEntity;
-import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.StudyGroupInfoEntity;
-import java.util.HashSet;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
+import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupRepository;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
+import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
 @DataJpaTest
-@DisplayName("StudyGroupRepository 테스트")
+@Import({StudyGroupRepositoryImpl.class})
+@DisplayName("StudyGroupRepository 구현체 테스트")
 class StudyGroupRepositoryImplTest {
 
     @Autowired
@@ -31,63 +31,78 @@ class StudyGroupRepositoryImplTest {
     @DisplayName("StudyGroup을 DB에 저장할 수 있다.")
     void givenStudyGroup_whenSave_thenSaveInDB() {
         // given
-        StudyGroupEntity studyGroupEntity = createDefaultStudyGroupEntityWithHost(
-                HOST_ID, "스터디 그룹 테스트 001");
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
+                LocalDateTime.now().plusDays(1));
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
 
         // when
-        StudyGroupEntity savedEntity = studyGroupRepository.save(studyGroupEntity);
+        StudyGroup savedStudyGroup = studyGroupRepository.save(studyGroup);
 
         // then
-        assertThat(savedEntity).isNotNull();
-        assertThat(savedEntity.getId()).isNotNull();
-        assertThat(savedEntity.getInfoEntity()).isEqualTo(studyGroupEntity.getInfoEntity());
+        assertThat(savedStudyGroup).isNotNull();
+        assertThat(savedStudyGroup.getId()).isNotNull();
+        assertThat(savedStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
 
-        assertThat(savedEntity.getParticipantEntitySet())
+        assertThat(savedStudyGroup.getParticipantSet())
                 .hasSize(1)
-                .extracting(ParticipantEntity::getUserId)
-                .containsExactlyInAnyOrder(HOST_ID);
+                .extracting(Participant::userId)
+                .containsExactlyInAnyOrder(1L);
     }
 
     @Test
-    @DisplayName("StudyGroup을 id로 조회할 때 내부에서 Participant를 조합해서 조회할 수 있다. fetch join")
-    void givenStudyGroupId_whenFindByIdWithParticipants_thenReturnStudyGroup() {
+    @DisplayName("StudyGroup에 대한 변경을 DB에 저장할 수 있다.")
+    void givenUpdatedStudyGroup_whenUpdate_thenSaveInDB() {
         // given
-        StudyGroupEntity studyGroupEntity = createDefaultStudyGroupEntityWithHost(HOST_ID,
-                "스터디 그룹 테스트 001");
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
+                LocalDateTime.now().plusDays(1));
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
 
-        ParticipantEntity user1Entity = ParticipantEntity.builder()
-                .userId(USER_1_ID)
-                .studyGroupEntity(studyGroupEntity)
-                .role(ParticipantRole.HOST)
-                .status(ParticipantStatus.APPROVED)
-                .build();
+        StudyGroup saved = studyGroupRepository.save(studyGroup);
 
-        ParticipantEntity user2Entity = ParticipantEntity.builder()
-                .userId(USER_2_ID)
-                .studyGroupEntity(studyGroupEntity)
-                .role(ParticipantRole.HOST)
-                .status(ParticipantStatus.APPROVED)
-                .build();
+        saved.apply(USER_1_ID);
+        saved.apply(USER_2_ID);
 
-        studyGroupEntity.getParticipantEntitySet().add(user1Entity);
-        studyGroupEntity.getParticipantEntitySet().add(user2Entity);
+        // when
+        StudyGroup updated = studyGroupRepository.update(saved);
 
-        StudyGroupEntity saved = studyGroupRepository.save(studyGroupEntity);
+        // then
+        assertThat(updated).isNotNull();
+        assertThat(updated.getId()).isEqualTo(saved.getId());
+        assertThat(updated.getStudyGroupInfo()).isEqualTo(saved.getStudyGroupInfo());
+
+        assertThat(updated.getParticipantSet())
+                .hasSize(3)
+                .extracting(Participant::userId)
+                .containsExactlyInAnyOrder(1L, 2L, 3L);
+    }
+
+    @Test
+    @DisplayName("StudyGroup을 id로 조회할 때 내부에서 Participant를 조합해서 조회할 수 있다.")
+    void givenStudyGroupId_whenFindById_thenReturnStudyGroup() {
+        // given
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
+                LocalDateTime.now().plusDays(1));
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+
+        studyGroup.apply(USER_1_ID);
+        studyGroup.apply(USER_2_ID);
+
+        StudyGroup saved = studyGroupRepository.save(studyGroup);
 
         Long studyGroupId = saved.getId();
 
         // when
-        StudyGroupEntity foundStudyGroup = studyGroupRepository.findByIdWithParticipants(
+        StudyGroup foundStudyGroup = studyGroupRepository.findById(
                 studyGroupId).get(); // 내부에서 participant를 fetch join 하여 불러옴
 
         // then
         assertThat(foundStudyGroup).isNotNull();
         assertThat(foundStudyGroup.getId()).isEqualTo(studyGroupId);
-        assertThat(foundStudyGroup.getInfoEntity()).isEqualTo(saved.getInfoEntity());
+        assertThat(foundStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
 
-        assertThat(foundStudyGroup.getParticipantEntitySet())
+        assertThat(foundStudyGroup.getParticipantSet())
                 .hasSize(3)
-                .extracting(ParticipantEntity::getUserId)
+                .extracting(Participant::userId)
                 .containsExactlyInAnyOrder(1L, 2L, 3L);
     }
 
@@ -95,47 +110,28 @@ class StudyGroupRepositoryImplTest {
     @DisplayName("GroupState.Recruiting인 StudyGroup을 조회할 수 있다.")
     void givenRecruitingState_whenFindByState_thenReturnRecruitingStudyGroup() {
         // given
-        StudyGroupEntity studyGroupEntity1 = createDefaultStudyGroupEntityWithHost(HOST_ID, "스터디 그룹 테스트 001");
-        StudyGroupEntity studyGroupEntity2 = createDefaultStudyGroupEntityWithHost(USER_1_ID, "스터디 그룹 테스트 002");
+        StudyGroupInfo studyGroupInfo_1 = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
+                LocalDateTime.now().plusDays(1));
 
-        studyGroupRepository.save(studyGroupEntity1);
-        studyGroupRepository.save(studyGroupEntity2);
+        StudyGroupInfo studyGroupInfo_2 = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 002", 3,
+                LocalDateTime.now().plusDays(1));
+
+        StudyGroup studyGroup1 = StudyGroup.createWithHost(HOST_ID, studyGroupInfo_1);
+        StudyGroup studyGroup2 = StudyGroup.createWithHost(USER_1_ID, studyGroupInfo_2);
+
+        studyGroupRepository.save(studyGroup1);
+        studyGroupRepository.save(studyGroup2);
 
         GroupState state = GroupState.RECRUITING;
 
         // when
-        List<StudyGroupEntity> recruitingGroup = studyGroupRepository.findByStatus(state);
+        List<StudyGroup> recruitingGroup = studyGroupRepository.findByState(state);
 
         // then
         assertThat(recruitingGroup)
                 .isNotNull()
                 .hasSize(2)
-                .extracting(StudyGroupEntity::getInfoEntity)
-                .containsExactlyInAnyOrder(studyGroupEntity1.getInfoEntity(), studyGroupEntity2.getInfoEntity());
-    }
-
-    private StudyGroupEntity createDefaultStudyGroupEntityWithHost(Long hostId, String title) {
-        StudyGroupInfoEntity infoEntity = StudyGroupInfoEntity.builder()
-                .title(title)
-                .capacity(3)
-                .policy(RecruitingPolicy.APPROVAL)
-                .state(GroupState.RECRUITING)
-                .build();
-
-        StudyGroupEntity studyGroupEntity = StudyGroupEntity.builder()
-                .infoEntity(infoEntity)
-                .participantEntitySet(new HashSet<>())
-                .build();
-
-        ParticipantEntity hostEntity = ParticipantEntity.builder()
-                .userId(hostId)
-                .studyGroupEntity(studyGroupEntity)
-                .role(ParticipantRole.HOST)
-                .status(ParticipantStatus.APPROVED)
-                .build();
-
-        studyGroupEntity.getParticipantEntitySet().add(hostEntity);
-
-        return studyGroupEntity;
+                .extracting(StudyGroup::getInfoTitle)
+                .containsExactlyInAnyOrder("스터디 그룹 테스트 001", "스터디 그룹 테스트 002");
     }
 }
