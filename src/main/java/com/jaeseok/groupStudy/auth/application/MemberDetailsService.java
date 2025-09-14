@@ -1,5 +1,6 @@
 package com.jaeseok.groupStudy.auth.application;
 
+import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import java.util.Collections;
@@ -23,14 +24,7 @@ public class MemberDetailsService implements UserDetailsService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 유저입니다."));
 
-        return createMemberDetails(member);
+        return new UserPrincipal(member.getId(), member.getUserInfoEmail(), member.getUserInfoPassword());
     }
 
-    private UserDetails createMemberDetails(Member member) {
-        return User.builder()
-                .username(String.valueOf(member.getId())) // 바뀌기 쉬운 이메일보다 바뀔 가능성이 없는 id로 name 설정
-                .password(member.getUserInfoPassword())
-                .authorities(Collections.emptyList())
-                .build();
-    }
 }

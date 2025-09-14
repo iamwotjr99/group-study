@@ -4,7 +4,6 @@ import com.jaeseok.groupStudy.auth.application.TokenProvider;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
@@ -40,13 +39,13 @@ public class JwtTokenProvider implements TokenProvider {
 
     @Override
     public String generateToken(Authentication authentication) {
-        String memberId = authentication.getName();
+        String email = authentication.getName();
 
         long now = new Date().getTime();
         Date accessTokenExpiresIn = new Date(now + this.accessTokenValidationInMilliSec);
 
         return Jwts.builder()
-                .subject(memberId)
+                .subject(email)
                 .expiration(accessTokenExpiresIn)
                 .signWith(this.key)
                 .compact();
