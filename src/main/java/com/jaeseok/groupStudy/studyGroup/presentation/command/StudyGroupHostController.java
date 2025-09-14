@@ -22,7 +22,7 @@ public class StudyGroupHostController {
     private final StudyGroupHostService studyGroupHostService;
 
     @PostMapping("/applicants/{applicantId}/approve")
-    public ResponseEntity<Void> approveApplication(
+    public ResponseEntity<String> approveApplication(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long applicantId
@@ -31,11 +31,11 @@ public class StudyGroupHostController {
                 studyGroupId, userPrincipal.userId(), applicantId);
         studyGroupHostService.approveApplication(command);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("승인 성공");
     }
 
     @DeleteMapping("/applicants/{applicantId}/reject")
-    public ResponseEntity<Void> rejectApplication(
+    public ResponseEntity<String> rejectApplication(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long applicantId
@@ -44,11 +44,11 @@ public class StudyGroupHostController {
                 studyGroupId, userPrincipal.userId(), applicantId);
         studyGroupHostService.rejectApplication(command);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("거절 성공");
     }
 
     @DeleteMapping("/participants/{participantId}/kick")
-    public ResponseEntity<Void> kickParticipant(
+    public ResponseEntity<String> kickParticipant(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long participantId
@@ -57,6 +57,6 @@ public class StudyGroupHostController {
                 userPrincipal.userId(), participantId);
         studyGroupHostService.kickParticipation(command);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body("강퇴 성공");
     }
 }

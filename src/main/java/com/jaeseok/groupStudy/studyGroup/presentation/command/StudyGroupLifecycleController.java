@@ -39,7 +39,7 @@ public class StudyGroupLifecycleController {
     }
 
     @PostMapping("/{studyGroupId}/start")
-    public ResponseEntity<Void> startStudyGroup(
+    public ResponseEntity<String> startStudyGroup(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -47,11 +47,11 @@ public class StudyGroupLifecycleController {
                 studyGroupId, userPrincipal.userId());
         studyGroupLifecycleService.startStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body("스터디를 시작했습니다.");
     }
 
     @PostMapping("/{studyGroupId}/close")
-    public ResponseEntity<Void> closeStudyGroup(
+    public ResponseEntity<String> closeStudyGroup(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -59,6 +59,6 @@ public class StudyGroupLifecycleController {
                 studyGroupId, userPrincipal.userId());
         studyGroupLifecycleService.closeStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body("스터디를 종료했습니다.");
     }
 }

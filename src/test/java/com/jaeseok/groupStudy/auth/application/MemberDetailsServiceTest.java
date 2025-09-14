@@ -41,7 +41,7 @@ class MemberDetailsServiceTest {
         UserDetails userDetails = memberDetailsService.loadUserByUsername(email);
 
         // then
-        assertThat(userDetails.getUsername()).isEqualTo(String.valueOf(savedMember.getId()));
+        assertThat(userDetails.getUsername()).isEqualTo(savedMember.getUserInfoEmail());
         assertThat(userDetails.getPassword()).isEqualTo(savedMember.getUserInfoPassword());
 
         verify(memberRepository, times(1)).findByEmail(email);

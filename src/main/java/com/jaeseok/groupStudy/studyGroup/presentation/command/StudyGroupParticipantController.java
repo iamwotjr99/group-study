@@ -23,7 +23,7 @@ public class StudyGroupParticipantController {
     private final StudyGroupParticipantService studyGroupParticipantService;
 
     @PostMapping("/applicants/apply")
-    public ResponseEntity<Void> apply(
+    public ResponseEntity<String> apply(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -31,11 +31,11 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.applyForStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body("가입 신청에 성공했습니다.");
     }
 
     @DeleteMapping("/applicants/cancel")
-    public ResponseEntity<Void> cancel(
+    public ResponseEntity<String> cancel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -43,11 +43,11 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.cancelApplication(command);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body("가입 신청 취소에 성공했습니다.");
     }
 
     @DeleteMapping("/participants/leave")
-    public ResponseEntity<Void> leave(
+    public ResponseEntity<String> leave(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -55,6 +55,6 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.leaveStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).build();
+        return ResponseEntity.status(HttpStatus.OK).body("스터디 그룹을 퇴장했습니다.");
     }
 }
