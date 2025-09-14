@@ -4,7 +4,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 
 public record ParticipantDto(
-        Long id,
+        Long userId,
         String email,
         String nickname,
         ParticipantRole role,

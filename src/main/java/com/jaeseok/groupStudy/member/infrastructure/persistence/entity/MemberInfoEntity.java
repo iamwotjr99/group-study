@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.member.domain.vo.MemberInfo;
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
 public class MemberInfoEntity {
     private String email;
     private String nickname;

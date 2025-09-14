@@ -16,6 +16,17 @@ public record StudyGroupDetailDto(
         Set<ParticipantDto> participants
 ) {
 
+    // QueryDSL을 위한 추가 생성자
+    public StudyGroupDetailDto(Long studyGroupId,
+            String title,
+            Integer curMemberCount,
+            Integer capacity,
+            LocalDateTime deadline,
+            RecruitingPolicy policy,
+            GroupState state) {
+        this(studyGroupId, title, curMemberCount, capacity, deadline, policy, state, Set.of());
+    }
+
     public StudyGroupDetailDto withParticipants(Set<ParticipantDto> participants) {
         return new StudyGroupDetailDto(
                 this.studyGroupId,

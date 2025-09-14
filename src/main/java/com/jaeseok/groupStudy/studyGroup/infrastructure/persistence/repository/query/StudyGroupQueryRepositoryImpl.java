@@ -1,13 +1,16 @@
 package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query;
 
+import com.jaeseok.groupStudy.member.infrastructure.persistence.entity.MemberEntity;
 import com.jaeseok.groupStudy.member.infrastructure.persistence.entity.QMemberEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
+import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.ParticipantEntity;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.QParticipantEntity;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.QStudyGroupEntity;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.ParticipantDto;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupDetailDto;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupSummaryDto;
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -33,12 +36,12 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         QStudyGroupEntity studyGroupEntity = QStudyGroupEntity.studyGroupEntity;
         QParticipantEntity participantEntity = QParticipantEntity.participantEntity;
 
-        StudyGroupDetailDto studyGroupDetailDto = queryFactory
+        StudyGroupDetailDto initialDto = queryFactory
                 .select(Projections.constructor(StudyGroupDetailDto.class,
                         studyGroupEntity.id,
                         studyGroupEntity.infoEntity.title,
                         JPAExpressions // curMemberCount
-                                .select(participantEntity.count())
+                                .select(participantEntity.count().intValue())
                                 .from(participantEntity)
                                 .where(isApprovedParticipant(studyGroupId)),
                         studyGroupEntity.infoEntity.capacity,
@@ -50,14 +53,14 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .where(studyGroupEntity.id.eq(studyGroupId))
                 .fetchOne();
 
-        Optional<StudyGroupDetailDto> optionalStudyGroupDetailDto = Optional.ofNullable(studyGroupDetailDto);
+        if (initialDto == null) {
+            return Optional.empty();
+        }
 
-        optionalStudyGroupDetailDto.ifPresent(dto -> {
-            Set<ParticipantDto> participants = findParticipantsByStudyGroupId(studyGroupId);
-            dto.withParticipants(participants);
-        });
+        Set<ParticipantDto> participants = findParticipantsByStudyGroupId(studyGroupId);
+        StudyGroupDetailDto finalDto = initialDto.withParticipants(participants);
 
-        return optionalStudyGroupDetailDto;
+        return Optional.of(finalDto);
     }
 
     @Override
@@ -70,7 +73,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                         studyGroupEntity.id,
                         studyGroupEntity.infoEntity.title,
                         JPAExpressions
-                                .select(participantEntity.count())
+                                .select(participantEntity.count().intValue())
                                 .from(participantEntity)
                                 .where(
                                         participantEntity.studyGroupEntity.id.eq(
@@ -106,19 +109,26 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         QParticipantEntity participantEntity = QParticipantEntity.participantEntity;
         QMemberEntity memberEntity = QMemberEntity.memberEntity;
 
-        return queryFactory
-                .select(Projections.constructor(ParticipantDto.class,
-                        participantEntity.id,
-                        memberEntity.memberInfoEntity.nickname,
-                        memberEntity.memberInfoEntity.email,
-                        participantEntity.role,
-                        participantEntity.status))
+        List<Tuple> result = queryFactory
+                .select(participantEntity, memberEntity)
                 .from(participantEntity)
                 .join(memberEntity)
                 .on(participantEntity.userId.eq(memberEntity.id))
-                .where(participantEntity.studyGroupEntity.id.eq(studyGroupId))
-                .fetch()
-                .stream()
+                .where(isApprovedParticipant(studyGroupId))
+                .fetch();
+
+        return result.stream()
+                .map(tuple -> {
+                    ParticipantEntity participant = tuple.get(participantEntity);
+                    MemberEntity member = tuple.get(memberEntity);
+                    return new ParticipantDto(
+                            member.getId(),
+                            member.getMemberInfoEntity().getNickname(),
+                            member.getMemberInfoEntity().getEmail(),
+                            participant.getRole(),
+                            participant.getStatus()
+                    );
+                })
                 .collect(Collectors.toSet());
     }
 
