@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.studyGroup.application;
+package com.jaeseok.groupStudy.studyGroup.application.query;
 
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.StudyGroupQueryRepository;
