@@ -1,6 +1,8 @@
 package com.jaeseok.groupStudy.auth.infrastructure.jwt;
 
+import com.jaeseok.groupStudy.auth.application.LoadUserPrincipalService;
 import com.jaeseok.groupStudy.auth.application.TokenProvider;
+import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -24,28 +26,31 @@ public class JwtTokenProvider implements TokenProvider {
     private final Key key;
     private final long accessTokenValidationInMilliSec;
     private final UserDetailsService userDetailsService;
+    private final LoadUserPrincipalService loadUserPrincipalService;
 
     public JwtTokenProvider(
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-validation-in-seconds}")
             long accessTokenValidationInSeconds,
-            UserDetailsService userDetailsService
+            UserDetailsService userDetailsService, LoadUserPrincipalService loadUserPrincipalService
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidationInMilliSec = accessTokenValidationInSeconds * 1000;
         this.userDetailsService = userDetailsService;
+        this.loadUserPrincipalService = loadUserPrincipalService;
     }
 
     @Override
     public String generateToken(Authentication authentication) {
-        String email = authentication.getName();
+        UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
+        Long userId = userDetails.userId();
 
         long now = new Date().getTime();
         Date accessTokenExpiresIn = new Date(now + this.accessTokenValidationInMilliSec);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(String.valueOf(userId))
                 .expiration(accessTokenExpiresIn)
                 .signWith(this.key)
                 .compact();
@@ -53,14 +58,14 @@ public class JwtTokenProvider implements TokenProvider {
 
     @Override
     public Authentication getAuthentication(String accessToken) {
-        String email = Jwts.parser()
+        String userId = Jwts.parser()
                 .setSigningKey(this.key)
                 .build()
                 .parseSignedClaims(accessToken)
                 .getPayload()
                 .getSubject();
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        UserDetails userDetails = loadUserPrincipalService.loadUserById(Long.valueOf(userId));
 
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
