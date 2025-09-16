@@ -3,6 +3,7 @@ package com.jaeseok.groupStudy.studyGroup.domain;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,7 +37,8 @@ public class StudyGroup {
     }
 
     // 스터디 그룹 생성시 방장도 추가
-    public static StudyGroup createWithHost(Long hostId, StudyGroupInfo info) {
+    public static StudyGroup createWithHost(Long hostId, String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy) {
+        StudyGroupInfo info = StudyGroupInfo.of(title, capacity, deadline, policy, GroupState.RECRUITING);
         Long newGroupId = null; // 신규 그룹이라 ID null, JPA를 통해 DB에 저장될때 생성
 
         Participant host = Participant.host(hostId, newGroupId);
@@ -152,7 +154,7 @@ public class StudyGroup {
     // 방장인지 권한 확인
     private void validateHost(Long userId) {
         Participant host = findParticipant(userId);
-        if (!host.isHost()) throw new IllegalArgumentException("해당 유저는 방장 권한이 없습니다.");
+        if (!host.isHost()) throw new NoHostAuthorityException("해당 유저는 방장 권한이 없습니다.");
     }
 
     // userId로 현재 StudyGroup의 참여자인지 탐색

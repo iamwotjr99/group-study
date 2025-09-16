@@ -2,6 +2,8 @@ package com.jaeseok.groupStudy.unit.studyGroup.infrastructure.persistence;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
+import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
@@ -27,9 +29,8 @@ public class StudyGroupEntityTest {
     @DisplayName("StudyGroupEntity 저장 및 조회 테스트")
     void givenStudyGroupEntity_whenSaveAndFind_thenReturnEqual() {
         // given
-        StudyGroupInfo info = StudyGroupInfo.defaultInfo("테스트 방 제목 001", 5,
-                LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, info);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
         studyGroup.apply(USER_ID);
 
         // when
@@ -53,8 +54,8 @@ public class StudyGroupEntityTest {
     @DisplayName("StudyGroup Domain -> StudyGroup Entity 매핑 테스트")
     void givenStudyGroupDomain_whenFromDomain_thenReturnEntity() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("테스트 제목", 5, LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
         studyGroup.apply(USER_ID);
 
         // when
@@ -76,9 +77,8 @@ public class StudyGroupEntityTest {
     @DisplayName("StudyGroup Entity -> StudyGroup Domain 매핑 테스트")
     void givenStudyGroupEntity_whenToDomain_thenReturnDomain() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("테스트 제목", 5,
-                LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
         studyGroup.apply(USER_ID);
 
         StudyGroupEntity studyGroupEntity = StudyGroupEntity.fromDomain(studyGroup);
@@ -93,6 +93,7 @@ public class StudyGroupEntityTest {
 
         // when
         StudyGroup domain = foundStudyGroupEntity.toDomain();
+        StudyGroupInfo studyGroupInfo = domain.getStudyGroupInfo();
 
         // then
         assertThat(domain.getId()).isEqualTo(studyGroupEntityId);

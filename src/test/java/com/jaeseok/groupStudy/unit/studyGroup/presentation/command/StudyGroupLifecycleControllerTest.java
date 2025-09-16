@@ -74,7 +74,7 @@ class StudyGroupLifecycleControllerTest {
     void givenCreateStudyGroupRequest_whenCreateStudyGroup_thenReturnCreated()
             throws Exception {
         // given
-        CreateStudyGroupRequest request = new CreateStudyGroupRequest(1L,
+        CreateStudyGroupRequest request = new CreateStudyGroupRequest(
                 "스터디 그룹 1", 5, LocalDateTime.now().plusDays(5), RecruitingPolicy.APPROVAL);
 
         Long willCreatedStudyGroupId = 10L;

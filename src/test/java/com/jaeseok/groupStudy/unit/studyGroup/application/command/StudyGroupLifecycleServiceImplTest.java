@@ -46,13 +46,15 @@ class StudyGroupLifecycleServiceImplTest {
     @DisplayName("스터디 그룹 생성 명령이 주어지면 스터디 그룹을 생성한다.")
     void givenCreateCommand_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
         CreateStudyGroupCommand cmd = new CreateStudyGroupCommand(HOST_ID,
-                studyGroupInfo);
+                "테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of(cmd.title(), cmd.capacity(),
+                cmd.deadline(), cmd.policy(), GroupState.RECRUITING);
 
         Long fakeStudyGroupId = 100L;
-        StudyGroup willCreatedStudyGroup = StudyGroup.of(fakeStudyGroupId, cmd.info(), Collections.EMPTY_SET);
+        StudyGroup willCreatedStudyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, Collections.EMPTY_SET);
         given(studyGroupCommandRepository.save(any(StudyGroup.class))).willReturn(willCreatedStudyGroup);
 
         // when
@@ -81,7 +83,7 @@ class StudyGroupLifecycleServiceImplTest {
         participants.add(host);
 
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
         StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId,
@@ -137,7 +139,7 @@ class StudyGroupLifecycleServiceImplTest {
         participants.add(member);
 
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
         StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
         StartStudyGroupCommand cmd = new StartStudyGroupCommand(fakeStudyGroupId, notHostUserId);
@@ -164,9 +166,8 @@ class StudyGroupLifecycleServiceImplTest {
         Set<Participant> participants = new HashSet<>();
         participants.add(host);
 
-        StudyGroupInfo recruitingInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
-        StudyGroupInfo studyGroupInfo = recruitingInfo.start();
+        StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.START);
         StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, studyGroupInfo, participants);
 
         given(studyGroupCommandRepository.findById(fakeStudyGroupId)).willReturn(Optional.of(studyGroup));
@@ -221,9 +222,8 @@ class StudyGroupLifecycleServiceImplTest {
         participants.add(host);
         participants.add(participant);
 
-        StudyGroupInfo recruitingInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
-        StudyGroupInfo startGroupInfo = recruitingInfo.start();
+        StudyGroupInfo startGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.START);
         StudyGroup studyGroup = StudyGroup.of(fakeStudyGroupId, startGroupInfo, participants);
 
         CloseStudyGroupCommand cmd = new CloseStudyGroupCommand(fakeStudyGroupId, notHostUserId);

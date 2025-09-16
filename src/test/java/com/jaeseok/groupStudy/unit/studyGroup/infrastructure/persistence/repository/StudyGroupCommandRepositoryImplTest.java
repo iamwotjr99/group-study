@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.unit.studyGroup.infrastructure.persistence.reposi
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
@@ -30,14 +31,14 @@ class StudyGroupCommandRepositoryImplTest {
     @DisplayName("StudyGroup을 DB에 저장할 수 있다.")
     void givenStudyGroup_whenSave_thenSaveInDB() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
-                LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
 
         // when
         StudyGroup savedStudyGroup = studyGroupCommandRepository.save(studyGroup);
 
         // then
+        StudyGroupInfo studyGroupInfo = savedStudyGroup.getStudyGroupInfo();
         assertThat(savedStudyGroup).isNotNull();
         assertThat(savedStudyGroup.getId()).isNotNull();
         assertThat(savedStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
@@ -52,9 +53,8 @@ class StudyGroupCommandRepositoryImplTest {
     @DisplayName("StudyGroup에 대한 변경을 DB에 저장할 수 있다.")
     void givenUpdatedStudyGroup_whenUpdate_thenSaveInDB() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
-                LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
 
         StudyGroup saved = studyGroupCommandRepository.save(studyGroup);
 
@@ -79,9 +79,8 @@ class StudyGroupCommandRepositoryImplTest {
     @DisplayName("StudyGroup을 id로 조회할 때 내부에서 Participant를 조합해서 조회할 수 있다.")
     void givenStudyGroupId_whenFindById_thenReturnStudyGroup() {
         // given
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("스터디 그룹 테스트 001", 3,
-                LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
 
         studyGroup.apply(USER_1_ID);
         studyGroup.apply(USER_2_ID);
@@ -95,6 +94,7 @@ class StudyGroupCommandRepositoryImplTest {
                 studyGroupId).get(); // 내부에서 participant를 fetch join 하여 불러옴
 
         // then
+        StudyGroupInfo studyGroupInfo = foundStudyGroup.getStudyGroupInfo();
         assertThat(foundStudyGroup).isNotNull();
         assertThat(foundStudyGroup.getId()).isEqualTo(studyGroupId);
         assertThat(foundStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);

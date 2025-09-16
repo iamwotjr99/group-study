@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.unit.studyGroup.infrastructure.persistence;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
@@ -31,8 +32,8 @@ class ParticipantEntityTest {
 
     @BeforeEach
     void setUp() {
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("테스트 제목", 5, LocalDateTime.now().plusDays(1));
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
 
         studyGroupEntity = StudyGroupEntity.fromDomain(studyGroup);
 

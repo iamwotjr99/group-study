@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupParticipa
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApplyStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CancelStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.LeaveStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
@@ -53,7 +54,7 @@ class StudyGroupParticipantServiceImplTest {
         participants.add(participant);
 
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
         studyGroup = StudyGroup.of(STUDY_GROUP_ID, studyGroupInfo, participants);
     }
 

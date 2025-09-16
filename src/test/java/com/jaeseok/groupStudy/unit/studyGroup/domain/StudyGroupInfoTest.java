@@ -20,7 +20,8 @@ class StudyGroupInfoTest {
         info = StudyGroupInfo.of("테스트 방 제목",
                 5,
                 LocalDateTime.now().plusDays(10),
-                RecruitingPolicy.APPROVAL
+                RecruitingPolicy.APPROVAL,
+                GroupState.RECRUITING
         );
     }
 
@@ -149,8 +150,8 @@ class StudyGroupInfoTest {
     void givenSameInfo_whenEqualsAndHashCode_thenReturnTrue() {
         // given
         LocalDateTime deadLine = LocalDateTime.now().plusDays(1);
-        StudyGroupInfo info1 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL);
-        StudyGroupInfo info2 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL);
+        StudyGroupInfo info1 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
+        StudyGroupInfo info2 = StudyGroupInfo.of("테스트 제목", 2, deadLine, RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
 
         // when
         boolean equals = info1.equals(info2);

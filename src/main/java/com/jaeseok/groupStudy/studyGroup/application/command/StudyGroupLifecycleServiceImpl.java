@@ -20,7 +20,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     // 스터디 그룹을 생성
     @Override
     public CreateStudyGroupInfo createStudyGroup(CreateStudyGroupCommand cmd) {
-        StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.info());
+        StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.title(), cmd.capacity(), cmd.deadline(), cmd.policy());
 
         StudyGroup saved = studyGroupCommandRepository.save(studyGroup);
         return new CreateStudyGroupInfo(saved.getId());

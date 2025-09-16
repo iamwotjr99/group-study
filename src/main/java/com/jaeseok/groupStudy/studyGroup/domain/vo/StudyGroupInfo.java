@@ -4,9 +4,11 @@ import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
+@EqualsAndHashCode
 public class StudyGroupInfo {
     private final String title;
     private final Integer capacity;
@@ -32,8 +34,8 @@ public class StudyGroupInfo {
         this.state = state;
     }
 
-    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy) {
-        return new StudyGroupInfo(title, capacity, deadline, policy, GroupState.RECRUITING);
+    public static StudyGroupInfo of(String title, Integer capacity, LocalDateTime deadline, RecruitingPolicy policy, GroupState state) {
+        return new StudyGroupInfo(title, capacity, deadline, policy, state);
     }
 
     // 기본값 스터디 정보 생성(가입 방법: 승인제, 스터디 모집 상태: 모집중)

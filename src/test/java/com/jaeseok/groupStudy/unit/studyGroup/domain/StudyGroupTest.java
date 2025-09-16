@@ -2,6 +2,7 @@ package com.jaeseok.groupStudy.unit.studyGroup.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
@@ -25,18 +26,19 @@ class StudyGroupTest {
 
     @BeforeEach
     void setUp() {
-        StudyGroupInfo studyGroupInfo = StudyGroupInfo.defaultInfo("Test Study", 5, LocalDateTime.now().plusDays(1));
-        studyGroup = StudyGroup.createWithHost(HOST_ID, studyGroupInfo);
+        studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
     }
 
     @Test
     @DisplayName("유저가 스터디 그룹을 만들 수 있고 해당 유저가 방장이된다.")
     void givenStudyGroupInfoWithHostId_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
-        StudyGroupInfo info = StudyGroupInfo.defaultInfo("Spring Study", 3, LocalDateTime.now().plusDays(1));
+        LocalDateTime deadline = LocalDateTime.now().plusDays(1);
+        StudyGroupInfo info = StudyGroupInfo.defaultInfo("Spring Study", 3, deadline);
 
         // when
-        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, info);
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "Spring Study", 3, deadline, RecruitingPolicy.APPROVAL);
 
         // then
         Participant host = studyGroup.getHost();

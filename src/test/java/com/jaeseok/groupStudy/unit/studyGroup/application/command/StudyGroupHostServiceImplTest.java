@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupHostServi
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApproveStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.KickStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.RejectStudyGroupCommand;
+import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
@@ -52,7 +53,7 @@ class StudyGroupHostServiceImplTest {
         participants.add(participant);
 
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
-                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
         studyGroup = StudyGroup.of(STUDY_GROUP_ID, studyGroupInfo, participants);
     }
 

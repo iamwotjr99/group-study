@@ -8,6 +8,7 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGrou
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.presentation.command.dto.CreateStudyGroupRequest;
 import com.jaeseok.groupStudy.studyGroup.presentation.command.dto.CreateStudyGroupResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,10 +29,10 @@ public class StudyGroupLifecycleController {
     @PostMapping
     public ResponseEntity<CreateStudyGroupResponse> createStudyGroup(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
-            @RequestBody CreateStudyGroupRequest request
+            @Valid @RequestBody CreateStudyGroupRequest request
     ) {
         CreateStudyGroupCommand command = new CreateStudyGroupCommand(
-                userPrincipal.userId(), request.toStudyGroupInfo());
+                userPrincipal.userId(), request.title(), request.capacity(), request.deadline(), request.policy());
         CreateStudyGroupInfo resultInfo = studyGroupLifecycleService.createStudyGroup(command);
         CreateStudyGroupResponse response = new CreateStudyGroupResponse(resultInfo.studyGroupId());
 
