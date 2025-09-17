@@ -109,7 +109,7 @@ public class StudyGroup {
 
     // 참여자가 퇴장
     public void participantLeave(Long participantId) {
-        Participant participant = findParticipant(participantId);
+        Participant participant = findApprovedParticipant(participantId);
         if (participant.isHost()) throw new IllegalArgumentException("방장은 퇴장할 수 없습니다.");
 
         this.participantSet.remove(participant);
@@ -163,6 +163,15 @@ public class StudyGroup {
                 .filter(p -> p.userId().equals(userId))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 스터디 그룹의 참여자가 아닙니다."));
+    }
+
+    // userId로 현재 StudyGroup의 승인된 참여자인지 탐색
+    private Participant findApprovedParticipant(Long userId) {
+        return participantSet.stream()
+                .filter(p -> p.userId().equals(userId)
+                        && p.status().equals(ParticipantStatus.APPROVED))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 승인된 참여자가 아닙니다."));
     }
 
     // userId로 유저가 현재 StudyGroup에 참여중인지 검사
