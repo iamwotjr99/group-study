@@ -1,6 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.presentation.command;
 
 import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
+import com.jaeseok.groupStudy.common.dto.SimpleResponse;
 import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupParticipantService;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApplyStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CancelStudyGroupCommand;
@@ -23,7 +24,7 @@ public class StudyGroupParticipantController {
     private final StudyGroupParticipantService studyGroupParticipantService;
 
     @PostMapping("/applicants/apply")
-    public ResponseEntity<String> apply(
+    public ResponseEntity<SimpleResponse> apply(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -31,11 +32,11 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.applyForStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("가입 신청에 성공했습니다.");
+        return ResponseEntity.status(HttpStatus.CREATED).body(SimpleResponse.of("가입 신청에 성공했습니다."));
     }
 
     @DeleteMapping("/applicants/cancel")
-    public ResponseEntity<String> cancel(
+    public ResponseEntity<SimpleResponse> cancel(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -43,11 +44,11 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.cancelApplication(command);
 
-        return ResponseEntity.status(HttpStatus.OK).body("가입 신청 취소에 성공했습니다.");
+        return ResponseEntity.ok().body(SimpleResponse.of("가입 신청 취소에 성공했습니다."));
     }
 
     @DeleteMapping("/participants/leave")
-    public ResponseEntity<String> leave(
+    public ResponseEntity<SimpleResponse> leave(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -55,6 +56,6 @@ public class StudyGroupParticipantController {
                 userPrincipal.userId());
         studyGroupParticipantService.leaveStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).body("스터디 그룹을 퇴장했습니다.");
+        return ResponseEntity.ok().body(SimpleResponse.of("스터디 그룹을 퇴장했습니다."));
     }
 }

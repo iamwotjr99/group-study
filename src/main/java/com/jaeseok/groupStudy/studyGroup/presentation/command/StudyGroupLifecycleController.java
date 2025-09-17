@@ -1,6 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.presentation.command;
 
 import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
+import com.jaeseok.groupStudy.common.dto.SimpleResponse;
 import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupLifecycleService;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
@@ -40,7 +41,7 @@ public class StudyGroupLifecycleController {
     }
 
     @PostMapping("/{studyGroupId}/start")
-    public ResponseEntity<String> startStudyGroup(
+    public ResponseEntity<SimpleResponse> startStudyGroup(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -48,11 +49,11 @@ public class StudyGroupLifecycleController {
                 studyGroupId, userPrincipal.userId());
         studyGroupLifecycleService.startStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).body("스터디를 시작했습니다.");
+        return ResponseEntity.ok().body(SimpleResponse.of("스터디를 시작했습니다."));
     }
 
     @PostMapping("/{studyGroupId}/close")
-    public ResponseEntity<String> closeStudyGroup(
+    public ResponseEntity<SimpleResponse> closeStudyGroup(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId
     ) {
@@ -60,6 +61,6 @@ public class StudyGroupLifecycleController {
                 studyGroupId, userPrincipal.userId());
         studyGroupLifecycleService.closeStudyGroup(command);
 
-        return ResponseEntity.status(HttpStatus.OK).body("스터디를 종료했습니다.");
+        return ResponseEntity.ok().body(SimpleResponse.of("스터디를 종료했습니다."));
     }
 }

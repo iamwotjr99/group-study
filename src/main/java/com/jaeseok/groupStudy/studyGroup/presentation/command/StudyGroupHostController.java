@@ -1,6 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.presentation.command;
 
 import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
+import com.jaeseok.groupStudy.common.dto.SimpleResponse;
 import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupHostService;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApproveStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.KickStudyGroupCommand;
@@ -22,7 +23,7 @@ public class StudyGroupHostController {
     private final StudyGroupHostService studyGroupHostService;
 
     @PostMapping("/applicants/{applicantId}/approve")
-    public ResponseEntity<String> approveApplication(
+    public ResponseEntity<SimpleResponse> approveApplication(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long applicantId
@@ -31,11 +32,11 @@ public class StudyGroupHostController {
                 studyGroupId, userPrincipal.userId(), applicantId);
         studyGroupHostService.approveApplication(command);
 
-        return ResponseEntity.ok().body("승인 성공");
+        return ResponseEntity.ok().body(SimpleResponse.of("승인 성공"));
     }
 
     @DeleteMapping("/applicants/{applicantId}/reject")
-    public ResponseEntity<String> rejectApplication(
+    public ResponseEntity<SimpleResponse> rejectApplication(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long applicantId
@@ -44,11 +45,11 @@ public class StudyGroupHostController {
                 studyGroupId, userPrincipal.userId(), applicantId);
         studyGroupHostService.rejectApplication(command);
 
-        return ResponseEntity.ok().body("거절 성공");
+        return ResponseEntity.ok().body(SimpleResponse.of("거절 성공"));
     }
 
     @DeleteMapping("/participants/{participantId}/kick")
-    public ResponseEntity<String> kickParticipant(
+    public ResponseEntity<SimpleResponse> kickParticipant(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @PathVariable Long studyGroupId,
             @PathVariable Long participantId
@@ -57,6 +58,6 @@ public class StudyGroupHostController {
                 userPrincipal.userId(), participantId);
         studyGroupHostService.kickParticipation(command);
 
-        return ResponseEntity.ok().body("강퇴 성공");
+        return ResponseEntity.ok().body(SimpleResponse.of("강퇴 성공"));
     }
 }
