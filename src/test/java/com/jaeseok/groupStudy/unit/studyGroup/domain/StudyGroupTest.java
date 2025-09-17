@@ -8,6 +8,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
 import java.time.LocalDateTime;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -176,13 +177,13 @@ class StudyGroupTest {
         // when
         // then
         assertThatThrownBy(() -> studyGroup.approveParticipant(notHostId, applicantUserId))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessage("해당 유저는 방장 권한이 없습니다.");
         assertThatThrownBy(() -> studyGroup.rejectParticipant(notHostId, applicantUserId))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessage("해당 유저는 방장 권한이 없습니다.");
         assertThatThrownBy(() -> studyGroup.kickParticipant(notHostId, applicantUserId))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessage("해당 유저는 방장 권한이 없습니다.");
     }
 

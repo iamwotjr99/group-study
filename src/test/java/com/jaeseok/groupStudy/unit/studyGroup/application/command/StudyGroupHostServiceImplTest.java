@@ -3,6 +3,8 @@ package com.jaeseok.groupStudy.unit.studyGroup.application.command;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import com.jaeseok.groupStudy.member.domain.Member;
+import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupHostServiceImpl;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApproveStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.KickStudyGroupCommand;
@@ -15,6 +17,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
@@ -27,6 +30,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("StudyGroup Host Service 테스트")
@@ -38,10 +43,14 @@ class StudyGroupHostServiceImplTest {
     @Mock
     StudyGroupCommandRepository studyGroupCommandRepository;
 
+    @Mock
+    MemberRepository memberRepository;
+
     final Long HOST_ID = 1L;
     final Long USER_ID = 2L;
     final Long STUDY_GROUP_ID = 100L;
     StudyGroup studyGroup;
+    Member member;
 
     @BeforeEach
     void setUp() {
@@ -55,6 +64,9 @@ class StudyGroupHostServiceImplTest {
         StudyGroupInfo studyGroupInfo = StudyGroupInfo.of("테스트 스터디 그룹 001", 3,
                 LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL, GroupState.RECRUITING);
         studyGroup = StudyGroup.of(STUDY_GROUP_ID, studyGroupInfo, participants);
+
+        member = Member.createMember("테스트유저001", "test@test.com",
+                "password1234");
     }
 
     @Test
@@ -71,6 +83,7 @@ class StudyGroupHostServiceImplTest {
                 studyGroupId, hostId, applicantUserId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when
         studyGroupHostService.approveApplication(cmd);
@@ -97,10 +110,11 @@ class StudyGroupHostServiceImplTest {
                 applicantUserId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupCommandRepository, never()).update(studyGroup);
@@ -118,6 +132,7 @@ class StudyGroupHostServiceImplTest {
                 notPendingUserId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
@@ -144,6 +159,7 @@ class StudyGroupHostServiceImplTest {
         ApproveStudyGroupCommand cmd = new ApproveStudyGroupCommand(studyGroupId, hostId, applicantId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.approveApplication(cmd))
@@ -167,6 +183,7 @@ class StudyGroupHostServiceImplTest {
                 hostId, applicantUserId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when
         studyGroupHostService.rejectApplication(cmd);
@@ -192,10 +209,11 @@ class StudyGroupHostServiceImplTest {
         RejectStudyGroupCommand cmd = new RejectStudyGroupCommand(studyGroupId, notHostUserId, applicantId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.rejectApplication(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupCommandRepository, never()).update(studyGroup);
@@ -213,6 +231,7 @@ class StudyGroupHostServiceImplTest {
                 hostId, notPendingUserId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.applicantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.rejectApplication(cmd))
@@ -236,6 +255,7 @@ class StudyGroupHostServiceImplTest {
                 hostId, participantId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.participantId())).willReturn(Optional.of(member));
 
         // when
         studyGroupHostService.kickParticipation(cmd);
@@ -263,10 +283,11 @@ class StudyGroupHostServiceImplTest {
                 notHostUserId, approvedId);
 
         given(studyGroupCommandRepository.findById(studyGroupId)).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.participantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.kickParticipation(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupCommandRepository, never()).update(studyGroup);
@@ -286,6 +307,7 @@ class StudyGroupHostServiceImplTest {
                 hostId, applicantId);
 
         given(studyGroupCommandRepository.findById(cmd.studyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(cmd.participantId())).willReturn(Optional.of(member));
 
         // when & then
         assertThatThrownBy(() -> studyGroupHostService.kickParticipation(cmd))

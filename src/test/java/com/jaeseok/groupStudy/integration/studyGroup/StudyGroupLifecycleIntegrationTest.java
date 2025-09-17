@@ -144,7 +144,7 @@ class StudyGroupLifecycleIntegrationTest extends IntegrationTestSupport {
         // then
         actions
                 .andExpect(status().isOk())
-                .andExpect(content().string("스터디를 시작했습니다."));
+                .andExpect(jsonPath("$.message").value("스터디를 시작했습니다."));
     }
 
     @Test
@@ -234,7 +234,7 @@ class StudyGroupLifecycleIntegrationTest extends IntegrationTestSupport {
         // then
         actions
                 .andExpect(status().isOk())
-                .andExpect(content().string("스터디를 종료했습니다."));
+                .andExpect(jsonPath("$.message").value("스터디를 종료했습니다."));
     }
 
     @Test

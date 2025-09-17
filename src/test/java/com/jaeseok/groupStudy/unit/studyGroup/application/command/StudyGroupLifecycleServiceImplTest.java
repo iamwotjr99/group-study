@@ -16,6 +16,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -148,7 +149,7 @@ class StudyGroupLifecycleServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
@@ -232,7 +233,7 @@ class StudyGroupLifecycleServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NoHostAuthorityException.class)
                 .hasMessageContaining("방장 권한이 없습니다.");
 
         verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
