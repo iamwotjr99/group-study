@@ -10,3 +10,6 @@ build/
 
 ### QueryDSL ###
 src/main/generated/
+
+### enviroment ###
+docker.env
