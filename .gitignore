@@ -1,11 +1,19 @@
-HELP.md
-.gradle
-build/
-!gradle/wrapper/gradle-wrapper.jar
-!**/src/main/**/build/
-!**/src/test/**/build/
+### IDEs & Editors ###
 
-### STS ###
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+
+# STS (Eclipse)
 .apt_generated
 .classpath
 .factorypath
@@ -17,31 +25,31 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/out/
-!**/src/test/**/out/
-
-### NetBeans ###
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 
-### VS Code ###
-.vscode/
+# Other Editors
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-### application setting files ###
-/src/main/resources/application.yml
-/src/test/resources/application-test.yml
-lombok.config
 
+### Logs ###
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+
+### Operating System Files ###
 .DS_Store
-
-### QueryDSL ###
-src/main/generated/
+Thumbs.db
