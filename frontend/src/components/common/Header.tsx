@@ -5,12 +5,11 @@ import { useUserStore } from "../../store/userStore";
 function Header() {
   const { accessToken, clearToken } = useUserStore((state) => state);
   const navigate = useNavigate();
-  // location 훅을 사용하지 않아도 되므로 이전 코드는 삭제합니다.
 
   const handleLogout = () => {
     clearToken();
     alert("로그아웃 되었습니다.");
-    navigate("/login"); // 로그아웃 후 로그인 페이지로 이동
+    navigate("/login");
   };
 
   return (
