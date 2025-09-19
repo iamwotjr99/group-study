@@ -1,4 +1,5 @@
 import { useLogin } from "../hooks/useLogin";
+import { Link } from "react-router-dom";
 
 function LoginPage() {
   const {
@@ -44,6 +45,9 @@ function LoginPage() {
         <button type="submit" disabled={isLoading}>
           {isLoading ? "로그인 중..." : "로그인"}
         </button>
+        <p>
+          계정이 없으신가요? <Link to="/signup">회원가입하러 가기</Link>
+        </p>
       </form>
     </div>
   );
