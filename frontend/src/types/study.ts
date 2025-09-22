@@ -7,7 +7,7 @@ export interface StudySummary {
   capacity: number;
   deadline: string; // LocalDateTime은 string으로 받습니다.
   policy: "AUTO" | "APPROVAL"; // RecruitingPolicy enum
-  state: "RECRUITING" | "IN_PROGRESS" | "COMPLETED"; // GroupState enum
+  state: "RECRUITING" | "START" | "CLOSE"; // GroupState enum
 }
 
 // 스터디 상세 조회시 (Detail)

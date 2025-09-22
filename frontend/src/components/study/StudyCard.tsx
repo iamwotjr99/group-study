@@ -8,8 +8,8 @@ type StudyCardProps = {
 function StudyCard({ study }: StudyCardProps) {
   const statusStyles = {
     RECRUITING: "bg-green-100 text-grenn-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    COMPLETED: "bg-gray-100 text-gray-800",
+    START: "bg-blue-100 text-blue-800",
+    CLOSE: "bg-gray-100 text-gray-800",
   };
 
   return (
@@ -27,7 +27,7 @@ function StudyCard({ study }: StudyCardProps) {
           >
             {study.state === "RECRUITING"
               ? "모집중"
-              : study.state === "IN_PROGRESS"
+              : study.state === "START"
               ? "진행중"
               : "종료"}
           </span>

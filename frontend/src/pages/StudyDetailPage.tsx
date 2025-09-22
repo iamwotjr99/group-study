@@ -5,9 +5,11 @@ import {
   applyStudyGroupAPI,
   approveApplicantAPI,
   cancleStudyGroupApplyAPI,
+  closeStudyGroupAPI,
   kickParticipantAPI,
   leaveStudyGroupAPI,
   rejectApplicantAPI,
+  startStudyGroupAPI,
 } from "../apis/studyApi";
 
 function StudyDetailPage() {
@@ -18,6 +20,18 @@ function StudyDetailPage() {
   const { userInfo } = useUserStore();
 
   const navigate = useNavigate();
+
+  const statusStyles = {
+    RECRUITING: "bg-green-100 text-green-800",
+    START: "bg-blue-100 text-blue-800",
+    CLOSE: "bg-gray-100 text-gray-800",
+  };
+
+  const statusTexts = {
+    RECRUITING: "모집중",
+    START: "진행중",
+    CLOSE: "종료",
+  };
 
   // --- API 호출 및 화면 갱신을 위한 공통 핸들러 ---
   const handleAction = async (action: () => Promise<any>) => {
@@ -41,6 +55,8 @@ function StudyDetailPage() {
     handleAction(() => rejectApplicantAPI(id!, applicantId));
   const handleKick = (participantId: number) =>
     handleAction(() => kickParticipantAPI(id!, participantId));
+  const handleStartStudy = () => handleAction(() => startStudyGroupAPI(id!));
+  const handleCloseStudy = () => handleAction(() => closeStudyGroupAPI(id!));
   const handleEnterRoom = () => navigate(`/study-groups/${id}/room`);
 
   const isHost = userInfo?.memberId === studyGroupData?.hostId;
@@ -49,6 +65,11 @@ function StudyDetailPage() {
   )?.status;
   const isParticipant = currentUserStatus === "APPROVED";
   const isApplicant = currentUserStatus === "PENDING";
+  const cannotApply =
+    currentUserStatus === "CANCELED" ||
+    currentUserStatus === "KICKED" ||
+    currentUserStatus === "LEAVE" ||
+    currentUserStatus === "REJECTED";
 
   const applicants =
     studyGroupData?.participants.filter((p) => p.status === "PENDING") || [];
@@ -57,16 +78,58 @@ function StudyDetailPage() {
   );
 
   const renderMainButton = () => {
-    if (isParticipant) {
+    // 재신청 불가 조건
+    if (cannotApply) {
       return (
-        <button
-          onClick={handleEnterRoom}
-          className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
-        >
-          화상 채팅방 입장
-        </button>
+        <div className="text-center p-3 bg-gray-100 rounded-md">
+          이 스터디와 상호작용할 수 없습니다.
+        </div>
       );
     }
+    // 1. 방장일 경우
+    if (isHost) {
+      if (studyGroupData?.state === "RECRUITING") {
+        return (
+          <button
+            onClick={handleStartStudy}
+            className="w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 font-semibold"
+          >
+            스터디 시작
+          </button>
+        );
+      }
+      if (studyGroupData?.state === "START") {
+        return (
+          <button
+            onClick={handleCloseStudy}
+            className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 font-semibold"
+          >
+            스터디 종료
+          </button>
+        );
+      }
+    }
+
+    if (isParticipant) {
+      if (studyGroupData?.state === "START") {
+        return (
+          <button
+            onClick={handleEnterRoom}
+            className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
+          >
+            화상 채팅방 입장
+          </button>
+        );
+      }
+      if (studyGroupData?.state === "RECRUITING") {
+        return (
+          <div className="text-center p-3 bg-gray-100 rounded-md">
+            스터디 시작을 기다리는 중입니다.
+          </div>
+        );
+      }
+    }
+    // 3. 신청자일 경우
     if (isApplicant) {
       return (
         <button
@@ -77,13 +140,24 @@ function StudyDetailPage() {
         </button>
       );
     }
+
+    // 4. 외부인일 경우
+    if (studyGroupData?.state === "RECRUITING") {
+      return (
+        <button
+          onClick={handleApply}
+          className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-semibold"
+        >
+          참여 신청하기
+        </button>
+      );
+    }
+
+    // 그 외 (모집 종료 등)
     return (
-      <button
-        onClick={handleApply}
-        className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-semibold"
-      >
-        참여 신청하기
-      </button>
+      <div className="text-center p-3 bg-gray-100 rounded-md">
+        모집이 마감된 스터디입니다.
+      </div>
     );
   };
 
@@ -114,12 +188,10 @@ function StudyDetailPage() {
       <div className="mb-8 flex items-center space-x-4 text-gray-600">
         <span
           className={`px-3 py-1 text-sm font-semibold rounded-full ${
-            studyGroupData.state === "RECRUITING"
-              ? "bg-green-100 text-green-800"
-              : "bg-gray-100 text-gray-800"
+            statusStyles[studyGroupData.state] || "bg-gray-100 text-gray-800"
           }`}
         >
-          {studyGroupData.state === "RECRUITING" ? "모집중" : "진행중/종료"}
+          {statusTexts[studyGroupData.state] || "알 수 없음"}
         </span>
         <span>
           모집 방식: {studyGroupData.policy === "AUTO" ? "선착순" : "승인제"}
@@ -130,12 +202,10 @@ function StudyDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {/* 왼쪽: 스터디 참여 버튼 등 메인 콘텐츠 */}
         <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
-          {/* isParticipant 값에 따라 다른 내용 렌더링 */}
           <h2 className="text-2xl font-semibold mb-4">스터디 참여</h2>
           {renderMainButton()}
-          {isParticipant && !isHost && (
+          {isParticipant && !isHost && studyGroupData.state !== "CLOSE" && (
             <button
               onClick={handleLeave}
               className="w-full mt-4 bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600 font-semibold"

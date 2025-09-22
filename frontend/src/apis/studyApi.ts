@@ -51,8 +51,30 @@ export const createStudyGroupAPI = async (
 };
 
 // 스터디를 시작하는 API
+export const startStudyGroupAPI = async (
+  studyGroupId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.post(`api/study-groups/${studyGroupId}/start`);
+    return response.data;
+  } catch (err) {
+    console.error("Start StudyGroup API Error : ", err);
+    throw err;
+  }
+};
 
 // 스터디를 종료하는 API
+export const closeStudyGroupAPI = async (
+  studyGroupId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.post(`api/study-groups/${studyGroupId}/close`);
+    return response.data;
+  } catch (err) {
+    console.error("Close StudyGroup API Error : ", err);
+    throw err;
+  }
+};
 
 // ---- 스터디 Host API ----
 // 참여 신청을 승인하는 API
