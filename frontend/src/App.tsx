@@ -9,6 +9,7 @@ import PublicRoute from "./components/auth/PublicRoute";
 import MainPage from "./pages/MainPage";
 import CreateStudyPage from "./pages/CreateStudyPage";
 import StudyDetailPage from "./pages/StudyDetailPage";
+import StudyRoomPage from "./pages/StudyRoomPage";
 
 function App() {
   const { setUser } = useUserStore();
@@ -65,6 +66,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <StudyDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/study-groups/:id/room"
+            element={
+              <ProtectedRoute>
+                <StudyRoomPage />
               </ProtectedRoute>
             }
           />

@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useStudyDetail } from "../hooks/useStudyDetail";
 import { useUserStore } from "../store/userStore";
 
@@ -8,6 +8,12 @@ function StudyDetailPage() {
 
   const { studyGroupData, isLoading, error } = useStudyDetail(id);
   const { userInfo } = useUserStore();
+
+  const navigate = useNavigate();
+
+  const handleEnterRoom = () => {
+    navigate(`/study-groups/${id}/room`);
+  };
 
   if (isLoading) {
     return <div className="text-center p-10">스터디 정보를 불러오는 중...</div>;
@@ -67,7 +73,10 @@ function StudyDetailPage() {
                 스터디 룸 입장하기
               </h2>
               <p className="mb-6">스터디에 참여하여 화상 채팅을 시작하세요!</p>
-              <button className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold">
+              <button
+                className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
+                onClick={handleEnterRoom}
+              >
                 화상 채팅방 입장
               </button>
             </>
