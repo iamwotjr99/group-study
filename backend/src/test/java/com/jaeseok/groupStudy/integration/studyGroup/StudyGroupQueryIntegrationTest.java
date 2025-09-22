@@ -58,11 +58,13 @@ public class StudyGroupQueryIntegrationTest extends IntegrationTestSupport {
     String TEST_USER_NICKNAME = "TestUser";
 
     Long TEST_STUDY_GROUP_ID;
+    Long TEST_HOST_ID;
     @BeforeEach
     void setUp() {
         Member host = Member.createMember(TEST_USER_NICKNAME, TEST_USER_EMAIL,
                 passwordEncoder.encode(TEST_USER_PASSWORD));
         Member savedHost = memberRepository.save(host);
+        TEST_HOST_ID = savedHost.getId();
 
         String title = "모집중인 스터디 ";
         Integer capacity = 3;
@@ -198,6 +200,7 @@ public class StudyGroupQueryIntegrationTest extends IntegrationTestSupport {
         actions
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.studyGroupId").value(studyGroupId))
+                .andExpect(jsonPath("$.hostId").value(TEST_HOST_ID))
                 .andExpect(jsonPath("$.title").value("상세정보 스터디"))
                 .andExpect(jsonPath("$.curMemberCount").value(1))
                 .andExpect(jsonPath("$.capacity").value(5))

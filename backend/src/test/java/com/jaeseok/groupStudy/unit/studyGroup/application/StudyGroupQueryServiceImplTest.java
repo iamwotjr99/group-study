@@ -39,7 +39,8 @@ class StudyGroupQueryServiceImplTest {
     void givenStudyGroupId_whenGetStudyGroupDetail_thenReturnStudyGroupDetailDto() {
         // given
         Long studyGroupId = 1L;
-        StudyGroupDetailDto mockDto = new StudyGroupDetailDto(studyGroupId, "테스트 스터디",
+        Long hostId = 2L;
+        StudyGroupDetailDto mockDto = new StudyGroupDetailDto(studyGroupId, hostId, "테스트 스터디",
                 3, 5, LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL,
                 GroupState.RECRUITING);
 
@@ -82,7 +83,7 @@ class StudyGroupQueryServiceImplTest {
         Pageable pageable = PageRequest.of(0, 10);
         List<StudyGroupSummaryDto> mockDtos = createMockStudyGroupSummaries(25);
         for (int i = 1; i <= 25; i++) {
-            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, "테스트 " + i, 3,
+            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, (long) i + 1, "테스트 " + i, 3,
                     5, LocalDateTime.now().plusDays(i), RecruitingPolicy.APPROVAL,
                     GroupState.RECRUITING);
             mockDtos.add(dto);
@@ -108,7 +109,7 @@ class StudyGroupQueryServiceImplTest {
     private List<StudyGroupSummaryDto> createMockStudyGroupSummaries(int count) {
         List<StudyGroupSummaryDto> dtos = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, "테스트 " + i, 3,
+            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, (long) i + 1,"테스트 " + i, 3,
                     5, LocalDateTime.now().plusDays(i), RecruitingPolicy.APPROVAL,
                     GroupState.RECRUITING);
             dtos.add(dto);

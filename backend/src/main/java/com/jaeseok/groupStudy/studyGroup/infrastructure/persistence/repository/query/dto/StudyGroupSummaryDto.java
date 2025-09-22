@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 
 public record StudyGroupSummaryDto(
         Long studyGroupId,
+        Long hostId,
         String title,
         Integer curMemberCount,
         Integer capacity,

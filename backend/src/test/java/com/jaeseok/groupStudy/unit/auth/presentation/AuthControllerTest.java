@@ -86,7 +86,7 @@ class AuthControllerTest {
         LoginRequest request = new LoginRequest("test@test.com", "password1234");
         LoginQuery query = request.toQuery();
 
-        LoginInfo loginInfo = new LoginInfo("access-token");
+        LoginInfo loginInfo = new LoginInfo("access-token", 1L, "validNickname");
         given(authService.login(query)).willReturn(loginInfo);
 
         // when

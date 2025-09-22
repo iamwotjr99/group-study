@@ -99,7 +99,8 @@ class StudyGroupQueryControllerTest {
     void getStudyGroupDetail() throws Exception {
         // given
         Long studyGroupId = 10L;
-        StudyGroupDetailDto mockDto = new StudyGroupDetailDto(studyGroupId,
+        Long hostId = 1L;
+        StudyGroupDetailDto mockDto = new StudyGroupDetailDto(studyGroupId, hostId,
                 "테스트 그룹 001", 3, 5, LocalDateTime.now().plusDays(3), RecruitingPolicy.APPROVAL,
                 GroupState.RECRUITING);
 
@@ -132,7 +133,7 @@ class StudyGroupQueryControllerTest {
     private List<StudyGroupSummaryDto> createMockStudyGroupSummaries(int count) {
         List<StudyGroupSummaryDto> dtos = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, "테스트 " + i, 3,
+            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, (long) i + 1,"테스트 " + i, 3,
                     5, LocalDateTime.now().plusDays(i), RecruitingPolicy.APPROVAL,
                     GroupState.RECRUITING);
             dtos.add(dto);

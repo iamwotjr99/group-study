@@ -16,6 +16,7 @@ import com.jaeseok.groupStudy.auth.presentation.dto.SignUpResponse;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import com.jaeseok.groupStudy.member.domain.vo.MemberInfo;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -122,9 +123,12 @@ class AuthServiceTest {
 
         Authentication mockAuthenticationObj = mock(Authentication.class);
 
+        Member validMember = Member.createMember("test001", request.email(), request.rawPassword());
+
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockAuthenticationObj);
         when(tokenProvider.generateToken(mockAuthenticationObj)).thenReturn("access-token");
+        when(memberRepository.findByEmail(query.email())).thenReturn(Optional.of(validMember));
 
         // when
         LoginInfo loginInfo = authService.login(query);

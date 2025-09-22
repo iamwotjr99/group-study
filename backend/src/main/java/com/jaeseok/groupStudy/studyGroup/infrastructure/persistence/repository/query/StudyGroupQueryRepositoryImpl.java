@@ -3,6 +3,7 @@ package com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.
 import com.jaeseok.groupStudy.member.infrastructure.persistence.entity.MemberEntity;
 import com.jaeseok.groupStudy.member.infrastructure.persistence.entity.QMemberEntity;
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
+import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.ParticipantEntity;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.entity.QParticipantEntity;
@@ -39,6 +40,13 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         StudyGroupDetailDto initialDto = queryFactory
                 .select(Projections.constructor(StudyGroupDetailDto.class,
                         studyGroupEntity.id,
+                        JPAExpressions
+                                .select(participantEntity.userId)
+                                .from(participantEntity)
+                                .where(
+                                        participantEntity.studyGroupEntity.id.eq(studyGroupEntity.id),
+                                        participantEntity.role.eq(ParticipantRole.HOST)
+                                ),
                         studyGroupEntity.infoEntity.title,
                         JPAExpressions // curMemberCount
                                 .select(participantEntity.count().intValue())
@@ -71,6 +79,13 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
         List<StudyGroupSummaryDto> result = queryFactory
                 .select(Projections.constructor(StudyGroupSummaryDto.class,
                         studyGroupEntity.id,
+                        JPAExpressions
+                                .select(participantEntity.userId)
+                                .from(participantEntity)
+                                .where(
+                                        participantEntity.studyGroupEntity.id.eq(studyGroupEntity.id),
+                                        participantEntity.role.eq(ParticipantRole.HOST)
+                                ),
                         studyGroupEntity.infoEntity.title,
                         JPAExpressions
                                 .select(participantEntity.count().intValue())
@@ -114,7 +129,7 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                 .from(participantEntity)
                 .join(memberEntity)
                 .on(participantEntity.userId.eq(memberEntity.id))
-                .where(isApprovedParticipant(studyGroupId))
+                .where(participantEntity.studyGroupEntity.id.eq(studyGroupId))
                 .fetch();
 
         return result.stream()
