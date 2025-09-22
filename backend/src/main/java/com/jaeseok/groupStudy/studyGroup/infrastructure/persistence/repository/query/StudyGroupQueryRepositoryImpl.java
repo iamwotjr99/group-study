@@ -123,8 +123,8 @@ public class StudyGroupQueryRepositoryImpl implements StudyGroupQueryRepository 
                     MemberEntity member = tuple.get(memberEntity);
                     return new ParticipantDto(
                             member.getId(),
-                            member.getMemberInfoEntity().getNickname(),
                             member.getMemberInfoEntity().getEmail(),
+                            member.getMemberInfoEntity().getNickname(),
                             participant.getRole(),
                             participant.getStatus()
                     );

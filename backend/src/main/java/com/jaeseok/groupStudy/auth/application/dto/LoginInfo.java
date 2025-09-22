@@ -1,6 +1,8 @@
 package com.jaeseok.groupStudy.auth.application.dto;
 
 public record LoginInfo(
-        String accessToken
+        String accessToken,
+        Long memberId,
+        String nickname
 ) {
 }

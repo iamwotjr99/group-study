@@ -7,6 +7,7 @@ import com.jaeseok.groupStudy.auth.application.dto.SignUpInfo;
 import com.jaeseok.groupStudy.auth.presentation.dto.LoginResponse;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,7 +33,10 @@ public class AuthService {
 
         String accessToken = tokenProvider.generateToken(authentication);
 
-        return new LoginInfo(accessToken);
+        Member member = memberRepository.findByEmail(query.email())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다."));
+
+        return new LoginInfo(accessToken, member.getId(), member.getUserInfoNickname());
     }
 
     @Transactional
