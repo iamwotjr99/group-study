@@ -6,6 +6,8 @@ import { useEffect } from "react";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Header from "./components/common/Header";
 import PublicRoute from "./components/auth/PublicRoute";
+import MainPage from "./pages/MainPage";
+import CreateStudyPage from "./pages/CreateStudyPage";
 
 function App() {
   const { setToken } = useUserStore();
@@ -44,7 +46,15 @@ function App() {
             path="/"
             element={
               <ProtectedRoute>
-                <div>메인 페이지(로그인한 사용자만 볼 수 있음)</div>
+                <MainPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/create-study"
+            element={
+              <ProtectedRoute>
+                <CreateStudyPage />
               </ProtectedRoute>
             }
           />
