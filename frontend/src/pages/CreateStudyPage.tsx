@@ -1,10 +1,9 @@
+import { useCreateStudy } from "../hooks/useCreatStudy";
+
 function CreateStudyPage() {
   // 나중에 useCreateStudy 훅으로 상태 관리를 대체
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    alert("스터디 생성 기능 구현 예정");
-  };
-
+  const { studyGroupData, isLoading, error, handleChange, handleSubmit } =
+    useCreateStudy();
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <h1 className="text-3xl font-bold mb-8 text-gray-800">
@@ -25,6 +24,9 @@ function CreateStudyPage() {
           <input
             type="text"
             id="title"
+            name="title"
+            value={studyGroupData.title}
+            onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
@@ -41,6 +43,9 @@ function CreateStudyPage() {
           <input
             type="number"
             id="capacity"
+            name="capacity"
+            value={studyGroupData.capacity}
+            onChange={handleChange}
             min="2"
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
@@ -58,6 +63,9 @@ function CreateStudyPage() {
           <input
             type="datetime-local"
             id="deadline"
+            name="deadline"
+            value={studyGroupData.deadline}
+            onChange={handleChange}
             className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             required
           />
@@ -73,7 +81,7 @@ function CreateStudyPage() {
               <input
                 type="radio"
                 name="policy"
-                value="FCFS"
+                value="AUTO"
                 className="form-radio"
                 defaultChecked
               />

@@ -1,4 +1,9 @@
-import type { Page, StudyDetail, StudySummary } from "../types/study";
+import type {
+  CreateStudyGroupData,
+  Page,
+  StudyDetail,
+  StudySummary,
+} from "../types/study";
 import api from "./instance";
 
 // 스터디 목록 전체를 페이징으로 조회하는 API 함수
@@ -27,6 +32,19 @@ export const fetchStudyDetailAPI = async (
     return response.data;
   } catch (err) {
     console.error(`Fetch Study Detail API Error (ID: ${studyGroupId}):`, err);
+    throw err;
+  }
+};
+
+// 새로운 스터디를 생성하는 API 함수
+export const createStudyGroupAPI = async (
+  studyGroupData: CreateStudyGroupData
+): Promise<{ studyGroupId: number }> => {
+  try {
+    const response = await api.post("/api/study-groups", studyGroupData);
+    return response.data;
+  } catch (err) {
+    console.error("Create StudyGroup API Error: ", err);
     throw err;
   }
 };

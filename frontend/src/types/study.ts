@@ -31,3 +31,11 @@ export interface Page<T> {
   size: number;
   number: number; // 현재 페이지 번호 (0부터 시작))
 }
+
+// 스터디 생성시 서버에 보낼 객체 타입
+export interface CreateStudyGroupData {
+  title: string;
+  capacity: number;
+  deadline: string;
+  policy: "AUTO" | "APPROVAL";
+}
