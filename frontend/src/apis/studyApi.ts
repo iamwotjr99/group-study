@@ -36,6 +36,7 @@ export const fetchStudyDetailAPI = async (
   }
 };
 
+// ---- 스터디 Lifecycle API ----
 // 새로운 스터디를 생성하는 API 함수
 export const createStudyGroupAPI = async (
   studyGroupData: CreateStudyGroupData
@@ -45,6 +46,105 @@ export const createStudyGroupAPI = async (
     return response.data;
   } catch (err) {
     console.error("Create StudyGroup API Error: ", err);
+    throw err;
+  }
+};
+
+// 스터디를 시작하는 API
+
+// 스터디를 종료하는 API
+
+// ---- 스터디 Host API ----
+// 참여 신청을 승인하는 API
+export const approveApplicantAPI = async (
+  studyGroupId: number,
+  applicantId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.post(
+      `/api/study-groups/${studyGroupId}/applicants/${applicantId}/approve`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Approve Applicant API Error: ", err);
+    throw err;
+  }
+};
+
+// 참여 신청을 거절하는 API
+export const rejectApplicantAPI = async (
+  studyGroupId: number,
+  applicantId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.delete(
+      `/api/study-groups/${studyGroupId}/applicants/${applicantId}/reject`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Reject Applicant API Error: ", err);
+    throw err;
+  }
+};
+
+// 스터디 그룹원을 강퇴하는 API
+export const kickParticipantAPI = async (
+  studyGroupId: number,
+  participantId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.delete(
+      `/api/study-groups/${studyGroupId}/participants/${participantId}/kick`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Kick Participant API Error: ", err);
+    throw err;
+  }
+};
+
+// ---- 스터디 Participant API ----
+// 특정 스터디 그룹에 참여 신청하는 API
+export const applyStudyGroupAPI = async (
+  studyGroupId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.post(
+      `/api/study-groups/${studyGroupId}/applicants/apply`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Apply To StudyGroup API Error: ", err);
+    throw err;
+  }
+};
+
+// 특정 스터디 그룹에 신청한 참여 신청을 취소하는 API
+export const cancleStudyGroupApplyAPI = async (
+  studyGroupId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.delete(
+      `/api/study-groups/${studyGroupId}/applicants/cancel`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Cancel To StudyGroup API Error: ", err);
+    throw err;
+  }
+};
+
+// 내가 속한 스터디 그룹을 퇴장하는 API
+export const leaveStudyGroupAPI = async (
+  studyGroupId: number
+): Promise<{ message: string }> => {
+  try {
+    const response = await api.delete(
+      `/api/study-groups/${studyGroupId}/participants/leave`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Leave To StudyGroup API Error: ", err);
     throw err;
   }
 };

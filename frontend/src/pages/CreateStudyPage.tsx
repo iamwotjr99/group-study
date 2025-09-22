@@ -84,6 +84,7 @@ function CreateStudyPage() {
                 value="AUTO"
                 className="form-radio"
                 defaultChecked
+                onChange={handleChange}
               />
               <span className="ml-2">선착순</span>
             </label>
@@ -93,6 +94,7 @@ function CreateStudyPage() {
                 name="policy"
                 value="APPROVAL"
                 className="form-radio"
+                onChange={handleChange}
               />
               <span className="ml-2">승인제</span>
             </label>

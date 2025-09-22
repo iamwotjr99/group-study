@@ -32,7 +32,9 @@ function StudyCard({ study }: StudyCardProps) {
               : "종료"}
           </span>
         </div>
-        <p className="mt-2 text-sm text-gray-600">모집 방식: {study.policy}</p>
+        <p className="mt-2 text-sm text-gray-600">
+          모집 방식: {study.policy === "AUTO" ? "선착순" : "승인제"}
+        </p>
         <div className="mt-4 text-sm font-medium text-gray-700">
           <span>
             인원: {study.curMemberCount} / {study.capacity}

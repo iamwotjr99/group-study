@@ -1,6 +1,7 @@
 // 스터디 목록 조회시 (Summary)
 export interface StudySummary {
   studyGroupId: number;
+  hostId: number;
   title: string;
   curMemberCount: number;
   capacity: number;
@@ -16,7 +17,7 @@ export interface StudyDetail extends StudySummary {
 
 // 참여자 정보
 export interface Participant {
-  memberId: number;
+  userId: number;
   email: string;
   nickname: string;
   role: "MEMBER" | "HOST";

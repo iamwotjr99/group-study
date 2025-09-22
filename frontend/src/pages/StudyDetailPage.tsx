@@ -1,18 +1,90 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useStudyDetail } from "../hooks/useStudyDetail";
 import { useUserStore } from "../store/userStore";
+import {
+  applyStudyGroupAPI,
+  approveApplicantAPI,
+  cancleStudyGroupApplyAPI,
+  kickParticipantAPI,
+  leaveStudyGroupAPI,
+  rejectApplicantAPI,
+} from "../apis/studyApi";
 
 function StudyDetailPage() {
   const { studyGroupId } = useParams<{ studyGroupId: string }>();
   const id = studyGroupId ? parseInt(studyGroupId, 10) : undefined;
 
-  const { studyGroupData, isLoading, error } = useStudyDetail(id);
+  const { studyGroupData, isLoading, error, refetch } = useStudyDetail(id);
   const { userInfo } = useUserStore();
 
   const navigate = useNavigate();
 
-  const handleEnterRoom = () => {
-    navigate(`/study-groups/${id}/room`);
+  // --- API 호출 및 화면 갱신을 위한 공통 핸들러 ---
+  const handleAction = async (action: () => Promise<any>) => {
+    if (!id) return;
+    try {
+      const result = await action();
+      alert(result.message);
+      refetch(); // 액션 성공 후 데이터를 다시 불러와 화면을 갱신
+    } catch (err) {
+      alert("요청 처리 중 오류가 발생했습니다.");
+      console.error("Study Detail Page Handle Action Error: ", err);
+    }
+  };
+
+  const handleApply = () => handleAction(() => applyStudyGroupAPI(id!));
+  const handleCancel = () => handleAction(() => cancleStudyGroupApplyAPI(id!));
+  const handleLeave = () => handleAction(() => leaveStudyGroupAPI(id!));
+  const handleApprove = (applicantId: number) =>
+    handleAction(() => approveApplicantAPI(id!, applicantId));
+  const handleReject = (applicantId: number) =>
+    handleAction(() => rejectApplicantAPI(id!, applicantId));
+  const handleKick = (participantId: number) =>
+    handleAction(() => kickParticipantAPI(id!, participantId));
+  const handleEnterRoom = () => navigate(`/study-groups/${id}/room`);
+
+  const isHost = userInfo?.memberId === studyGroupData?.hostId;
+  const currentUserStatus = studyGroupData?.participants.find(
+    (p) => p.userId === userInfo?.memberId
+  )?.status;
+  const isParticipant = currentUserStatus === "APPROVED";
+  const isApplicant = currentUserStatus === "PENDING";
+
+  const applicants =
+    studyGroupData?.participants.filter((p) => p.status === "PENDING") || [];
+  const approvedParticipants = studyGroupData?.participants.filter(
+    (p) => p.status === "APPROVED"
+  );
+
+  const renderMainButton = () => {
+    if (isParticipant) {
+      return (
+        <button
+          onClick={handleEnterRoom}
+          className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
+        >
+          화상 채팅방 입장
+        </button>
+      );
+    }
+    if (isApplicant) {
+      return (
+        <button
+          onClick={handleCancel}
+          className="w-full bg-yellow-500 text-black py-3 rounded-md hover:bg-yellow-600 font-semibold"
+        >
+          참여 신청 취소
+        </button>
+      );
+    }
+    return (
+      <button
+        onClick={handleApply}
+        className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-semibold"
+      >
+        참여 신청하기
+      </button>
+    );
   };
 
   if (isLoading) {
@@ -30,12 +102,6 @@ function StudyDetailPage() {
       </div>
     );
   }
-
-  const isParticipant = studyGroupData.participants.some(
-    (p) => p.userId === userInfo?.memberId
-  );
-
-  console.log("Participants Data:", studyGroupData.participants);
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
@@ -67,44 +133,71 @@ function StudyDetailPage() {
         {/* 왼쪽: 스터디 참여 버튼 등 메인 콘텐츠 */}
         <div className="md:col-span-2 bg-white p-6 rounded-lg shadow-md">
           {/* isParticipant 값에 따라 다른 내용 렌더링 */}
-          {isParticipant ? (
-            <>
-              <h2 className="text-2xl font-semibold mb-4">
-                스터디 룸 입장하기
-              </h2>
-              <p className="mb-6">스터디에 참여하여 화상 채팅을 시작하세요!</p>
-              <button
-                className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
-                onClick={handleEnterRoom}
-              >
-                화상 채팅방 입장
-              </button>
-            </>
-          ) : (
-            <>
-              <h2 className="text-2xl font-semibold mb-4">스터디 참여하기</h2>
-              <p className="mb-6">이 스터디에 참여하여 함께 성장하세요!</p>
-              <button className="w-full bg-indigo-600 text-white py-3 rounded-md hover:bg-indigo-700 font-semibold">
-                참여 신청하기
-              </button>
-            </>
+          <h2 className="text-2xl font-semibold mb-4">스터디 참여</h2>
+          {renderMainButton()}
+          {isParticipant && !isHost && (
+            <button
+              onClick={handleLeave}
+              className="w-full mt-4 bg-gray-500 text-white py-2 rounded-md hover:bg-gray-600 font-semibold"
+            >
+              스터디 퇴장
+            </button>
           )}
         </div>
 
-        {/* 오른쪽: 참가자 정보 */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold mb-4">
             참가자 ({studyGroupData.curMemberCount} / {studyGroupData.capacity})
           </h2>
           <ul className="space-y-3">
-            {studyGroupData.participants.map((p) => (
-              <li key={p.userId} className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gray-300 rounded-full"></div>
-                <span>{p.nickname}</span>
+            {approvedParticipants?.map((p) => (
+              <li key={p.userId} className="flex justify-between items-center">
+                <span>
+                  {p.nickname} {p.role === "HOST" && "(방장)"}
+                </span>
+                {isHost && p.userId !== userInfo?.memberId && (
+                  <button
+                    onClick={() => handleKick(p.userId)}
+                    className="bg-red-500 text-white px-2 py-1 rounded text-xs hover:bg-red-600"
+                  >
+                    강퇴
+                  </button>
+                )}
               </li>
             ))}
           </ul>
         </div>
+
+        {/* 방장에게만 보이는 신청자 관리 UI */}
+        {isHost && applicants?.length > 0 && (
+          <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">참여 신청자 목록</h2>
+            <ul className="space-y-3">
+              {applicants?.map((applicant) => (
+                <li
+                  key={applicant.userId}
+                  className="flex justify-between items-center"
+                >
+                  <span>{applicant.nickname}</span>
+                  <div className="space-x-2">
+                    <button
+                      onClick={() => handleApprove(applicant.userId)}
+                      className="bg-blue-500 text-white px-3 py-1 text-sm rounded hover:bg-blue-600"
+                    >
+                      승인
+                    </button>
+                    <button
+                      onClick={() => handleReject(applicant.userId)}
+                      className="bg-red-500 text-white px-3 py-1 text-sm rounded hover:bg-red-600"
+                    >
+                      거절
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );
