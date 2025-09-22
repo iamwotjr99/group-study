@@ -8,18 +8,21 @@ import Header from "./components/common/Header";
 import PublicRoute from "./components/auth/PublicRoute";
 import MainPage from "./pages/MainPage";
 import CreateStudyPage from "./pages/CreateStudyPage";
+import StudyDetailPage from "./pages/StudyDetailPage";
 
 function App() {
-  const { setToken } = useUserStore();
+  const { setUser } = useUserStore();
 
   useEffect(() => {
     // 앱이 시작될 떄 localStorage에서 accessToken 확인
     const token = localStorage.getItem("accessToken");
-    if (token) {
-      // 토큰이 있으면 전역 상태에 설정
-      setToken(token);
+    const userInfoString = localStorage.getItem("userInfo");
+    if (token && userInfoString) {
+      // 토큰, 유저 정보가 있으면 전역 상태에 설정
+      const userInfo = JSON.parse(userInfoString);
+      setUser(token, userInfo);
     }
-  }, [setToken]);
+  }, [setUser]);
   return (
     <BrowserRouter>
       <Header />
@@ -41,7 +44,6 @@ function App() {
               </PublicRoute>
             }
           />
-          {/* TODO: 메인 페이지 추가*/}
           <Route
             path="/"
             element={
@@ -55,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <CreateStudyPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/study-groups/:studyGroupId"
+            element={
+              <ProtectedRoute>
+                <StudyDetailPage />
               </ProtectedRoute>
             }
           />

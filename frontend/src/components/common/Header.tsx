@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUserStore } from "../../store/userStore";
 
 function Header() {
-  const { accessToken, clearToken } = useUserStore((state) => state);
+  const { accessToken, clearUser } = useUserStore((state) => state);
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    clearToken();
+    clearUser();
     alert("로그아웃 되었습니다.");
     navigate("/login");
   };

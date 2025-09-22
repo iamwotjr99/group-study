@@ -9,7 +9,7 @@ export interface StudySummary {
   state: "RECRUITING" | "IN_PROGRESS" | "COMPLETED"; // GroupState enum
 }
 
-// 스터디 상제 조회시 (Detail)
+// 스터디 상세 조회시 (Detail)
 export interface StudyDetail extends StudySummary {
   participants: Participant[];
 }

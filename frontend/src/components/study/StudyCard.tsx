@@ -14,7 +14,7 @@ function StudyCard({ study }: StudyCardProps) {
 
   return (
     <Link
-      to={`/study/${study.studyGroupId}`}
+      to={`/study-groups/${study.studyGroupId}`}
       className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300"
     >
       <div className="p-6">

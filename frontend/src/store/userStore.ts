@@ -1,23 +1,28 @@
 import { create } from "zustand";
 
+interface UserInfo {
+  memberId: number;
+  nickname: string;
+}
+
 interface UserState {
   accessToken: string | null;
-  setToken: (token: string) => void;
-  clearToken: () => void;
+  userInfo: UserInfo | null;
+  setUser: (token: string, info: UserInfo) => void;
+  clearUser: () => void;
 }
 
 export const useUserStore = create<UserState>((set) => ({
   accessToken: null,
-  setToken: (token) => {
-    console.log(
-      "%cZustand Store: 토큰 설정!",
-      "color: green; font-weight: bold;",
-      token
-    );
-    set({ accessToken: token });
+  userInfo: null,
+  setUser: (token, info) => {
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("userInfo", JSON.stringify(info));
+    set({ accessToken: token, userInfo: info });
   },
-  clearToken: () => {
+  clearUser: () => {
     localStorage.removeItem("accessToken");
+    localStorage.removeItem("userInfo");
     set({ accessToken: null });
   },
 }));
