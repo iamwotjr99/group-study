@@ -1,8 +1,9 @@
-package com.jaeseok.groupStudy.chat.domain;
+package com.jaeseok.groupStudy.unit.chat.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDateTime;
+import com.jaeseok.groupStudy.chat.domain.ChatMessage;
+import com.jaeseok.groupStudy.chat.domain.MessageType;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -16,18 +17,16 @@ class ChatMessageTest {
         Long chatRoomId = 1L;
         Long senderId = 10L;
         String content = "안녕하세요 여러분";
-        LocalDateTime timestamp = LocalDateTime.now();
         MessageType type = MessageType.CHAT;
 
         // when
-        ChatMessage chatMessage = ChatMessage.of(chatRoomId, senderId, content, timestamp, type);
+        ChatMessage chatMessage = ChatMessage.of(chatRoomId, senderId, content, type);
 
         // then
         assertThat(chatMessage).isNotNull();
         assertThat(chatMessage.getChatRoomId()).isEqualTo(chatRoomId);
         assertThat(chatMessage.getSenderId()).isEqualTo(senderId);
         assertThat(chatMessage.getContent()).isEqualTo(content);
-        assertThat(chatMessage.getTimestamp()).isEqualTo(timestamp);
         assertThat(chatMessage.getType()).isEqualTo(type);
     }
 }

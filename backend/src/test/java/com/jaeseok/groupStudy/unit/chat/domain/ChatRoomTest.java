@@ -1,7 +1,8 @@
-package com.jaeseok.groupStudy.chat.domain;
+package com.jaeseok.groupStudy.unit.chat.domain;
 
 import static org.assertj.core.api.Assertions.*;
 
+import com.jaeseok.groupStudy.chat.domain.ChatRoom;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
