@@ -39,4 +39,9 @@ public class StudyGroupCommandRepositoryImpl implements StudyGroupCommandReposit
 
         return studyGroupEntity.toDomain();
     }
+
+    @Override
+    public boolean existsById(Long id) {
+        return jpaStudyGroupCommandRepository.existsById(id);
+    }
 }

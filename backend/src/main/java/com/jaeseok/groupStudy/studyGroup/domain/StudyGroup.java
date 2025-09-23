@@ -139,6 +139,12 @@ public class StudyGroup {
         this.studyGroupInfo = this.studyGroupInfo.close();
     }
 
+    // memberId로 해당 유저가 스터디 그룹내에 참여하고있는 유저인지 유효성 검증 메서드
+    public boolean isMember(Long memberId) {
+        findApprovedParticipant(memberId);
+        return true;
+    }
+
     // 방이 꽉 찬 상태인지 확인
     private boolean isFull() {
         return getApprovedParticipantCount() == this.getInfoCapacity();

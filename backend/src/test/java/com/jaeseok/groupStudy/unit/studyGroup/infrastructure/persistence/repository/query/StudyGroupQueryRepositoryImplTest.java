@@ -99,9 +99,9 @@ class StudyGroupQueryRepositoryImplTest {
         assertThat(resultDto.state()).isEqualTo(GroupState.RECRUITING);
         assertThat(resultDto.curMemberCount()).isEqualTo(2);
         assertThat(resultDto.participants())
-                .hasSize(2)
+                .hasSize(3)
                 .extracting(ParticipantDto::userId)
-                .containsExactlyInAnyOrder(host.getId(), approvedUser.getId());
+                .containsExactlyInAnyOrder(host.getId(), approvedUser.getId(), pendingUser.getId());
     }
 
     @Test
@@ -205,7 +205,7 @@ class StudyGroupQueryRepositoryImplTest {
     }
 
     @Test
-    @DisplayName("스터디 그룹안에 있는 승인된(Approved) 참여자들을 조회할 수 있다.")
+    @DisplayName("스터디 그룹안에 있는 모든 상태의 참여자들을 조회할 수 있다.")
     void givenStudyGroupId_whenFindParticipantsByStudyGroupId_thenReturnParticipantDtos() {
         // given
         MemberEntity host = createAndSaveMember("호스트");
@@ -223,9 +223,9 @@ class StudyGroupQueryRepositoryImplTest {
         // then
         assertThat(resultDtos).isNotNull();
         assertThat(resultDtos)
-                .hasSize(2)
+                .hasSize(3)
                 .extracting(ParticipantDto::userId)
-                .containsExactlyInAnyOrder(host.getId(), approvedUser.getId());
+                .containsExactlyInAnyOrder(host.getId(), approvedUser.getId(), pendingUser.getId());
     }
 
     private MemberEntity createAndSaveMember(String nickname) {

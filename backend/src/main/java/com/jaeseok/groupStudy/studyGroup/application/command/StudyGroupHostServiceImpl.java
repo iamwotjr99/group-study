@@ -1,10 +1,12 @@
 package com.jaeseok.groupStudy.studyGroup.application.command;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
+import com.jaeseok.groupStudy.member.exception.MemberNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.ApproveStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.KickStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.RejectStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +23,9 @@ public class StudyGroupHostServiceImpl implements StudyGroupHostService {
     @Override
     public void approveApplication(ApproveStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupCommandRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디그룹 입니다."));
         memberRepository.findById(cmd.applicantId())
-                        .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다."));
+                        .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 유저입니다."));
 
         studyGroup.approveParticipant(cmd.hostId(), cmd.applicantId());
 
@@ -34,9 +36,9 @@ public class StudyGroupHostServiceImpl implements StudyGroupHostService {
     @Override
     public void rejectApplication(RejectStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupCommandRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디그룹 입니다."));
         memberRepository.findById(cmd.applicantId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 유저입니다."));
 
         studyGroup.rejectParticipant(cmd.hostId(), cmd.applicantId());
 
@@ -47,9 +49,9 @@ public class StudyGroupHostServiceImpl implements StudyGroupHostService {
     @Override
     public void kickParticipation(KickStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupCommandRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디그룹 입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디그룹 입니다."));
         memberRepository.findById(cmd.participantId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다."));
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 유저입니다."));
 
         studyGroup.kickParticipant(cmd.hostId(), cmd.participantId());
 

@@ -22,4 +22,6 @@ public interface JpaStudyGroupCommandRepository extends JpaRepository<StudyGroup
             + " FROM StudyGroupEntity sg"
             + " WHERE sg.infoEntity.state = :state")
     List<StudyGroupEntity> findByState(@Param("state") GroupState state);
+
+    boolean existsById(Long id);
 }

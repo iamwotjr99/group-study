@@ -6,6 +6,7 @@ import static org.mockito.BDDMockito.*;
 import com.jaeseok.groupStudy.studyGroup.application.query.StudyGroupQueryServiceImpl;
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
 import com.jaeseok.groupStudy.studyGroup.domain.RecruitingPolicy;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.StudyGroupQueryRepository;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupDetailDto;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupSummaryDto;
@@ -68,7 +69,7 @@ class StudyGroupQueryServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> studyGroupQueryService.getStudyGroupDetail(notExistStudyGroupId))
-                .isInstanceOf(EntityNotFoundException.class)
+                .isInstanceOf(StudyGroupNotFoundException.class)
                 .hasMessage("존재하지 않는 스터디 그룹입니다.");
 
         verify(studyGroupQueryRepository, times(1)).findStudyGroupDetailById(notExistStudyGroupId);

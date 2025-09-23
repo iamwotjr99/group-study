@@ -104,4 +104,25 @@ class StudyGroupCommandRepositoryImplTest {
                 .extracting(Participant::userId)
                 .containsExactlyInAnyOrder(1L, 2L, 3L);
     }
+
+    @Test
+    @DisplayName("id를 통해서 StudyGroup이 존재하는지 조회할 수 있다.")
+    void givenStudyGroupId_whenExistById_thenReturnBoolean() {
+        // given
+        StudyGroup studyGroup = StudyGroup.createWithHost(HOST_ID, "테스트 방 제목 001", 5,
+                LocalDateTime.now().plusDays(1), RecruitingPolicy.APPROVAL);
+
+        StudyGroup saved = studyGroupCommandRepository.save(studyGroup);
+
+        Long studyGroupId = saved.getId();
+        Long invalidStudyGroupId = 999L;
+
+        // when
+        boolean expectedTrue = studyGroupCommandRepository.existsById(studyGroupId);
+        boolean expectedFalse = studyGroupCommandRepository.existsById(invalidStudyGroupId);
+
+        // then
+        assertThat(expectedTrue).isTrue();
+        assertThat(expectedFalse).isFalse();
+    }
 }

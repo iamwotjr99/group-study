@@ -6,4 +6,5 @@ public interface StudyGroupCommandRepository {
     StudyGroup save(StudyGroup studyGroup);
     Optional<StudyGroup> findById(Long id);
     StudyGroup update(StudyGroup studyGroup);
+    boolean existsById(Long id);
 }

@@ -1,7 +1,10 @@
 package com.jaeseok.groupStudy.common.exception;
 
+import com.jaeseok.groupStudy.chat.exception.ChatRoomNotFoundException;
 import com.jaeseok.groupStudy.common.exception.dto.ErrorResponseDto;
+import com.jaeseok.groupStudy.member.exception.MemberNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,5 +48,26 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleNoHostAuthorityException(NoHostAuthorityException ex) {
         ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(StudyGroupNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponseDto> handleStudyGroupNotFoundException(StudyGroupNotFoundException ex) {
+        ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ChatRoomNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponseDto> handleChatRoomNotFoundException(ChatRoomNotFoundException ex) {
+        ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ResponseEntity<ErrorResponseDto> handleMemberNotFoundException(MemberNotFoundException ex) {
+        ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 }

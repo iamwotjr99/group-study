@@ -17,6 +17,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -118,7 +119,7 @@ class StudyGroupLifecycleServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.startStudyGroup(cmd))
-                .isInstanceOf(EntityNotFoundException.class)
+                .isInstanceOf(StudyGroupNotFoundException.class)
                 .hasMessageContaining("존재하지 않는 스터디 그룹");
 
         verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());
@@ -201,7 +202,7 @@ class StudyGroupLifecycleServiceImplTest {
 
         // when & then
         assertThatThrownBy(() -> studyGroupLifecycleService.closeStudyGroup(cmd))
-                .isInstanceOf(EntityNotFoundException.class)
+                .isInstanceOf(StudyGroupNotFoundException.class)
                 .hasMessageContaining("존재하지 않는 스터디 그룹");
 
         verify(studyGroupCommandRepository, times(1)).findById(cmd.studyGroupId());

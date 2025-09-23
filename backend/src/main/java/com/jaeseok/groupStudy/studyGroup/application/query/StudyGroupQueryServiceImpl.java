@@ -1,6 +1,7 @@
 package com.jaeseok.groupStudy.studyGroup.application.query;
 
 import com.jaeseok.groupStudy.studyGroup.domain.GroupState;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.StudyGroupQueryRepository;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupDetailDto;
 import com.jaeseok.groupStudy.studyGroup.infrastructure.persistence.repository.query.dto.StudyGroupSummaryDto;
@@ -21,7 +22,7 @@ public class StudyGroupQueryServiceImpl implements StudyGroupQueryService {
     @Transactional
     public StudyGroupDetailDto getStudyGroupDetail(Long studyGroupId) {
         return studyGroupQueryRepository.findStudyGroupDetailById(studyGroupId)
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디 그룹입니다."));
     }
 
     @Override

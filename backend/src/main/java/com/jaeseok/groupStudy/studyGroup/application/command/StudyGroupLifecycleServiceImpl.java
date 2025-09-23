@@ -6,6 +6,7 @@ import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGrou
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     @Override
     public void startStudyGroup(StartStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupCommandRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디 그룹입니다."));
 
         studyGroup.start(cmd.hostId());
         studyGroupCommandRepository.update(studyGroup);
@@ -42,7 +43,7 @@ public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleServic
     @Override
     public void closeStudyGroup(CloseStudyGroupCommand cmd) {
         StudyGroup studyGroup = studyGroupCommandRepository.findById(cmd.studyGroupId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 스터디 그룹입니다."));
+                .orElseThrow(() -> new StudyGroupNotFoundException("존재하지 않는 스터디 그룹입니다."));
 
         studyGroup.close(cmd.hostId());
         studyGroupCommandRepository.update(studyGroup);
