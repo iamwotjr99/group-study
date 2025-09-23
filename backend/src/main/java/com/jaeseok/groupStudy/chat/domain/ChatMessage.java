@@ -29,22 +29,18 @@ public class ChatMessage extends BaseTimeEntity {
     @Column(name = "content")
     String content;
 
-    @Column(name = "timestamp")
-    LocalDateTime timestamp;
-
     @Column(name = "type")
     MessageType type;
 
-    public static ChatMessage of(Long chatRoomId, Long senderId, String content, LocalDateTime timestamp, MessageType type) {
-        return new ChatMessage(null, chatRoomId, senderId, content, timestamp, type);
+    public static ChatMessage of(Long chatRoomId, Long senderId, String content, MessageType type) {
+        return new ChatMessage(null, chatRoomId, senderId, content, type);
     }
 
-    private ChatMessage(Long id, Long chatRoomId, Long senderId, String content, LocalDateTime timestamp, MessageType type) {
+    private ChatMessage(Long id, Long chatRoomId, Long senderId, String content, MessageType type) {
         this.id = id;
         this.chatRoomId = chatRoomId;
         this.senderId = senderId;
         this.content = content;
-        this.timestamp = timestamp;
         this.type = type;
     }
 }
