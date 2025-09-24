@@ -4,13 +4,15 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
 import com.jaeseok.groupStudy.chat.application.ChatService;
-import com.jaeseok.groupStudy.chat.application.dto.GetMessageInfo;
+import com.jaeseok.groupStudy.chat.application.dto.SendMessageInfo;
 import com.jaeseok.groupStudy.chat.application.dto.SendMessageCommand;
 import com.jaeseok.groupStudy.chat.domain.ChatMessage;
 import com.jaeseok.groupStudy.chat.domain.ChatRoom;
 import com.jaeseok.groupStudy.chat.domain.MessageType;
 import com.jaeseok.groupStudy.chat.domain.repository.ChatMessageRepository;
 import com.jaeseok.groupStudy.chat.domain.repository.ChatRoomRepository;
+import com.jaeseok.groupStudy.member.domain.Member;
+import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
@@ -40,11 +42,17 @@ class ChatServiceTest {
     @Mock
     StudyGroupCommandRepository studyGroupCommandRepository;
 
+    @Mock
+    MemberRepository memberRepository;
+
     @InjectMocks
     ChatService chatService;
 
     @Mock
     StudyGroup studyGroup;
+
+    @Mock
+    Member member;
 
     @Test
     @DisplayName("스터디 그룹이 존재하면 채팅방을 생성한다.")
@@ -91,6 +99,7 @@ class ChatServiceTest {
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
 
         SendMessageCommand cmd = new SendMessageCommand(roomId, senderId, message,
                 type);
@@ -103,6 +112,7 @@ class ChatServiceTest {
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(studyGroup, times(1)).isMember(senderId);
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verify(memberRepository, times(1)).findById(senderId);
         verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
     }
 
@@ -153,7 +163,7 @@ class ChatServiceTest {
         given(chatMessageRepository.findChatMessageHistoryWithNickname(roomId, pageable)).willReturn(mockPages);
 
         // when
-        Page<GetMessageInfo> result = chatService.getChatHistory(roomId, memberId, pageable);
+        Page<SendMessageInfo> result = chatService.getChatHistory(roomId, memberId, pageable);
 
         // then
         assertThat(result).isNotNull();
@@ -161,7 +171,7 @@ class ChatServiceTest {
         assertThat(result.getTotalPages()).isEqualTo(4);
         assertThat(result.getContent()).hasSize(8);
 
-        GetMessageInfo firstMessageInfo = result.getContent().get(0);
+        SendMessageInfo firstMessageInfo = result.getContent().get(0);
         assertThat(firstMessageInfo.nickname()).isEqualTo("nickname2");
         assertThat(firstMessageInfo.content()).isEqualTo("메세지 1");
 

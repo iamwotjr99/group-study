@@ -1,12 +1,15 @@
 package com.jaeseok.groupStudy.chat.application;
 
 import com.jaeseok.groupStudy.chat.application.dto.SendMessageCommand;
-import com.jaeseok.groupStudy.chat.application.dto.GetMessageInfo;
+import com.jaeseok.groupStudy.chat.application.dto.SendMessageInfo;
 import com.jaeseok.groupStudy.chat.domain.ChatMessage;
 import com.jaeseok.groupStudy.chat.domain.ChatRoom;
 import com.jaeseok.groupStudy.chat.domain.repository.ChatMessageRepository;
 import com.jaeseok.groupStudy.chat.domain.repository.ChatRoomRepository;
 import com.jaeseok.groupStudy.chat.exception.ChatRoomNotFoundException;
+import com.jaeseok.groupStudy.member.domain.Member;
+import com.jaeseok.groupStudy.member.domain.MemberRepository;
+import com.jaeseok.groupStudy.member.exception.MemberNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
@@ -23,6 +26,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final StudyGroupCommandRepository studyGroupCommandRepository;
+    private final MemberRepository memberRepository;
 
     // 채팅방 생성
     public Long createChatRoom(Long studyGroupId) {
@@ -37,20 +41,22 @@ public class ChatService {
     }
 
     // 메시지 전송
-    public void sendMessage(SendMessageCommand cmd) {
+    public SendMessageInfo sendMessage(SendMessageCommand cmd) {
         ChatRoom chatRoom = checkChatRoom(cmd.roomId());
         StudyGroup studyGroup = checkStudyGroup(chatRoom.getStudyGroupId());
-
         studyGroup.isMember(cmd.senderId());
 
         ChatMessage chatMessage = ChatMessage.of(cmd.roomId(), cmd.senderId(), cmd.message(), cmd.type());
-
         chatMessageRepository.save(chatMessage);
+
+        Member member = memberRepository.findById(cmd.senderId())
+                .orElseThrow(() -> new MemberNotFoundException("존재하지 않는 유저입니다."));
+        return new SendMessageInfo(member.getUserInfoNickname(), chatMessage.getContent(), chatMessage.getCreatedAt());
     }
 
     // 채팅 내역 조회
     @Transactional(readOnly = true)
-    public Page<GetMessageInfo> getChatHistory(Long roomId, Long memberId, Pageable pageable) {
+    public Page<SendMessageInfo> getChatHistory(Long roomId, Long memberId, Pageable pageable) {
         ChatRoom chatRoom = checkChatRoom(roomId);
         StudyGroup studyGroup = checkStudyGroup(chatRoom.getStudyGroupId());
 
@@ -62,7 +68,7 @@ public class ChatService {
         return queryResult.map(result -> {
             ChatMessage cm = (ChatMessage) result[0];
             String n = (String) result[1];
-            return new GetMessageInfo(n, cm.getContent(), cm.getCreatedAt());
+            return new SendMessageInfo(n, cm.getContent(), cm.getCreatedAt());
         });
     }
 
