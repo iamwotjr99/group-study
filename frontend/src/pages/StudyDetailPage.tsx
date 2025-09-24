@@ -100,12 +100,20 @@ function StudyDetailPage() {
       }
       if (studyGroupData?.state === "START") {
         return (
-          <button
-            onClick={handleCloseStudy}
-            className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 font-semibold"
-          >
-            스터디 종료
-          </button>
+          <div className="space-y-4">
+            <button
+              onClick={handleEnterRoom}
+              className="w-full bg-green-600 text-white py-3 rounded-md hover:bg-green-700 font-semibold"
+            >
+              화상 채팅방 입장
+            </button>
+            <button
+              onClick={handleCloseStudy}
+              className="w-full bg-red-600 text-white py-3 rounded-md hover:bg-red-700 font-semibold"
+            >
+              스터디 종료
+            </button>
+          </div>
         );
       }
     }
