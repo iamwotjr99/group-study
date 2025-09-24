@@ -1,7 +1,7 @@
 package com.jaeseok.groupStudy.chat.application;
 
 import com.jaeseok.groupStudy.chat.application.dto.SendMessageCommand;
-import com.jaeseok.groupStudy.chat.application.dto.SendMessageInfo;
+import com.jaeseok.groupStudy.chat.application.dto.GetMessageInfo;
 import com.jaeseok.groupStudy.chat.domain.ChatMessage;
 import com.jaeseok.groupStudy.chat.domain.ChatRoom;
 import com.jaeseok.groupStudy.chat.domain.repository.ChatMessageRepository;
@@ -10,7 +10,6 @@ import com.jaeseok.groupStudy.chat.exception.ChatRoomNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
-import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,7 +26,9 @@ public class ChatService {
 
     // 채팅방 생성
     public Long createChatRoom(Long studyGroupId) {
-        checkStudyGroup(studyGroupId);
+        if(!studyGroupCommandRepository.existsById(studyGroupId)) {
+            throw new StudyGroupNotFoundException("존재하지 않는 스터디 그룹입니다.");
+        }
 
         ChatRoom chatRoom = ChatRoom.of(studyGroupId);
         chatRoom = chatRoomRepository.save(chatRoom);
@@ -49,7 +50,7 @@ public class ChatService {
 
     // 채팅 내역 조회
     @Transactional(readOnly = true)
-    public Page<SendMessageInfo> getChatHistory(Long roomId, Long memberId, Pageable pageable) {
+    public Page<GetMessageInfo> getChatHistory(Long roomId, Long memberId, Pageable pageable) {
         ChatRoom chatRoom = checkChatRoom(roomId);
         StudyGroup studyGroup = checkStudyGroup(chatRoom.getStudyGroupId());
 
@@ -61,7 +62,7 @@ public class ChatService {
         return queryResult.map(result -> {
             ChatMessage cm = (ChatMessage) result[0];
             String n = (String) result[1];
-            return new SendMessageInfo(n, cm.getContent(), cm.getCreatedAt());
+            return new GetMessageInfo(n, cm.getContent(), cm.getCreatedAt());
         });
     }
 

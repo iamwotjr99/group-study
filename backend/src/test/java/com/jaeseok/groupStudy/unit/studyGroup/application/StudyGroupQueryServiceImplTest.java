@@ -83,12 +83,6 @@ class StudyGroupQueryServiceImplTest {
         // given
         Pageable pageable = PageRequest.of(0, 10);
         List<StudyGroupSummaryDto> mockDtos = createMockStudyGroupSummaries(25);
-        for (int i = 1; i <= 25; i++) {
-            StudyGroupSummaryDto dto = new StudyGroupSummaryDto((long) i, (long) i + 1, "테스트 " + i, 3,
-                    5, LocalDateTime.now().plusDays(i), RecruitingPolicy.APPROVAL,
-                    GroupState.RECRUITING);
-            mockDtos.add(dto);
-        }
         PageImpl<StudyGroupSummaryDto> mockPage = new PageImpl<>(mockDtos, pageable, 25);
 
         given(studyGroupQueryRepository.findStudyGroupSummaries(any(), any(Pageable.class)))

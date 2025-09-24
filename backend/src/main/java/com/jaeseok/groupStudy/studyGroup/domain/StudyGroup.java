@@ -140,9 +140,8 @@ public class StudyGroup {
     }
 
     // memberId로 해당 유저가 스터디 그룹내에 참여하고있는 유저인지 유효성 검증 메서드
-    public boolean isMember(Long memberId) {
+    public void isMember(Long memberId) {
         findApprovedParticipant(memberId);
-        return true;
     }
 
     // 방이 꽉 찬 상태인지 확인
