@@ -23,7 +23,7 @@ public class ChatRealTimeController {
      * 클라이언트로부터 받은 메세지를 다시 해당 채팅방으로 브로드캐스팅한다.
      * @param userPrincipal JWT 인증 객체
      * @param roomId 클라이언트가 전송한 목적지의 채팅방 ID
-     * @param payload 메세지의 내용
+     * @param payload 메세지의 내용 payload
      */
     @MessageMapping("/chatroom/{roomId}/message")
     public void sendMessage(
