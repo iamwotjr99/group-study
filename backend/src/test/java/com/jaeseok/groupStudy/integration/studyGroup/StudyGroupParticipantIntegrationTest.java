@@ -130,7 +130,7 @@ public class StudyGroupParticipantIntegrationTest extends IntegrationTestSupport
     }
 
     @Test
-    @DisplayName("이미 신청한 스터디 그룹에 신청을 하면 400 에러를 응답한다.")
+    @DisplayName("이미 신청한 스터디 그룹에 신청을 하면 403 에러를 응답한다.")
     void givenLoginUserAndAlreadyAppliedStudyGroupId_whenApplyToStudyGroup_thenReturnBadRequest() throws Exception {
         // given
         Long studyGroupId = TEST_STUDY_GROUP_ID;
@@ -146,7 +146,7 @@ public class StudyGroupParticipantIntegrationTest extends IntegrationTestSupport
 
         // then
         actions
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -254,7 +254,7 @@ public class StudyGroupParticipantIntegrationTest extends IntegrationTestSupport
     }
 
     @Test
-    @DisplayName("참여중이 아닌 스터디 그룹에 퇴장 요청을 하면 400 에러를 응답한다.")
+    @DisplayName("참여중이 아닌 스터디 그룹에 퇴장 요청을 하면 403 에러를 응답한다.")
     void givenLoginUserAndAlreadyApprovedStudyGroupId_whenLeaveFromStudyGroup_thenReturnBadRequest() throws Exception {
         // given
         Long studyGroupId = TEST_STUDY_GROUP_ID;
@@ -271,7 +271,7 @@ public class StudyGroupParticipantIntegrationTest extends IntegrationTestSupport
 
         // then
         actions
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isForbidden());
     }
 
     @Test

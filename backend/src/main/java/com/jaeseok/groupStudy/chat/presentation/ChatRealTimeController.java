@@ -4,7 +4,9 @@ import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
 import com.jaeseok.groupStudy.chat.application.ChatService;
 import com.jaeseok.groupStudy.chat.application.dto.SendMessageCommand;
 import com.jaeseok.groupStudy.chat.application.dto.SendMessageInfo;
+import com.jaeseok.groupStudy.chat.domain.MessageType;
 import com.jaeseok.groupStudy.chat.presentation.dto.SendMessagePayload;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -29,12 +31,32 @@ public class ChatRealTimeController {
     public void sendMessage(
             @AuthenticationPrincipal UserPrincipal userPrincipal,
             @DestinationVariable Long roomId,
-            SendMessagePayload payload) {
+            @Valid SendMessagePayload payload) {
         Long senderId = userPrincipal.userId();
 
-        SendMessageCommand command = payload.toCommand(roomId, senderId);
-        SendMessageInfo broadcastInfo = chatService.sendMessage(command);
+        SendMessageInfo broadcastInfo = null;
+
+        if (payload.type() == MessageType.ENTER) {
+            broadcastInfo = handleEnter(roomId, senderId);
+        } else if (payload.type() == MessageType.LEAVE) {
+            broadcastInfo = handleLeave(roomId, senderId);
+        } else {
+            broadcastInfo = handleChat(roomId, senderId, payload);
+        }
 
         messagingTemplate.convertAndSend("/sub/chatroom/" + roomId, broadcastInfo);
+    }
+
+    private SendMessageInfo handleChat(Long roomId, Long senderId, SendMessagePayload payload) {
+        SendMessageCommand command = payload.toCommand(roomId, senderId);
+        return chatService.sendMessage(command);
+    }
+
+    private SendMessageInfo handleEnter(Long roomId, Long senderId) {
+        return chatService.enterChatRoom(roomId, senderId);
+    }
+
+    private SendMessageInfo handleLeave(Long roomId, Long senderId) {
+        return chatService.leaveChatRoom(roomId, senderId);
     }
 }

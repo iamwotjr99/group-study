@@ -3,6 +3,8 @@ package com.jaeseok.groupStudy.unit.studyGroup.application.command;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.BDDMockito.*;
 
+import com.jaeseok.groupStudy.chat.domain.ChatRoom;
+import com.jaeseok.groupStudy.chat.domain.repository.ChatRoomRepository;
 import com.jaeseok.groupStudy.studyGroup.application.command.StudyGroupLifecycleServiceImpl;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
@@ -16,6 +18,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
+import com.jaeseok.groupStudy.studyGroup.event.StudyGroupCreatedEvent;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,6 +34,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("StudyGroupLifecycle 테스트")
@@ -42,10 +46,13 @@ class StudyGroupLifecycleServiceImplTest {
     @Mock
     StudyGroupCommandRepository studyGroupCommandRepository;
 
+    @Mock
+    ApplicationEventPublisher eventPublisher;
+
     final Long HOST_ID = 1L;
 
     @Test
-    @DisplayName("스터디 그룹 생성 명령이 주어지면 스터디 그룹을 생성한다.")
+    @DisplayName("스터디 그룹 생성 명령이 주어지면 스터디 그룹을 생성하고 그룹 생성 이벤트를 발행한다.")
     void givenCreateCommand_whenCreateStudyGroup_thenReturnStudyGroup() {
         // given
         CreateStudyGroupCommand cmd = new CreateStudyGroupCommand(HOST_ID,
@@ -71,6 +78,12 @@ class StudyGroupLifecycleServiceImplTest {
 
         StudyGroup capturedStudyGroup = studyGroupCaptor.getValue();
         assertThat(capturedStudyGroup.getStudyGroupInfo()).isEqualTo(studyGroupInfo);
+
+        ArgumentCaptor<StudyGroupCreatedEvent> eventCaptor = ArgumentCaptor.forClass(StudyGroupCreatedEvent.class);
+        verify(eventPublisher, times(1)).publishEvent(eventCaptor.capture());
+
+        StudyGroupCreatedEvent event = eventCaptor.getValue();
+        assertThat(event.studyGroupId()).isEqualTo(fakeStudyGroupId);
     }
 
     @Test

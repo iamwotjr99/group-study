@@ -1,15 +1,19 @@
 package com.jaeseok.groupStudy.studyGroup.application.command;
 
+import com.jaeseok.groupStudy.chat.domain.ChatRoom;
+import com.jaeseok.groupStudy.chat.domain.repository.ChatRoomRepository;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CloseStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.CreateStudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.application.command.dto.StartStudyGroupCommand;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
+import com.jaeseok.groupStudy.studyGroup.event.StudyGroupCreatedEvent;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,13 +21,18 @@ import org.springframework.stereotype.Service;
 public class StudyGroupLifecycleServiceImpl implements StudyGroupLifecycleService {
 
     private final StudyGroupCommandRepository studyGroupCommandRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
-    // 스터디 그룹을 생성
+    // 스터디 그룹을 생성, 채팅방도 함께 생성
     @Override
     public CreateStudyGroupInfo createStudyGroup(CreateStudyGroupCommand cmd) {
         StudyGroup studyGroup = StudyGroup.createWithHost(cmd.hostId(), cmd.title(), cmd.capacity(), cmd.deadline(), cmd.policy());
 
         StudyGroup saved = studyGroupCommandRepository.save(studyGroup);
+
+        // 채팅방 생성 로직 제거 대신 이벤트 발행
+        eventPublisher.publishEvent(new StudyGroupCreatedEvent(saved.getId()));
+
         return new CreateStudyGroupInfo(saved.getId());
     }
 

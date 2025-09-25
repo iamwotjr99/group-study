@@ -4,6 +4,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.Participant;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupMemberAccessException;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,7 +51,7 @@ public class StudyGroup {
     // 스터디 그룹에 참여 신청
     public void apply(Long userId) {
         if (existsParticipant(userId)) {
-            throw new IllegalArgumentException("이미 신청중이거나 참여중인 스터디 그룹입니다.");
+            throw new StudyGroupMemberAccessException("이미 신청중이거나 참여중인 스터디 그룹입니다.");
         }
 
         Participant applied = Participant.apply(userId, this.id);
@@ -167,7 +168,7 @@ public class StudyGroup {
         return participantSet.stream()
                 .filter(p -> p.userId().equals(userId))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 이 스터디 그룹의 참여자가 아닙니다."));
+                .orElseThrow(() -> new StudyGroupMemberAccessException("해당 유저는 이 스터디 그룹의 참여자가 아닙니다."));
     }
 
     // userId로 현재 StudyGroup의 승인된 참여자인지 탐색
@@ -176,7 +177,7 @@ public class StudyGroup {
                 .filter(p -> p.userId().equals(userId)
                         && p.status().equals(ParticipantStatus.APPROVED))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저는 승인된 참여자가 아닙니다."));
+                .orElseThrow(() -> new StudyGroupMemberAccessException("해당 유저는 승인된 참여자가 아닙니다."));
     }
 
     // userId로 유저가 현재 StudyGroup에 참여중인지 검사

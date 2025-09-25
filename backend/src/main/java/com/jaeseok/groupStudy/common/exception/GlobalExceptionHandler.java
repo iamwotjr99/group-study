@@ -4,6 +4,7 @@ import com.jaeseok.groupStudy.chat.exception.ChatRoomNotFoundException;
 import com.jaeseok.groupStudy.common.exception.dto.ErrorResponseDto;
 import com.jaeseok.groupStudy.member.exception.MemberNotFoundException;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupMemberAccessException;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -69,5 +70,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleMemberNotFoundException(MemberNotFoundException ex) {
         ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.NOT_FOUND.value(), ex.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(StudyGroupMemberAccessException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ResponseEntity<ErrorResponseDto> handleStudyGroupMemberAccessException(StudyGroupMemberAccessException ex) {
+        ErrorResponseDto response =  new ErrorResponseDto(HttpStatus.FORBIDDEN.value(), ex.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
     }
 }

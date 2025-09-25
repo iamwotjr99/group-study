@@ -15,6 +15,7 @@ import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroup;
 import com.jaeseok.groupStudy.studyGroup.domain.StudyGroupCommandRepository;
+import com.jaeseok.groupStudy.studyGroup.event.StudyGroupCreatedEvent;
 import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -55,39 +57,28 @@ class ChatServiceTest {
     Member member;
 
     @Test
-    @DisplayName("스터디 그룹이 존재하면 채팅방을 생성한다.")
+    @DisplayName("그룹 생성 이벤트를 수신하고 해당 스터디 그룹이 존재하면 채팅방을 생성한다.")
     void givenStudyGroupId_whenCreateChatRoom_thenReturnChatRoomId() {
         // given
         Long studyGroupId = 1L;
-        given(studyGroupCommandRepository.existsById(studyGroupId)).willReturn(true);
+        StudyGroupCreatedEvent event = new StudyGroupCreatedEvent(studyGroupId);
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
         given(chatRoomRepository.save(any(ChatRoom.class))).willReturn(willReturnChatRoom);
 
         // when
-        chatService.createChatRoom(studyGroupId);
+        chatService.createChatRoom(event);
 
         // then
-        verify(studyGroupCommandRepository, times(1)).existsById(studyGroupId);
-        verify(chatRoomRepository, times(1)).save(any(ChatRoom.class));
-        verifyNoMoreInteractions(studyGroupCommandRepository, chatRoomRepository);
+        ArgumentCaptor<ChatRoom> captor = ArgumentCaptor.forClass(ChatRoom.class);
+        verify(chatRoomRepository).save(captor.capture());
+
+        ChatRoom savedChatRoom = captor.getValue();
+        assertThat(savedChatRoom.getStudyGroupId()).isEqualTo(studyGroupId);
     }
 
     @Test
-    @DisplayName("스터디 그룹이 없으면 채팅방을 생성할 수 없다.")
-    void givenNotExistStudyGroupId_whenCreateChatRoom_thenThrowException() {
-        // given
-        Long notExistStudyGroupId = 404L;
-        given(studyGroupCommandRepository.existsById(notExistStudyGroupId)).willReturn(false);
-
-        // when & then
-        assertThatThrownBy(() -> chatService.createChatRoom(notExistStudyGroupId))
-                .isInstanceOf(StudyGroupNotFoundException.class)
-                .hasMessageContaining("존재하지 않는");
-    }
-
-    @Test
-    @DisplayName("그룹에 속한 참여자가 메세지를 보내면 저장한다.")
+    @DisplayName("그룹에 속한 참여자가 메세지를 보내면 저장하고 메세지를 응답한다.")
     void givenSendMessageCommand_whenSendMessage_thenSaveChatMessage() {
         // given
         Long studyGroupId = 1L;
@@ -105,7 +96,7 @@ class ChatServiceTest {
                 type);
 
         // when
-        chatService.sendMessage(cmd);
+        SendMessageInfo sendMessageInfo = chatService.sendMessage(cmd);
 
         // then
         verify(chatRoomRepository, times(1)).findById(roomId);
@@ -114,6 +105,85 @@ class ChatServiceTest {
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
         verify(memberRepository, times(1)).findById(senderId);
         verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
+
+        ArgumentCaptor<ChatMessage> captor = ArgumentCaptor.forClass(ChatMessage.class);
+        verify(chatMessageRepository).save(captor.capture());
+
+        ChatMessage savedMessage = captor.getValue();
+        assertThat(savedMessage.getContent()).isEqualTo(message);
+        assertThat(savedMessage.getType()).isEqualTo(type);
+
+        assertThat(sendMessageInfo.content()).isEqualTo(message);
+    }
+
+    @Test
+    @DisplayName("그룹에 속한 참여자가 입장을 하면 입장 메세지를 저장하고 응답한다.")
+    void givenRoomIdAndSenderId_whenSendMessage_thenSaveEnterMessage() {
+        // given
+        Long studyGroupId = 1L;
+        Long roomId = 5L;
+        Long senderId = 10L;
+
+        ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
+        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
+        given(member.getUserInfoNickname()).willReturn("테스트 유저");
+
+        // when
+        SendMessageInfo sendMessageInfo = chatService.enterChatRoom(roomId, senderId);
+
+        // then
+        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
+        verify(memberRepository, times(1)).findById(senderId);
+        verify(studyGroup, times(1)).isMember(senderId);
+        verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
+
+        ArgumentCaptor<ChatMessage> captor = ArgumentCaptor.forClass(ChatMessage.class);
+        verify(chatMessageRepository).save(captor.capture());
+
+        ChatMessage savedMessage = captor.getValue();
+        assertThat(savedMessage.getContent()).isEqualTo("테스트 유저님이 입장하셨습니다.");
+        assertThat(savedMessage.getType()).isEqualTo(MessageType.ENTER);
+
+        assertThat(sendMessageInfo.content()).isEqualTo("테스트 유저님이 입장하셨습니다.");
+    }
+
+    @Test
+    @DisplayName("그룹에 속한 참여자가 퇴장을 하면 퇴장 메세지를 저장하고 퇴장한다.")
+    void givenRoomIdAndSenderId_whenSendMessage_thenSaveLeaveMessage() {
+        // given
+        Long studyGroupId = 1L;
+        Long roomId = 5L;
+        Long senderId = 10L;
+
+        ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
+        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
+        given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
+        given(member.getUserInfoNickname()).willReturn("테스트 유저");
+
+        // when
+        SendMessageInfo sendMessageInfo = chatService.leaveChatRoom(roomId, senderId);
+
+        // then
+        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
+        verify(memberRepository, times(1)).findById(senderId);
+        verify(studyGroup, times(1)).isMember(senderId);
+        verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
+        verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
+
+        ArgumentCaptor<ChatMessage> captor = ArgumentCaptor.forClass(ChatMessage.class);
+        verify(chatMessageRepository).save(captor.capture());
+
+        ChatMessage savedMessage = captor.getValue();
+        assertThat(savedMessage.getContent()).isEqualTo("테스트 유저님이 퇴장하셨습니다.");
+        assertThat(savedMessage.getType()).isEqualTo(MessageType.LEAVE);
+
+        assertThat(sendMessageInfo.content()).isEqualTo("테스트 유저님이 퇴장하셨습니다.");
     }
 
     @Test
@@ -140,6 +210,7 @@ class ChatServiceTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("해당 유저는 승인된 참여자가 아닙니다.");
 
+        verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
     }
 
     @Test
@@ -202,6 +273,8 @@ class ChatServiceTest {
         assertThatThrownBy(() -> chatService.getChatHistory(roomId, invalidMemberId, pageable))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("해당 유저는 승인된 참여자가 아닙니다.");
+
+        verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
     }
 
     private List<Object[]> createMockGetMessageInfo(Long roomId, int count) {

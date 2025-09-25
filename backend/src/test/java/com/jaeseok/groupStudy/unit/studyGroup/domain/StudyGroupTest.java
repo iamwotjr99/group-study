@@ -9,6 +9,7 @@ import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantRole;
 import com.jaeseok.groupStudy.studyGroup.domain.participant.ParticipantStatus;
 import com.jaeseok.groupStudy.studyGroup.domain.vo.StudyGroupInfo;
 import com.jaeseok.groupStudy.studyGroup.exception.NoHostAuthorityException;
+import com.jaeseok.groupStudy.studyGroup.exception.StudyGroupMemberAccessException;
 import java.time.LocalDateTime;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -93,7 +94,7 @@ class StudyGroupTest {
         // when
         // then
         assertThatThrownBy(() -> studyGroup.apply(applicantUserId))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(StudyGroupMemberAccessException.class)
                 .hasMessage("이미 신청중이거나 참여중인 스터디 그룹입니다.");
     }
 
