@@ -64,7 +64,7 @@ public class SecurityConfig {
                         .accessDeniedHandler((request, response, accessDeniedException)
                                 -> response.setStatus(HttpStatus.FORBIDDEN.value())))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**")
+                        .requestMatchers("/api/auth/**", "/ws/chat/**", "/ws/chat")
                         .permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

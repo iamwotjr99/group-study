@@ -48,10 +48,9 @@ public class ChatService {
         Member member = checkMember(cmd.senderId());
 
         ChatMessage chatMessage = ChatMessage.of(cmd.roomId(), cmd.senderId(), cmd.message(), cmd.type());
-        chatMessageRepository.save(chatMessage);
+        ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
 
-
-        return new SendMessageInfo(member.getUserInfoNickname(), chatMessage.getContent(), chatMessage.getCreatedAt());
+        return new SendMessageInfo(member.getUserInfoNickname(), savedMessage.getContent(), savedMessage.getCreatedAt());
     }
 
     // 채팅방 입장 메시지 메서드
