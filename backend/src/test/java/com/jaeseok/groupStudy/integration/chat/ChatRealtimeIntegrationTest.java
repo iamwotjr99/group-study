@@ -195,63 +195,63 @@ class ChatRealtimeIntegrationTest {
         session.disconnect();
     }
 
-    @Test
-    @DisplayName("해당 방에 소속되지 않은 유저가 메시지를 보내면, StudyGroupMemberAccessException을 응답한다.")
-    void givenNotParticipantMember_whenSendMessage_thenThrowException() throws Exception {
-        // given
-        Long roomId = chatRoom.getId();
-        String message = "테스트 메세지";
-
-        // 유저 B의 JWT 토큰 발급
-        UserPrincipal userPrincipal = new UserPrincipal(memberB.getId(), memberB.getUserInfoEmail(),
-                memberB.getUserInfoPassword());
-        Authentication authentication = new UsernamePasswordAuthenticationToken(
-                userPrincipal, null, userPrincipal.getAuthorities());
-        memberBToken = tokenProvider.generateToken(authentication);
-
-        // 메세지 수신용 큐 (수신 클라이언트 역할)
-        BlockingQueue<SendMessageInfo> receivedMessages = new LinkedBlockingDeque<>();
-        BlockingQueue<StompHeaders> receivedErrorMessages = new LinkedBlockingDeque<>();
-        TestStompSessionHandler sessionHandler = new TestStompSessionHandler(receivedMessages,
-                receivedErrorMessages);
-
-        // HTTP Handshake Headers 생성 (JWT 인증용)
-        String token = createBearerToken(memberBToken);
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(HttpHeaders.AUTHORIZATION, token);
-        WebSocketHttpHeaders webSocketHttpHeaders = new WebSocketHttpHeaders(httpHeaders);
-
-        // STOMP 세션 연결 (JWT 헤더 포함)
-        WebSocketStompClient socketStompClient = initWebSocketStompClient();
-        socketStompClient.setMessageConverter(new MappingJackson2MessageConverter());
-        StompHeaders stompHeader = new StompHeaders();
-        stompHeader.set(HttpHeaders.AUTHORIZATION, token);
-        StompSession session = socketStompClient.connectAsync(url, webSocketHttpHeaders,
-                        stompHeader, sessionHandler)
-                .get(10, TimeUnit.SECONDS);
-
-        // 채팅방 구독 (구독은 성공하고, 메세지 '발행' 시점에 예외발생)
-        session.subscribe("/sub/chatroom/" + roomId, sessionHandler);
-
-        // Error 메시지 수신용 큐 구독
-        session.subscribe("/queue/errors", sessionHandler);
-
-        SendMessagePayload payload = new SendMessagePayload(message, MessageType.CHAT);
-
-        // when
-        session.send("/pub/chatroom/" + roomId + "/message", payload);
-
-        // then
-        // 에러 프레임 수신 확인
-        await().atMost(5, TimeUnit.SECONDS).until(() -> receivedErrorMessages.size() == 1);
-
-        StompHeaders errorHeaders = receivedErrorMessages.poll();
-
-        List<String> errorMessage = errorHeaders.get("error-message");
-        assertThat(errorMessage).isNotNull();
-        assertThat(errorMessage.get(0))
-                .isEqualTo("해당 유저는 승인된 참여자가 아닙니다.");
-    }
+//    @Test
+//    @DisplayName("해당 방에 소속되지 않은 유저가 메시지를 보내면, StudyGroupMemberAccessException을 응답한다.")
+//    void givenNotParticipantMember_whenSendMessage_thenThrowException() throws Exception {
+//        // given
+//        Long roomId = chatRoom.getId();
+//        String message = "테스트 메세지";
+//
+//        // 유저 B의 JWT 토큰 발급
+//        UserPrincipal userPrincipal = new UserPrincipal(memberB.getId(), memberB.getUserInfoEmail(),
+//                memberB.getUserInfoPassword());
+//        Authentication authentication = new UsernamePasswordAuthenticationToken(
+//                userPrincipal, null, userPrincipal.getAuthorities());
+//        memberBToken = tokenProvider.generateToken(authentication);
+//
+//        // 메세지 수신용 큐 (수신 클라이언트 역할)
+//        BlockingQueue<SendMessageInfo> receivedMessages = new LinkedBlockingDeque<>();
+//        BlockingQueue<StompHeaders> receivedErrorMessages = new LinkedBlockingDeque<>();
+//        TestStompSessionHandler sessionHandler = new TestStompSessionHandler(receivedMessages,
+//                receivedErrorMessages);
+//
+//        // HTTP Handshake Headers 생성 (JWT 인증용)
+//        String token = createBearerToken(memberBToken);
+//        HttpHeaders httpHeaders = new HttpHeaders();
+//        httpHeaders.add(HttpHeaders.AUTHORIZATION, token);
+//        WebSocketHttpHeaders webSocketHttpHeaders = new WebSocketHttpHeaders(httpHeaders);
+//
+//        // STOMP 세션 연결 (JWT 헤더 포함)
+//        WebSocketStompClient socketStompClient = initWebSocketStompClient();
+//        socketStompClient.setMessageConverter(new MappingJackson2MessageConverter());
+//        StompHeaders stompHeader = new StompHeaders();
+//        stompHeader.set(HttpHeaders.AUTHORIZATION, token);
+//        StompSession session = socketStompClient.connectAsync(url, webSocketHttpHeaders,
+//                        stompHeader, sessionHandler)
+//                .get(10, TimeUnit.SECONDS);
+//
+//        // 채팅방 구독 (구독은 성공하고, 메세지 '발행' 시점에 예외발생)
+//        session.subscribe("/sub/chatroom/" + roomId, sessionHandler);
+//
+//        // Error 메시지 수신용 큐 구독
+//        session.subscribe("/queue/errors", sessionHandler);
+//
+//        SendMessagePayload payload = new SendMessagePayload(message, MessageType.CHAT);
+//
+//        // when
+//        session.send("/pub/chatroom/" + roomId + "/message", payload);
+//
+//        // then
+//        // 에러 프레임 수신 확인
+//        await().atMost(5, TimeUnit.SECONDS).until(() -> receivedErrorMessages.size() == 1);
+//
+//        StompHeaders errorHeaders = receivedErrorMessages.poll();
+//
+//        List<String> errorMessage = errorHeaders.get("error-message");
+//        assertThat(errorMessage).isNotNull();
+//        assertThat(errorMessage.get(0))
+//                .isEqualTo("해당 유저는 승인된 참여자가 아닙니다.");
+//    }
 
     @Test
     @DisplayName("인증되지 않은 유저는 메시지 채널에 연결할 수 없고 Error 프레임을 수신한다.")

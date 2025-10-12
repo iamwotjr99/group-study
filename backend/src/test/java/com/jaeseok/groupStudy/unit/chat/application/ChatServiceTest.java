@@ -26,6 +26,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -91,6 +92,9 @@ class ChatServiceTest {
         given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
         given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
+
+        ChatMessage mockSavedMessage = ChatMessage.of(roomId, senderId, message, type);
+        given(chatMessageRepository.save(any(ChatMessage.class))).willReturn(mockSavedMessage);
 
         SendMessageCommand cmd = new SendMessageCommand(roomId, senderId, message,
                 type);
