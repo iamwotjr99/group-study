@@ -4,12 +4,12 @@ import SignupPage from "./pages/SignupPage";
 import { useUserStore } from "./store/userStore";
 import { useEffect } from "react";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Header from "./components/common/Header";
 import PublicRoute from "./components/auth/PublicRoute";
 import MainPage from "./pages/MainPage";
 import CreateStudyPage from "./pages/CreateStudyPage";
 import StudyDetailPage from "./pages/StudyDetailPage";
 import StudyRoomPage from "./pages/StudyRoomPage";
+import Layout from "./components/common/Layout";
 
 function App() {
   const { setUser } = useUserStore();
@@ -26,9 +26,8 @@ function App() {
   }, [setUser]);
   return (
     <BrowserRouter>
-      <Header />
-      <main>
-        <Routes>
+      <Routes>
+        <Route element={<Layout />}>
           <Route
             path="/login"
             element={
@@ -77,8 +76,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-        </Routes>
-      </main>
+        </Route>
+      </Routes>
     </BrowserRouter>
   );
 }
