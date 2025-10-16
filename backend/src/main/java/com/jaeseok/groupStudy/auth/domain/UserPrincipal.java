@@ -23,7 +23,7 @@ public record UserPrincipal(
 
     @Override
     public String getUsername() {
-        return this.email;
+        return String.valueOf(this.userId);
     }
 
     @Override

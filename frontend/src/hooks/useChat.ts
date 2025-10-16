@@ -2,93 +2,124 @@ import { useEffect, useRef, useState } from "react";
 import { useUserStore } from "../store/userStore";
 import { Client, type IMessage } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import type { ReceivedMessage, SendMessagePayload } from "../types/chat";
+import type {
+  OnlineParticipant,
+  ReceivedMessage,
+  SendMessagePayload,
+} from "../types/chat";
 import { fetchChatHistoryAPI } from "../apis/chatApi";
 
-export const useChat = (roomId: string | undefined) => {
+export const useChat = (
+  roomId: string | undefined,
+  memberId: number | undefined
+) => {
   const [messages, setMessages] = useState<ReceivedMessage[]>([]);
-  const { userInfo } = useUserStore();
+  const [onlineParticipants, setOnlineParticipants] = useState<
+    OnlineParticipant[]
+  >([]);
+  const nickname = useUserStore((state) => state.userInfo?.nickname);
   const clientRef = useRef<Client | null>(null);
 
   useEffect(() => {
-    if (!roomId || !userInfo) {
+    if (!roomId || !memberId) {
+      setOnlineParticipants([]);
       return;
     }
 
-    const loadChatHistroyAndConnect = async () => {
+    const loadChatHistory = async () => {
       try {
         const chatHistory = await fetchChatHistoryAPI(roomId);
-
         setMessages(chatHistory.reverse());
         console.log("history: ", chatHistory);
       } catch (err) {
-        console.error("Failed to load chat history in component:", err);
+        console.error("채팅 내역 로딩 실패: ", err);
       }
-
-      const accessToken = localStorage.getItem("accessToken");
-
-      // STOMP Client 생성
-      const client = new Client({
-        webSocketFactory: () => new SockJS("http://localhost:8080/ws/chat"),
-        connectHeaders: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-        reconnectDelay: 5000,
-        heartbeatIncoming: 10000,
-        heartbeatOutgoing: 10000,
-        debug: (str) => {
-          console.log(new Date(), str);
-        },
-        // STOMP 프로토콜 레벨 에러 핸들러
-        onStompError: (frame) => {
-          console.error("Broker reported error: " + frame.headers["message"]);
-          console.error("Additional details: " + frame.body);
-        },
-
-        // WebSocket 자체의 연결 에러 핸들러
-        onWebSocketError: (error) => {
-          console.error("WebSocket Error:", error);
-        },
-        onConnect: () => {
-          console.log("STOMP 연결");
-
-          // 채팅방 구독
-          client.subscribe(`/sub/chatroom/${roomId}`, (message: IMessage) => {
-            const newMessage = JSON.parse(message.body) as ReceivedMessage;
-            if (newMessage.senderId == userInfo?.memberId) {
-              return;
-            }
-            setMessages((prevMessages) => [...prevMessages, newMessage]);
-          });
-        },
-
-        onDisconnect: () => {
-          console.log("STOMP 연결 해제");
-        },
-      });
-
-      client.activate();
-      clientRef.current = client;
     };
 
-    loadChatHistroyAndConnect();
+    loadChatHistory();
+
+    const accessToken = localStorage.getItem("accessToken");
+
+    // STOMP Client 생성
+    const client = new Client({
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws/chat"),
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      reconnectDelay: 5000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+
+      debug: (str) => {
+        console.log(new Date(), str);
+      },
+      //STOMP 프로토콜 레벨 에러 핸들러
+      onStompError: (frame) => {
+        console.error("Broker reported error: " + frame.headers["message"]);
+        console.error("Additional details: " + frame.body);
+      },
+
+      // WebSocket 자체의 연결 에러 핸들러
+      onWebSocketError: (error) => {
+        console.error("WebSocket Error:", error);
+      },
+
+      onConnect: () => {
+        console.log("STOMP 연결");
+
+        // 채팅 메세지 구독
+        client.subscribe(`/sub/chatroom/${roomId}`, (message: IMessage) => {
+          const newMessage = JSON.parse(message.body) as ReceivedMessage;
+          if (newMessage.senderId == memberId) {
+            return;
+          }
+          setMessages((prevMessages) => [...prevMessages, newMessage]);
+        });
+
+        // 최신 온라인 명단 구독
+        client.subscribe(
+          `/sub/chatroom/${roomId}/participants`,
+          (message: IMessage) => {
+            const latestParticipants = JSON.parse(
+              message.body
+            ) as OnlineParticipant[];
+            setOnlineParticipants(latestParticipants);
+            console.log("최신 온라인 명단: ", latestParticipants);
+          }
+        );
+
+        // 모든 구독이 완료된 후 최신 온라인 명단 요청
+        client.publish({
+          destination: `/pub/chatroom/${roomId}/request-participants`,
+        });
+      },
+
+      onDisconnect: () => {
+        console.log("STOMP 연결 해제");
+      },
+    });
+
+    client.activate();
+    clientRef.current = client;
 
     return () => {
-      clientRef.current?.deactivate();
+      if (client?.active) {
+        client.deactivate();
+      }
     };
-  }, [roomId, userInfo]);
+  }, [roomId, memberId]);
 
   const sendMessage = (messageText: string) => {
     console.log("Sending message:", {
       isConnected: clientRef.current?.connected,
-      userInfo: !!userInfo, // 객체가 있는지 boolean 값으로 확인
+      senderId: memberId, // 객체가 있는지 boolean 값으로 확인
       roomId: roomId,
     });
 
-    if (clientRef.current?.connected && userInfo && roomId) {
+    if (clientRef.current?.connected && nickname && memberId && roomId) {
       const optimisticMessage: ReceivedMessage = {
-        senderId: userInfo?.memberId,
-        nickname: userInfo?.nickname,
+        senderId: memberId,
+        nickname: nickname,
         content: messageText,
         timestamp: new Date().toISOString(),
       };
@@ -106,5 +137,12 @@ export const useChat = (roomId: string | undefined) => {
     }
   };
 
-  return { messages, sendMessage };
+  const disconnect = () => {
+    if (clientRef.current) {
+      clientRef.current.deactivate();
+      console.log("STOMP 연결 해제");
+    }
+  };
+
+  return { messages, onlineParticipants, sendMessage, disconnect };
 };

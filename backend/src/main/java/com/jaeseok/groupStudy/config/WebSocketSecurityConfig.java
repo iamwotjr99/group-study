@@ -37,8 +37,8 @@ public class WebSocketSecurityConfig {
 //                .simpSubscribeDestMatchers("/queue/errors").authenticated()
 
                 // 메시지 구독 권한 (SUBSCRIBE)
-                // /sub/chatroom/** 경로를 구독하는 요청은 인증된 사용자만 허용
-                .simpSubscribeDestMatchers("/sub/chatroom/**").authenticated()
+                // 해당 경로를 구독하는 요청은 인증된 사용자만 허용
+                .simpSubscribeDestMatchers("/sub/chatroom/**", "/user/**").authenticated()
 
                 // 기본 정책
                 // 위 규칙에 해당하지 않는 모든 메시지는 기본적으로 거부

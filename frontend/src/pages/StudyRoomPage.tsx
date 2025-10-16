@@ -1,19 +1,30 @@
 // src/pages/StudyRoomPage.tsx
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
 import { useState } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useUserStore } from "../store/userStore";
+import { useStudyDetail } from "../hooks/useStudyDetail";
 
 function StudyRoomPage() {
+  const navigate = useNavigate();
   const { studyGroupId } = useParams<{ studyGroupId: string }>();
-
-  const { messages, sendMessage } = useChat(studyGroupId);
+  const id = studyGroupId ? parseInt(studyGroupId, 10) : undefined;
 
   const [newMessage, setNewMessage] = useState("");
+  const memberId = useUserStore((state) => state.userInfo?.memberId);
 
-  const { userInfo } = useUserStore();
+  const { studyGroupData } = useStudyDetail(id);
+  const approvedParticipants =
+    studyGroupData?.participants.filter((p) => p.status === "APPROVED") || [];
+
+  const { messages, onlineParticipants, sendMessage, disconnect } = useChat(
+    studyGroupId,
+    memberId
+  );
+
+  const onlineUserIds = new Set(onlineParticipants.map((p) => p.userId));
 
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,13 +34,34 @@ function StudyRoomPage() {
     }
   };
 
-  // UI 확인을 위한 더미 데이터
-  const dummyParticipants = [
-    { id: 1, nickname: "User One", isMuted: false, isCameraOff: false },
-    { id: 2, nickname: "User Two", isMuted: true, isCameraOff: false },
-    { id: 3, nickname: "You", isMuted: false, isCameraOff: false },
-    { id: 4, nickname: "User Four", isMuted: false, isCameraOff: true },
-  ];
+  const handleLeaveRoom = () => {
+    disconnect();
+    navigate(-1);
+  };
+
+  // 참가자 수에 따라 동적으로 그리드 클래스를 결정하는 함수
+  const getGridClass = (count: number): string => {
+    if (count === 1) {
+      // 1명일 때는 한 칸을 꽉 채웁니다.
+      return "grid-cols-1";
+    }
+    if (count === 2) {
+      // 2명일 때는 세로로 쌓거나(모바일), 가로로 2칸(데스크탑)을 만듭니다.
+      return "grid-cols-1 lg:grid-cols-2";
+    }
+    if (count <= 4) {
+      // 3~4명일 때는 2x2 그리드를 만듭니다.
+      return "grid-cols-2";
+    }
+    if (count <= 9) {
+      // 5~9명일 때는 3x3 그리드를 만듭니다.
+      return "grid-cols-3";
+    }
+    // 10명 이상일 때는 4열 그리드를 만듭니다.
+    return "grid-cols-4";
+  };
+
+  const gridClass = getGridClass(onlineParticipants.length);
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -40,29 +72,27 @@ function StudyRoomPage() {
           <h1 className="text-xl font-bold text-gray-800">
             스터디 룸 (ID: {studyGroupId})
           </h1>
-          <span className="text-sm text-gray-500">
-            참여 인원: {dummyParticipants.length}명
-          </span>
         </header>
 
         {/* --- 비디오 그리드 --- */}
-        <main className="flex-1 bg-gray-200 p-4 grid grid-cols-1 md:grid-cols-2 gap-4 overflow-y-auto">
-          {dummyParticipants.map((p) => (
+        <main
+          className={`flex-1 bg-gray-200 p-4 grid gap-4 overflow-y-auto ${gridClass}`}
+        >
+          {onlineParticipants?.map((p) => (
             <div
-              key={p.id}
+              key={p.userId}
               className="relative bg-black rounded-lg aspect-video flex items-center justify-center"
             >
-              {p.isCameraOff ? (
-                <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center">
-                  <span className="text-2xl text-white">
-                    {p.nickname.charAt(0)}
-                  </span>
-                </div>
-              ) : (
-                <span className="text-gray-400">비디오 화면</span>
-              )}
+              {/* 실제 비디오 스트림이 들어갈 자리 */}
+              {/* 지금은 카메라가 꺼져있다고 가정하고 닉네임 이니셜을 표시 */}
+              <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center">
+                <span className="text-2xl text-white">
+                  {p.nickname.charAt(0)}
+                </span>
+              </div>
+
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
-                {p.isMuted ? "[음소거]" : ""} {p.nickname}
+                {p.nickname}
               </div>
             </div>
           ))}
@@ -80,7 +110,10 @@ function StudyRoomPage() {
             <button className="bg-gray-200 p-3 rounded-full hover:bg-gray-300">
               🖥️ 화면 공유
             </button>
-            <button className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 font-bold">
+            <button
+              className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 font-bold"
+              onClick={handleLeaveRoom}
+            >
               나가기
             </button>
           </div>
@@ -90,25 +123,44 @@ function StudyRoomPage() {
       {/* ===== 오른쪽 사이드바 (참가자 & 채팅) ===== */}
       <aside className="w-96 bg-white flex flex-col border-l border-gray-200">
         <h2 className="p-4 font-bold text-lg border-b border-gray-200">
-          채팅 및 참가자
+          참가자 ({onlineParticipants.length} / {approvedParticipants?.length})
         </h2>
 
         {/* --- 참가자 목록 --- */}
         <div className="p-4 border-b border-gray-200">
-          <h3 className="font-semibold mb-2">참가자</h3>
-          <ul className="space-y-2">
-            {dummyParticipants.map((p) => (
-              <li key={p.id} className="text-sm">
-                {p.nickname} {p.isMuted ? "(음소거)" : ""}
-              </li>
-            ))}
+          <ul className="space-y-3">
+            {/* 전체 참여자를 기준으로 목록 선언 */}
+            {approvedParticipants?.map((p) => {
+              // 현재 사용자가 온라인 상태인지 확인
+              const isOnline = onlineUserIds.has(p.userId);
+
+              return (
+                <li key={p.userId} className="flex items-center gap-2">
+                  {/* 온라인 상태 표시 점 */}
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      isOnline ? "bg-green-500" : "bg-gray-300"
+                    }`}
+                  ></span>
+                  {/* 닉네임 (오프라인일 경우 회색 처리) */}
+                  <span
+                    className={`text-sm ${
+                      isOnline ? "text-gray-800" : "text-gray-400"
+                    }`}
+                  >
+                    {p.nickname}
+                  </span>
+                  {p.role === "HOST" && <span className="text-xs">👑</span>}
+                </li>
+              );
+            })}
           </ul>
         </div>
 
         {/* --- 채팅 메시지 목록 --- */}
         <div className="flex-1 p-4 overflow-y-auto space-y-4">
           {messages.map((msg, index) => {
-            const isMyMessage = msg.senderId === userInfo?.memberId;
+            const isMyMessage = msg.senderId === memberId;
 
             return (
               <div key={index} className="text-sm">

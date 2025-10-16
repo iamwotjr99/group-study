@@ -11,3 +11,9 @@ export interface ReceivedMessage {
   content: string;
   timestamp: string;
 }
+export interface OnlineParticipant {
+  roomId: number;
+  userId: number;
+  nickname: String;
+  sessionId: String;
+}

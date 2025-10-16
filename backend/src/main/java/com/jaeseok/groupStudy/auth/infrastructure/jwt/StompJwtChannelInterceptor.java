@@ -19,7 +19,6 @@ import org.springframework.util.StringUtils;
 public class StompJwtChannelInterceptor implements ChannelInterceptor {
 
     private final TokenProvider tokenProvider;
-    private final MemberDetailsService memberDetailsService;
 
     private static final String AUTHORIZATION_HEADER_NAME = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
