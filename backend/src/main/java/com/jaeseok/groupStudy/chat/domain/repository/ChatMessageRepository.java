@@ -15,9 +15,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
      * @param pageable
      * @return 페이지 요구 개수에 맞는 메세지 개수 배열을 반환
      */
-    @Query("SELECT cm, me.memberInfoEntity.nickname "
+    @Query("SELECT cm, me.memberInfoEntity.nickname, me.id "
             + "FROM ChatMessage cm JOIN MemberEntity me ON cm.senderId = me.id "
             + "WHERE cm.chatRoomId = :chatRoomId "
             + "ORDER BY cm.createdAt DESC")
-    Page<Object[]> findChatMessageHistoryWithNickname(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
+    Page<Object[]> findChatMessageHistoryWithUser(@Param("chatRoomId") Long chatRoomId, Pageable pageable);
 }

@@ -84,7 +84,7 @@ class ChatMessageRepositoryTest {
         Pageable pageable = PageRequest.of(0, 10);
 
         // when
-        Page<Object[]> chatMessageHistoryWithNickname = chatMessageRepository.findChatMessageHistoryWithNickname(
+        Page<Object[]> chatMessageHistoryWithNickname = chatMessageRepository.findChatMessageHistoryWithUser(
                 chatRoomId, pageable);
 
         // then

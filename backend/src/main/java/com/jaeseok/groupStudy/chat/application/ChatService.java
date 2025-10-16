@@ -50,7 +50,7 @@ public class ChatService {
         ChatMessage chatMessage = ChatMessage.of(cmd.roomId(), cmd.senderId(), cmd.message(), cmd.type());
         ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
 
-        return new SendMessageInfo(member.getUserInfoNickname(), savedMessage.getContent(), savedMessage.getCreatedAt());
+        return new SendMessageInfo(member.getId(), member.getUserInfoNickname(), savedMessage.getContent(), savedMessage.getCreatedAt());
     }
 
     // 채팅방 입장 메시지 메서드
@@ -66,7 +66,7 @@ public class ChatService {
                 MessageType.ENTER);
         chatMessageRepository.save(enterMessage);
 
-        return new SendMessageInfo(member.getUserInfoNickname(), enterMessage.getContent(), enterMessage.getCreatedAt());
+        return new SendMessageInfo(member.getId(), member.getUserInfoNickname(), enterMessage.getContent(), enterMessage.getCreatedAt());
     }
 
     // 채팅방 퇴장 메시지 메서드
@@ -81,7 +81,7 @@ public class ChatService {
                 MessageType.LEAVE);
         chatMessageRepository.save(chatMessage);
 
-        return new SendMessageInfo(member.getUserInfoNickname(), chatMessage.getContent(), chatMessage.getCreatedAt());
+        return new SendMessageInfo(member.getId(), member.getUserInfoNickname(), chatMessage.getContent(), chatMessage.getCreatedAt());
     }
 
     // 채팅 내역 조회
@@ -89,13 +89,14 @@ public class ChatService {
     public Page<SendMessageInfo> getChatHistory(Long roomId, Long memberId, Pageable pageable) {
         validateChatAccess(roomId, memberId);
 
-        Page<Object[]> queryResult = chatMessageRepository.findChatMessageHistoryWithNickname(
+        Page<Object[]> queryResult = chatMessageRepository.findChatMessageHistoryWithUser(
                 roomId, pageable);
 
         return queryResult.map(result -> {
-            ChatMessage cm = (ChatMessage) result[0];
-            String n = (String) result[1];
-            return new SendMessageInfo(n, cm.getContent(), cm.getCreatedAt());
+            ChatMessage chatMessage = (ChatMessage) result[0];
+            String nickname = (String) result[1];
+            Long userId = (Long) result[2];
+            return new SendMessageInfo(userId, nickname, chatMessage.getContent(), chatMessage.getCreatedAt());
         });
     }
 

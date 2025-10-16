@@ -235,7 +235,7 @@ class ChatServiceTest {
                 (int) (pageable.getOffset() + pageable.getPageSize()));
         PageImpl<Object[]> mockPages = new PageImpl<>(firstPagingData, pageable, 25);
 
-        given(chatMessageRepository.findChatMessageHistoryWithNickname(roomId, pageable)).willReturn(mockPages);
+        given(chatMessageRepository.findChatMessageHistoryWithUser(roomId, pageable)).willReturn(mockPages);
 
         // when
         Page<SendMessageInfo> result = chatService.getChatHistory(roomId, memberId, pageable);
@@ -253,7 +253,7 @@ class ChatServiceTest {
         verify(chatRoomRepository, times(1)).findById(roomId);
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(studyGroup, times(1)).isMember(memberId);
-        verify(chatMessageRepository, times(1)).findChatMessageHistoryWithNickname(roomId, pageable);
+        verify(chatMessageRepository, times(1)).findChatMessageHistoryWithUser(roomId, pageable);
         verifyNoMoreInteractions(chatRoomRepository, studyGroupCommandRepository, studyGroup, chatMessageRepository);
     }
 
