@@ -70,7 +70,7 @@ function App() {
             }
           />
           <Route
-            path="/study-groups/:id/room"
+            path="/study-groups/:studyGroupId/room"
             element={
               <ProtectedRoute>
                 <StudyRoomPage />

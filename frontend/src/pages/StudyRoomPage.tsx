@@ -1,8 +1,27 @@
 // src/pages/StudyRoomPage.tsx
 import { useParams } from "react-router-dom";
+import { useChat } from "../hooks/useChat";
+import { useState } from "react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { useUserStore } from "../store/userStore";
 
 function StudyRoomPage() {
   const { studyGroupId } = useParams<{ studyGroupId: string }>();
+
+  const { messages, sendMessage } = useChat(studyGroupId);
+
+  const [newMessage, setNewMessage] = useState("");
+
+  const { userInfo } = useUserStore();
+
+  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (newMessage.trim() != "") {
+      sendMessage(newMessage);
+      setNewMessage("");
+    }
+  };
 
   // UI 확인을 위한 더미 데이터
   const dummyParticipants = [
@@ -10,15 +29,6 @@ function StudyRoomPage() {
     { id: 2, nickname: "User Two", isMuted: true, isCameraOff: false },
     { id: 3, nickname: "You", isMuted: false, isCameraOff: false },
     { id: 4, nickname: "User Four", isMuted: false, isCameraOff: true },
-  ];
-
-  const dummyMessages = [
-    { sender: "User One", text: "안녕하세요, 오늘 스터디 주제는 뭔가요?" },
-    {
-      sender: "User Two",
-      text: "리액트 커스텀 훅에 대해 이야기해보기로 했습니다.",
-    },
-    { sender: "You", text: "좋습니다! 저도 궁금했던 부분이에요." },
   ];
 
   return (
@@ -97,20 +107,43 @@ function StudyRoomPage() {
 
         {/* --- 채팅 메시지 목록 --- */}
         <div className="flex-1 p-4 overflow-y-auto space-y-4">
-          {dummyMessages.map((msg, index) => (
-            <div key={index} className="text-sm">
-              <span className="font-bold">{msg.sender}: </span>
-              <span>{msg.text}</span>
-            </div>
-          ))}
+          {messages.map((msg, index) => {
+            const isMyMessage = msg.senderId === userInfo?.memberId;
+
+            return (
+              <div key={index} className="text-sm">
+                {/* isMyMessage 값에 따라 다른 색상 클래스를 적용 */}
+                <span
+                  className={`font-bold ${
+                    isMyMessage ? "text-blue-600" : "text-black"
+                  }`}
+                >
+                  {isMyMessage ? "나" : msg.nickname}:
+                </span>
+
+                <span> {msg.content}</span>
+
+                <span className="text-xs text-gray-500 ml-2">
+                  {format(new Date(msg.timestamp), "yyyy. M. d. a h:mm", {
+                    locale: ko,
+                  })}
+                </span>
+              </div>
+            );
+          })}
         </div>
 
         {/* --- 메시지 입력 폼 --- */}
-        <form className="p-4 border-t border-gray-200 flex">
+        <form
+          className="p-4 border-t border-gray-200 flex"
+          onSubmit={handleSendMessage}
+        >
           <input
             type="text"
             className="flex-1 border border-gray-300 rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             placeholder="메시지 입력..."
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
           />
           <button
             type="submit"
