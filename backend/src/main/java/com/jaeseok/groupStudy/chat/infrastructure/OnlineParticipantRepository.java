@@ -9,8 +9,9 @@ import org.springframework.stereotype.Component;
 /**
  * 스터디 그룹 실시간 기능에 온라인 참여자가 누가 있는지 접속자 정보를 메모리로 관리하는 싱글톤 Bean
  */
+
 @Component
-public class ParticipantRepository {
+public class OnlineParticipantRepository {
     // <스터디 방 ID, 참여자 정보 Set>
     private final Map<Long, Set<ParticipantInfo>> onlineParticipantByRoom  = new ConcurrentHashMap<>();
 

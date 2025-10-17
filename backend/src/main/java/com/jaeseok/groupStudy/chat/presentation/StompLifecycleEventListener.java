@@ -1,11 +1,10 @@
 package com.jaeseok.groupStudy.chat.presentation;
 
 import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
-import com.jaeseok.groupStudy.chat.infrastructure.ParticipantRepository;
+import com.jaeseok.groupStudy.chat.infrastructure.OnlineParticipantRepository;
 import com.jaeseok.groupStudy.chat.infrastructure.dto.ParticipantInfo;
 import com.jaeseok.groupStudy.member.application.MemberService;
 import com.jaeseok.groupStudy.member.application.dto.MemberInfoDto;
-import java.security.Principal;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +25,7 @@ import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 @RequiredArgsConstructor
 @Slf4j
 public class StompLifecycleEventListener {
-    private final ParticipantRepository participantRepository;
+    private final OnlineParticipantRepository onlineParticipantRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final MemberService memberService;
 
@@ -51,7 +50,7 @@ public class StompLifecycleEventListener {
             String sessionId = headerAccessor.getSessionId();
             ParticipantInfo newParticipantInfo = ParticipantInfo.of(roomId, userId, memberInfo.nickname(),
                     sessionId);
-            participantRepository.add(roomId, newParticipantInfo);
+            onlineParticipantRepository.add(roomId, newParticipantInfo);
         }
     }
 
@@ -60,7 +59,7 @@ public class StompLifecycleEventListener {
     public void handleSessionDisconnect(SessionDisconnectEvent event) {
         // 세션 ID를 통해 나간 사용자가 누구인지 찾음
         String sessionId = event.getSessionId();
-        ParticipantInfo leavingParticipant = participantRepository.remove(sessionId);
+        ParticipantInfo leavingParticipant = onlineParticipantRepository.remove(sessionId);
 
         if (leavingParticipant != null) {
             // 나간 사람이 적용된 최신 온라인 참여자 명단 전송
@@ -69,7 +68,7 @@ public class StompLifecycleEventListener {
     }
 
     private void broadcastParticipantList(Long roomId) {
-        Set<ParticipantInfo> currentParticipants = participantRepository.getParticipants(roomId);
+        Set<ParticipantInfo> currentParticipants = onlineParticipantRepository.getParticipants(roomId);
         simpMessagingTemplate.convertAndSend(
                 "/sub/chatroom/" + roomId + "/participants",
                 currentParticipants

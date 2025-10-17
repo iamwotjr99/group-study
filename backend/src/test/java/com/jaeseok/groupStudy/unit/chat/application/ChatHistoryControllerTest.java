@@ -71,7 +71,7 @@ class ChatHistoryControllerTest {
         Long userId = USER_ID;
         Pageable pageable = PageRequest.of(0, 5);
 
-        List<SendMessageInfo> mockChatHistory = createMockChatHistory(30);
+        List<SendMessageInfo> mockChatHistory = createMockChatHistory(userId, 30);
         List<SendMessageInfo> firstPagingMockChatHistory = mockChatHistory.subList((int) pageable.getOffset(), (int) pageable.getOffset() + pageable.getPageSize());
         Page<SendMessageInfo> mockPage = new PageImpl<>(firstPagingMockChatHistory, pageable, 30);
 
@@ -207,11 +207,11 @@ class ChatHistoryControllerTest {
         );
     }
 
-    private List<SendMessageInfo> createMockChatHistory(int count) {
+    private List<SendMessageInfo> createMockChatHistory(Long senderId, int count) {
         List<SendMessageInfo> dtos = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
             String nickname = "nickname" + (i % 3);
-            SendMessageInfo sendMessageInfo = new SendMessageInfo(nickname, "테스트 메세지 " + i,
+            SendMessageInfo sendMessageInfo = new SendMessageInfo(senderId, nickname, "테스트 메세지 " + i,
                     LocalDateTime.now());
             dtos.add(sendMessageInfo);
         }

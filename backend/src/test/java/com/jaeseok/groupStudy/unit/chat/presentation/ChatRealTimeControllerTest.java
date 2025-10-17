@@ -60,7 +60,7 @@ class ChatRealTimeControllerTest {
 
         SendMessagePayload payload = new SendMessagePayload("안녕하세요 여러분", MessageType.CHAT);
         SendMessageCommand command = payload.toCommand(roomId, senderId);
-        SendMessageInfo willBroadcastInfo = new SendMessageInfo("nickname1", "테스트 메세지",
+        SendMessageInfo willBroadcastInfo = new SendMessageInfo(senderId, "nickname1", "테스트 메세지",
                 LocalDateTime.now());
 
         given(chatService.sendMessage(command)).willReturn(willBroadcastInfo);
@@ -81,7 +81,7 @@ class ChatRealTimeControllerTest {
         Long roomId = ROOM_ID;
 
         SendMessagePayload payload = new SendMessagePayload(null, MessageType.ENTER);
-        SendMessageInfo willBroadcastInfo = new SendMessageInfo("nickname1",
+        SendMessageInfo willBroadcastInfo = new SendMessageInfo(senderId, "nickname1",
                 "nickname1 님이 입장하셨습니다.", LocalDateTime.now());
 
         given(chatService.enterChatRoom(roomId,senderId)).willReturn(willBroadcastInfo);
@@ -102,7 +102,7 @@ class ChatRealTimeControllerTest {
         Long roomId = ROOM_ID;
 
         SendMessagePayload payload = new SendMessagePayload(null, MessageType.LEAVE);
-        SendMessageInfo willBroadcastInfo = new SendMessageInfo("nickname1", "nickname1 님이 퇴장하셨습니다.",
+        SendMessageInfo willBroadcastInfo = new SendMessageInfo(senderId, "nickname1", "nickname1 님이 퇴장하셨습니다.",
                 LocalDateTime.now());
 
         given(chatService.leaveChatRoom(roomId, senderId)).willReturn(willBroadcastInfo);

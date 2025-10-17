@@ -288,7 +288,7 @@ class ChatServiceTest {
             String nickname = i % 2 == 0 ? "nickname1" : "nickname2";
             ChatMessage chatMessage = ChatMessage.of(roomId, (long) i, "메세지 " + i,
                     MessageType.CHAT);
-            Object[] mockObj = {chatMessage, nickname};
+            Object[] mockObj = {chatMessage, nickname, chatMessage.getSenderId()};
             dtos.add(mockObj);
         }
 
