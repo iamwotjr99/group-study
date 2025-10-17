@@ -32,8 +32,7 @@ public class StompLifecycleEventListener {
     // 사용자가 특정 방을 구독할 때 발생하는 이벤트 -> [입장]
     @EventListener
     public void handleSessionSubscribe(SessionSubscribeEvent event) {
-        SimpMessageHeaderAccessor headerAccessor = MessageHeaderAccessor.getAccessor(event.getMessage(),
-                StompHeaderAccessor.class);
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
         String destination = headerAccessor.getDestination();
 
         if (destination != null && destination.matches("/sub/chatroom/\\d+$")) {

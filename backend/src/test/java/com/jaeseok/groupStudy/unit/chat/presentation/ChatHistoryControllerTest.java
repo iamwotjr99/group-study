@@ -1,4 +1,4 @@
-package com.jaeseok.groupStudy.unit.chat.application;
+package com.jaeseok.groupStudy.unit.chat.presentation;
 
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
