@@ -57,7 +57,7 @@ public class ChatRealTimeController {
      */
     @MessageMapping("/chatroom/{roomId}/request-participants")
     public void requestParticipants(@DestinationVariable Long roomId) {
-        // 현재 참여자 목록을 조회하여 해당 방 전체에 방송합니다.
+        // 현재 참여자 목록을 조회하여 해당 방 전체에 방송
         Set<ParticipantInfo> currentParticipants = onlineParticipantRepository.getParticipants(roomId);
         messagingTemplate.convertAndSend(
                 "/sub/chatroom/" + roomId + "/participants",
