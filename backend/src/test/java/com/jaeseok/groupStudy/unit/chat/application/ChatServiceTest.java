@@ -83,13 +83,13 @@ class ChatServiceTest {
     void givenSendMessageCommand_whenSendMessage_thenSaveChatMessage() {
         // given
         Long studyGroupId = 1L;
-        Long roomId = 5L;
+        Long roomId = 1L;
         Long senderId = 10L;
         String message = "안녕하세요.";
         MessageType type = MessageType.CHAT;
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
         given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
 
@@ -103,7 +103,7 @@ class ChatServiceTest {
         SendMessageInfo sendMessageInfo = chatService.sendMessage(cmd);
 
         // then
-        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(chatRoomRepository, times(1)).findByStudyGroupId(roomId);
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(studyGroup, times(1)).isMember(senderId);
         verify(chatMessageRepository, times(1)).save(any(ChatMessage.class));
@@ -125,11 +125,11 @@ class ChatServiceTest {
     void givenRoomIdAndSenderId_whenSendMessage_thenSaveEnterMessage() {
         // given
         Long studyGroupId = 1L;
-        Long roomId = 5L;
+        Long roomId = 1L;
         Long senderId = 10L;
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
         given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
         given(member.getUserInfoNickname()).willReturn("테스트 유저");
@@ -138,7 +138,7 @@ class ChatServiceTest {
         SendMessageInfo sendMessageInfo = chatService.enterChatRoom(roomId, senderId);
 
         // then
-        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(chatRoomRepository, times(1)).findByStudyGroupId(roomId);
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(memberRepository, times(1)).findById(senderId);
         verify(studyGroup, times(1)).isMember(senderId);
@@ -160,11 +160,11 @@ class ChatServiceTest {
     void givenRoomIdAndSenderId_whenSendMessage_thenSaveLeaveMessage() {
         // given
         Long studyGroupId = 1L;
-        Long roomId = 5L;
+        Long roomId = 1L;
         Long senderId = 10L;
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
         given(memberRepository.findById(senderId)).willReturn(Optional.of(member));
         given(member.getUserInfoNickname()).willReturn("테스트 유저");
@@ -173,7 +173,7 @@ class ChatServiceTest {
         SendMessageInfo sendMessageInfo = chatService.leaveChatRoom(roomId, senderId);
 
         // then
-        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(chatRoomRepository, times(1)).findByStudyGroupId(roomId);
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(memberRepository, times(1)).findById(senderId);
         verify(studyGroup, times(1)).isMember(senderId);
@@ -195,13 +195,13 @@ class ChatServiceTest {
     void givenInvalidMember_whenSendMessage_thenThrowException() {
         // given
         Long studyGroupId = 1L;
-        Long roomId = 5L;
+        Long roomId = 1L;
         Long invalidSenderId = 10L;
         String message = "안녕하세요.";
         MessageType type = MessageType.CHAT;
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
 
         doThrow(new IllegalArgumentException("해당 유저는 승인된 참여자가 아닙니다."))
@@ -227,7 +227,7 @@ class ChatServiceTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
 
         List<Object[]> allMockMessageInfo = createMockGetMessageInfo(roomId, 25);
@@ -250,7 +250,7 @@ class ChatServiceTest {
         assertThat(firstMessageInfo.nickname()).isEqualTo("nickname2");
         assertThat(firstMessageInfo.content()).isEqualTo("메세지 1");
 
-        verify(chatRoomRepository, times(1)).findById(roomId);
+        verify(chatRoomRepository, times(1)).findByStudyGroupId(roomId);
         verify(studyGroupCommandRepository, times(1)).findById(willReturnChatRoom.getStudyGroupId());
         verify(studyGroup, times(1)).isMember(memberId);
         verify(chatMessageRepository, times(1)).findChatMessageHistoryWithUser(roomId, pageable);
@@ -267,7 +267,7 @@ class ChatServiceTest {
         Pageable pageable = PageRequest.of(0, 8);
 
         ChatRoom willReturnChatRoom = ChatRoom.of(studyGroupId);
-        given(chatRoomRepository.findById(roomId)).willReturn(Optional.of(willReturnChatRoom));
+        given(chatRoomRepository.findByStudyGroupId(roomId)).willReturn(Optional.of(willReturnChatRoom));
         given(studyGroupCommandRepository.findById(willReturnChatRoom.getStudyGroupId())).willReturn(Optional.of(studyGroup));
 
         doThrow(new IllegalArgumentException("해당 유저는 승인된 참여자가 아닙니다."))

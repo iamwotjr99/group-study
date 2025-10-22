@@ -112,7 +112,7 @@ public class ChatService {
     }
 
     private ChatRoom checkChatRoom(Long roomId) {
-        return chatRoomRepository.findById(roomId)
+        return chatRoomRepository.findByStudyGroupId(roomId)
                 .orElseThrow(() -> new ChatRoomNotFoundException("존재하지 않는 채팅방 입니다."));
     }
 

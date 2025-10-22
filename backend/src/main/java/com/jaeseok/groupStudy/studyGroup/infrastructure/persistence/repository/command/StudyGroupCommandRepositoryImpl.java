@@ -44,4 +44,9 @@ public class StudyGroupCommandRepositoryImpl implements StudyGroupCommandReposit
     public boolean existsById(Long id) {
         return jpaStudyGroupCommandRepository.existsById(id);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        jpaStudyGroupCommandRepository.deleteById(id);
+    }
 }

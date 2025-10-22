@@ -7,4 +7,5 @@ public interface StudyGroupCommandRepository {
     Optional<StudyGroup> findById(Long id);
     StudyGroup update(StudyGroup studyGroup);
     boolean existsById(Long id);
+    void deleteById(Long id);
 }
