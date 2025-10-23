@@ -29,7 +29,7 @@ class SignalControllerTest {
         Long roomId = 1L;
         Long senderId = 10L;
         Long receiverId = 20L;
-        SignalMessage message = new SignalMessage("offer", "sdp data ...", senderId, receiverId);
+        SignalMessage message = SignalMessage.of("offer", "sdp", "candidate", "spidMid", 1, senderId, receiverId);
 
         willDoNothing().given(signalService).relaySignal(roomId, message);
 

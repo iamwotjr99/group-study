@@ -5,9 +5,6 @@ import static org.assertj.core.api.Assertions.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jaeseok.groupStudy.auth.application.TokenProvider;
 import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
-import com.jaeseok.groupStudy.auth.infrastructure.jwt.JwtTokenProvider;
-import com.jaeseok.groupStudy.chat.domain.repository.ChatRoomRepository;
-import com.jaeseok.groupStudy.integration.chat.utils.TestStompSessionHandler;
 import com.jaeseok.groupStudy.integration.webrtc.utils.SignalTestStompSessionHandler;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
@@ -21,8 +18,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -158,7 +153,7 @@ class SignalingIntegrationTest {
 
         // when
         // when: Signal Message 생성 및 발행
-        SignalMessage message = new SignalMessage("offer", "sdp data ...", sender.getId(), receiver.getId());
+        SignalMessage message = SignalMessage.of("offer", "sdp", "candidate", "spidMid", 1, sender.getId(), receiver.getId());
         senderSession.send("/pub/signal/" + roomId, message);
 
         // then
@@ -188,7 +183,7 @@ class SignalingIntegrationTest {
 
         // when
         // when: Signal Message 생성 및 발행
-        SignalMessage message = new SignalMessage("offer", "sdp data ...", otherUser.getId(), receiver.getId());
+        SignalMessage message = SignalMessage.of("offer", "sdp", "candidate", "spidMid", 1, sender.getId(), receiver.getId());
         senderSession.send("/pub/signal/" + roomId, message);
 
         // then

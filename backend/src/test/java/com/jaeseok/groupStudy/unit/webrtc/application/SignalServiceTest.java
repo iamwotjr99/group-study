@@ -45,7 +45,7 @@ class SignalServiceTest {
         roomId = 1L;
         senderId = 10L;
         receiverId = 20L;
-        signalMessage = new SignalMessage("offer", "sdp data ...", senderId, receiverId);
+        signalMessage = SignalMessage.of("offer", "sdp", "candidate", "spidMid", 1, senderId, receiverId);
     }
 
     @Test

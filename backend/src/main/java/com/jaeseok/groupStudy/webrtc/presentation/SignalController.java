@@ -4,12 +4,14 @@ import com.jaeseok.groupStudy.auth.domain.UserPrincipal;
 import com.jaeseok.groupStudy.webrtc.application.SignalService;
 import com.jaeseok.groupStudy.webrtc.dto.SignalMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
 public class SignalController {
 
     private final SignalService signalService;
