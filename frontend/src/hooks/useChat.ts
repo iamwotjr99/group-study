@@ -50,19 +50,19 @@ export const useChat = (
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
 
-      debug: (str) => {
-        console.log(new Date(), str);
-      },
-      //STOMP 프로토콜 레벨 에러 핸들러
-      onStompError: (frame) => {
-        console.error("Broker reported error: " + frame.headers["message"]);
-        console.error("Additional details: " + frame.body);
-      },
+      // debug: (str) => {
+      //   console.log(new Date(), str);
+      // },
+      // //STOMP 프로토콜 레벨 에러 핸들러
+      // onStompError: (frame) => {
+      //   console.error("Broker reported error: " + frame.headers["message"]);
+      //   console.error("Additional details: " + frame.body);
+      // },
 
-      // WebSocket 자체의 연결 에러 핸들러
-      onWebSocketError: (error) => {
-        console.error("WebSocket Error:", error);
-      },
+      // // WebSocket 자체의 연결 에러 핸들러
+      // onWebSocketError: (error) => {
+      //   console.error("WebSocket Error:", error);
+      // },
 
       onConnect: () => {
         console.log("STOMP 연결");

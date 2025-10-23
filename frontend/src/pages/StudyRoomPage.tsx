@@ -1,11 +1,12 @@
 // src/pages/StudyRoomPage.tsx
 import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useUserStore } from "../store/userStore";
 import { useStudyDetail } from "../hooks/useStudyDetail";
+import { useWebRTC } from "../hooks/useWebRTC";
 
 function StudyRoomPage() {
   const navigate = useNavigate();
@@ -24,6 +25,17 @@ function StudyRoomPage() {
     memberId
   );
 
+  const {
+    localStream,
+    remoteStream,
+    isMediaReady,
+    connectToPeer,
+    connectToPeerForceOffer,
+    disconnectWebRTC,
+    pendingOfferIds,
+    isCoolingDown,
+  } = useWebRTC(studyGroupId, memberId);
+
   const onlineUserIds = new Set(onlineParticipants.map((p) => p.userId));
 
   const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
@@ -35,6 +47,7 @@ function StudyRoomPage() {
   };
 
   const handleLeaveRoom = () => {
+    disconnectWebRTC();
     disconnect();
     navigate(-1);
   };
@@ -61,6 +74,53 @@ function StudyRoomPage() {
     return "grid-cols-4";
   };
 
+  // 💡 [새로운 useEffect] Offer 재시도 로직 실행 (상태 변화에만 반응)
+  useEffect(() => {
+    // ✅ Cooldown 중이 아니고 미디어가 준비되었을 때만 실행
+    if (isMediaReady && !isCoolingDown) {
+      // console.log("[RoomPage] Re-evaluating pending offers.");
+      pendingOfferIds.forEach((targetId) => {
+        // connectToPeerForceOffer는 ID 비교를 무시하고 Offer를 보냄
+        connectToPeerForceOffer(targetId);
+      });
+    }
+  }, [isMediaReady, pendingOfferIds, connectToPeerForceOffer, isCoolingDown]); // ✅ isCoolingDown 의존성 추가!
+
+  // onlineParticipants 목록이 변경될 때마다 새로운 참여자에게 연결 시도
+  useEffect(() => {
+    // ✅ Cooldown 중이 아니고 미디어가 준비되었을 때만 실행
+    if (isMediaReady && !isCoolingDown && memberId) {
+      console.log("[RoomPage] Media Ready. Checking for new peers.");
+
+      const connectedPeerIds = new Set(Object.keys(remoteStream).map(Number));
+
+      onlineParticipants.forEach((p) => {
+        if (
+          p.userId !== memberId &&
+          !connectedPeerIds.has(p.userId) &&
+          !pendingOfferIds.has(p.userId)
+        ) {
+          console.log(
+            `[RoomPage] New peer detected: ${p.userId}. Calling connectToPeer.`
+          );
+          connectToPeer(p.userId);
+        }
+      });
+    } else {
+      console.log(
+        "[RoomPage] Waiting for local media stream to be ready or cooling down..."
+      );
+    }
+  }, [
+    onlineParticipants,
+    memberId,
+    connectToPeer,
+    isMediaReady,
+    isCoolingDown,
+    remoteStream, // 💡 [수정] remoteStream 의존성 추가
+    pendingOfferIds, // 💡 [수정] pendingOfferIds 의존성 추가
+  ]);
+
   const gridClass = getGridClass(onlineParticipants.length);
 
   return (
@@ -72,30 +132,109 @@ function StudyRoomPage() {
           <h1 className="text-xl font-bold text-gray-800">
             스터디 룸 (ID: {studyGroupId})
           </h1>
+          {isCoolingDown && (
+            <div className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded font-medium text-sm">
+              연결 불안정. 잠시 후 자동 재시도됩니다... ⏳
+            </div>
+          )}
         </header>
 
         {/* --- 비디오 그리드 --- */}
         <main
           className={`flex-1 bg-gray-200 p-4 grid gap-4 overflow-y-auto ${gridClass}`}
         >
-          {onlineParticipants?.map((p) => (
+          {/* 1. 내 비디오 화면 (localStream) */}
+          {localStream && ( // localStream이 있을 때만 렌더링
             <div
-              key={p.userId}
-              className="relative bg-black rounded-lg aspect-video flex items-center justify-center"
+              key="local" // 고유한 key 부여
+              className="relative bg-black rounded-lg aspect-video flex items-center justify-center overflow-hidden"
             >
-              {/* 실제 비디오 스트림이 들어갈 자리 */}
-              {/* 지금은 카메라가 꺼져있다고 가정하고 닉네임 이니셜을 표시 */}
-              <div className="w-20 h-20 bg-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-2xl text-white">
-                  {p.nickname.charAt(0)}
-                </span>
-              </div>
-
+              <video
+                ref={(video) => {
+                  // 비디오 요소가 생성되면 srcObject에 localStream 연결
+                  if (video) {
+                    video.srcObject = localStream;
+                  }
+                }}
+                className="w-full h-full object-cover" // 비디오가 영역을 꽉 채우도록
+                autoPlay
+                muted // 내 소리는 내가 듣지 않도록 음소거
+                playsInline
+              />
               <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
-                {p.nickname}
+                나 (You)
               </div>
             </div>
-          ))}
+          )}
+
+          {/* 2. 다른 참여자 비디오 화면 (remoteStreams) */}
+          {onlineParticipants
+            // 나 자신은 제외
+            .filter((p) => p.userId !== memberId)
+            .map((p) => {
+              // 해당 참여자의 remoteStream 찾기
+              const stream = remoteStream[p.userId];
+
+              return (
+                <div
+                  key={p.userId} // 참여자의 userId를 key로 사용
+                  className="relative bg-black rounded-lg aspect-video flex items-center justify-center overflow-hidden"
+                >
+                  {stream ? ( // remoteStream이 있으면 비디오 렌더링
+                    <video
+                      ref={(video) => {
+                        if (video) {
+                          video.srcObject = stream;
+                        }
+                      }}
+                      className="w-full h-full object-cover"
+                      autoPlay
+                      playsInline
+                    />
+                  ) : (
+                    // stream이 없을 때 (연결 중 상태)
+                    <div className="flex flex-col items-center justify-center text-white space-y-3">
+                      {/* 1. 아바타 (식별용) */}
+                      <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                        <span className="text-xl text-white">
+                          {/* 💡 [수정 1] 닉네임이 undefined일 때 크래시 방지 */}
+                          {p.nickname?.charAt(0) || "?"}
+                        </span>
+                      </div>
+
+                      {/* 2. 스피너 및 텍스트 */}
+                      <div className="flex items-center space-x-2">
+                        <svg
+                          className="animate-spin h-4 w-4 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        <span className="text-sm font-medium">연결 중...</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* 💡 [수정 2] 하단 닉네임 오버레이도 보호 */}
+                  <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
+                    {p.nickname || "참가자..."}
+                  </div>
+                </div>
+              );
+            })}
         </main>
 
         {/* --- 하단 컨트롤 바 --- */}
@@ -113,6 +252,7 @@ function StudyRoomPage() {
             <button
               className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 font-bold"
               onClick={handleLeaveRoom}
+              disabled={isCoolingDown}
             >
               나가기
             </button>
