@@ -16,7 +16,8 @@ interface MediaStreamMap {
 
 export const useWebRTC = (
   roomId: string | undefined,
-  memberId: number | undefined
+  memberId: number | undefined,
+  onScreenShareEnded: () => void
 ) => {
   // 로컬 스트림 (Ref: WebRTC 로직용 최신 값)
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -39,6 +40,8 @@ export const useWebRTC = (
   );
 
   const [isCoolingDown, setIsCoolingDown] = useState(false);
+
+  const screenStreamRef = useRef<MediaStream | null>(null);
 
   // 시그널링 메시지 발송 함수
   const sendSignal = useCallback(
@@ -476,6 +479,95 @@ export const useWebRTC = (
     [createPeerConnection, memberId, sendSignal, isCoolingDown]
   );
 
+  // 화면 공유 중지 함수
+  const stopScreenShare = useCallback(() => {
+    // 화면 공유 스트림이 없거나 카메라 스트림이 없으면 중단
+    if (!screenStreamRef.current || !localStreamRef.current) {
+      return false;
+    }
+
+    try {
+      // 화면 공유 트랙 중지
+      screenStreamRef.current.getTracks().forEach((track) => track.stop());
+      screenStreamRef.current = null;
+
+      // 원래 카메라 비디오 트랙 가져오기
+      const cameraTrack = localStreamRef.current.getVideoTracks()[0];
+      if (!cameraTrack) return false;
+
+      // 모든 피어 커넥션의 비디오 트랙을 카메라 트랙으로 복구
+      Object.values(peerConnectionRefs.current).forEach((pc) => {
+        const sender = pc
+          .getSenders()
+          .find((s: any) => s.track?.kind === "video");
+        if (sender) {
+          sender.replaceTrack(cameraTrack);
+        }
+      });
+
+      // 로컬 UI도 카메라 화면으로 복구
+      setDisplayLocalStream(localStreamRef.current);
+      console.log("[WebRTC DEBUG] 화면 공유 중지, 카메라로 복구");
+
+      // 상태 변경 콜백 호출
+      onScreenShareEnded();
+      return true; // 화면 공유 중지 성공
+    } catch (err) {
+      console.log("[WebRTC DEBUG] 화면 공유 중지 오류: ", err);
+      return false; // 화면 공유 중지 실패
+    }
+  }, [onScreenShareEnded, setDisplayLocalStream]);
+
+  // 화면 공유 시작 함수
+  const startScreenShare = useCallback(async () => {
+    // 카메라 스트림이 준비되지 않았거나 이미 화면 공유 중이면 중단
+    if (!localStreamRef.current) {
+      console.log("[WebRTC DEBUG] 카메라 스트림이 준비되지 않았습니다.");
+      return false;
+    }
+    if (screenStreamRef.current) {
+      console.warn("[WebRTC DEBUG] 이미 화면 공유 중입니다.");
+      return false;
+    }
+
+    try {
+      // 브라우저의 화면 공유 API 호춣
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: false, // 시스템 오디오 공유는 일단 제외
+      });
+
+      const screenTrack = stream.getVideoTracks()[0];
+      if (!screenTrack) return false;
+
+      screenStreamRef.current = stream;
+
+      // 모든 피어 커넥션의 비디오 트랙을 화면 공유 트랙으로 교체
+      Object.values(peerConnectionRefs.current).forEach((pc) => {
+        const sender = pc
+          .getSenders()
+          .find((s: any) => s.track?.kind === "video");
+        if (sender) {
+          sender.replaceTrack(screenTrack);
+        }
+      });
+
+      // 로컬 UI도 화면 공유 화면으로 교체
+      setDisplayLocalStream(stream);
+
+      // 사용자가 브라우저의 "공유 중지" 버튼을 눌렀을 때 감지
+      screenTrack.onended = () => {
+        console.log("[WebRTC DEBUG] 브라우저 컨트롤러로 화면 공유 중지됨");
+        startScreenShare(); // 화면 공유 중지 함수 호출
+      };
+
+      return true; // 화면 공유 시작 성공
+    } catch (err) {
+      console.error("[WebRTC DEBUG] 화면 공유 시작 실패: ", err);
+      return false; // 화면 공유 시작 실패
+    }
+  }, [stopScreenShare]);
+
   // 미디어 및 STOMP 연결 로직 (초기화)
   useEffect(() => {
     if (!roomId || !memberId) return;
@@ -554,5 +646,7 @@ export const useWebRTC = (
     disconnectWebRTC,
     pendingOfferIds,
     isCoolingDown,
+    startScreenShare,
+    stopScreenShare,
   };
 };

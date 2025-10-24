@@ -1,7 +1,7 @@
 // src/pages/StudyRoomPage.tsx
 import { useNavigate, useParams } from "react-router-dom";
 import { useChat } from "../hooks/useChat";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useUserStore } from "../store/userStore";
@@ -25,6 +25,12 @@ function StudyRoomPage() {
     memberId
   );
 
+  const [isSharingScreen, setIsSharingScreen] = useState(false);
+
+  const handleScreenShareEnded = useCallback(() => {
+    setIsSharingScreen(false);
+  }, []);
+
   const {
     localStream,
     remoteStream,
@@ -34,7 +40,9 @@ function StudyRoomPage() {
     disconnectWebRTC,
     pendingOfferIds,
     isCoolingDown,
-  } = useWebRTC(studyGroupId, memberId);
+    startScreenShare,
+    stopScreenShare,
+  } = useWebRTC(studyGroupId, memberId, handleScreenShareEnded);
 
   const onlineUserIds = new Set(onlineParticipants.map((p) => p.userId));
 
@@ -50,6 +58,22 @@ function StudyRoomPage() {
     disconnectWebRTC();
     disconnect();
     navigate(-1);
+  };
+
+  const handleToggleScreenShare = async () => {
+    if (isSharingScreen) {
+      // 화면 공유 중지
+      const stopSuccess = stopScreenShare();
+      if (stopSuccess) {
+        setIsSharingScreen(false);
+      }
+    } else {
+      // 화면 공유 시작
+      const startSuccess = await startScreenShare();
+      if (startSuccess) {
+        setIsSharingScreen(true);
+      }
+    }
   };
 
   // 참가자 수에 따라 동적으로 그리드 클래스를 결정하는 함수
@@ -246,8 +270,15 @@ function StudyRoomPage() {
             <button className="bg-gray-200 p-3 rounded-full hover:bg-gray-300">
               📹 카메라
             </button>
-            <button className="bg-gray-200 p-3 rounded-full hover:bg-gray-300">
-              🖥️ 화면 공유
+            <button
+              className={`p-3 rounded-full ${
+                isSharingScreen
+                  ? "bg-blue-500 text-white hover:bg-blue-600"
+                  : "bg-gray-200 hover:bg-gray-300"
+              }`}
+              onClick={handleToggleScreenShare}
+            >
+              🖥️ {isSharingScreen ? "공유 중지" : "화면 공유"}
             </button>
             <button
               className="bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 font-bold"
