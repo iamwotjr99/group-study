@@ -18,9 +18,9 @@ export const useWebRTC = (
   roomId: string | undefined,
   memberId: number | undefined
 ) => {
-  // ✅ 로컬 스트림 (Ref: WebRTC 로직용 최신 값)
+  // 로컬 스트림 (Ref: WebRTC 로직용 최신 값)
   const localStreamRef = useRef<MediaStream | null>(null);
-  // ✅ UI용 상태 (useState: 리렌더링 유발)
+  // UI용 상태 (useState: 리렌더링 유발)
   const [displayLocalStream, setDisplayLocalStream] =
     useState<MediaStream | null>(null);
 
@@ -33,14 +33,14 @@ export const useWebRTC = (
 
   const [isMediaReady, setIsMediaReady] = useState(false);
 
-  // ✅ 타이밍 문제로 Offer를 놓친 피어 ID 목록 (재시도 플래그)
+  // 타이밍 문제로 Offer를 놓친 피어 ID 목록 (재시도 플래그)
   const [pendingOfferIds, setPendingOfferIds] = useState<Set<number>>(
     new Set()
   );
 
-  const [isCoolingDown, setIsCoolingDown] = useState(false); // ✅ Cooldown 상태
+  const [isCoolingDown, setIsCoolingDown] = useState(false);
 
-  // 1. 시그널링 메시지 발송 함수 (변경 없음)
+  // 시그널링 메시지 발송 함수
   const sendSignal = useCallback(
     (signalData: {
       type: "offer" | "answer" | "iceCandidate";
@@ -58,23 +58,20 @@ export const useWebRTC = (
           destination: `/pub/signal/${roomId}`,
           body: JSON.stringify(signalToSend),
         });
-        console.log("Sent Signal:", signalToSend);
+        console.log("서버로 보낸 시그널 :", signalToSend);
       }
     },
     [memberId, roomId]
   );
 
-  // 2. RTCPeerConnection 생성 및 설정 함수 (변경 없음)
-  // src/hooks/useWebRTC.ts
-
-  // 2. RTCPeerConnection 생성 및 설정 함수 (쿨다운 로직 제거됨)
+  // 2. RTCPeerConnection 생성 및 설정 함수
   const createPeerConnection = useCallback(
     (targetUserId: number, streamToAdd: MediaStream): RTCPeerConnection => {
       console.log(
-        `[WebRTC DEBUG] CREATING NEW PeerConnection for ${targetUserId}`
+        `[WebRTC DEBUG] 새 PeerConnection을 만드는중 ID: ${targetUserId}`
       );
 
-      // 기존 연결이 있다면 닫고 새로 만듦 (재연결 대비)
+      // 기존 연결이 있다면 닫고 새로 만듦
       if (peerConnectionRefs.current[targetUserId]) {
         peerConnectionRefs.current[targetUserId].close();
       }
@@ -98,13 +95,13 @@ export const useWebRTC = (
         }
       };
 
-      // 상대방 스트림 수신 처리 (하이브리드 방식)
+      // 상대방 스트림 수신 처리
       pc.ontrack = (event) => {
-        console.log(`[WebRTC] 상대방 트랙 수신: ${event.track.kind}`);
+        console.log(`[WebRTC DEBUG] 상대방 트랙 수신: ${event.track.kind}`);
 
         if (event.streams && event.streams[0]) {
           console.log(
-            `[WebRTC] ${targetUserId}번 유저의 전체 스트림 수신 (event.streams[0])`
+            `[WebRTC DEBUG] ${targetUserId}번 유저의 전체 스트림 수신 (event.streams[0])`
           );
           setRemoteStream((prevMap) => ({
             ...prevMap,
@@ -114,7 +111,7 @@ export const useWebRTC = (
         }
 
         console.warn(
-          `[WebRTC] event.streams[0] 없음. ${targetUserId}번 유저 트랙 수동 누적.`
+          `[WebRTC DEBUG] event.streams[0] 없음. ${targetUserId}번 유저 트랙 수동 누적.`
         );
         setRemoteStream((prevMap) => {
           const newMap = { ...prevMap };
@@ -124,7 +121,7 @@ export const useWebRTC = (
             stream = new MediaStream();
             newMap[targetUserId] = stream;
             console.log(
-              `[WebRTC] ${targetUserId}번 유저를 위한 새 MediaStream 생성 (수동 누적용)`
+              `[WebRTC DEBUG] ${targetUserId}번 유저를 위한 새 MediaStream 생성 (수동 누적용)`
             );
           }
           stream.addTrack(event.track);
@@ -132,31 +129,30 @@ export const useWebRTC = (
         });
       };
 
-      // 로컬 스트림 트랙 추가 (필수)
+      // 로컬 스트림 트랙 추가
       streamToAdd.getTracks().forEach((track) => {
         pc.addTrack(track, streamToAdd);
       });
 
-      // 💡 [수정됨] 연결 상태 로깅 (Stale Handler 방지)
+      // 연결 상태 로깅 (Stale Handler 방지)
       pc.onconnectionstatechange = () => {
         console.log(
-          `[WebRTC] PC state (${targetUserId}): ${pc.connectionState}`
+          `[WebRTC DEBUG] PC state (${targetUserId}): ${pc.connectionState}`
         );
         if (
           pc.connectionState === "disconnected" ||
           pc.connectionState === "failed"
         ) {
           console.log(
-            `[WebRTC] Disconnected/Failed: Peer ${targetUserId} closed.`
+            `[WebRTC DEBUG] 연결 해제/실패: Peer ${targetUserId} closed.`
           );
 
-          // 💡 [핵심 수정]
-          // 현재 ref map에 있는 PC가 '나(pc)' 자신일 때만 상태(Stream)와 ref를 삭제합니다.
+          // 현재 ref map에 있는 PC가 '나(pc)' 자신일 때만 상태(Stream)와 ref를 삭제
           // 롤백으로 인해 닫힌 'Stale' 핸들러가
-          // 새로 생성된 PC(PC_A2)를 삭제하는 것을 방지합니다.
+          // 새로 생성된 PC(PC_A2)를 삭제하는 것을 방지
           if (peerConnectionRefs.current[targetUserId] === pc) {
             console.log(
-              `[WebRTC] Cleaning up 'active' PeerConnection ref for ${targetUserId}.`
+              `[WebRTC DEBUG] 'active' PeerConnection Ref 정리 ID: ${targetUserId}.`
             );
             setRemoteStream((prev) => {
               const newState = { ...prev };
@@ -166,7 +162,7 @@ export const useWebRTC = (
             delete peerConnectionRefs.current[targetUserId];
           } else {
             console.warn(
-              `[WebRTC] 'Stale' PeerConnection (${targetUserId}) state change detected. Ignoring cleanup.`
+              `[WebRTC DEBUG] 'Stale' PeerConnection (${targetUserId}) state 변화 감지. cleanup 무시.`
             );
           }
         }
@@ -175,28 +171,27 @@ export const useWebRTC = (
       peerConnectionRefs.current[targetUserId] = pc;
       return pc;
     },
-    // 💡 [수정됨] 의존성 배열에 'setRemoteStream' 추가
+    // 의존성 배열에 'setRemoteStream' 추가
     [sendSignal, setRemoteStream]
   );
 
-  // 3. 수신된 시그널 처리 함수 (로컬 스트림 준비 보장)
+  // 수신된 시그널 처리 함수 (로컬 스트림 준비 보장)
   const handleSignal = useCallback(
     async (signal: SignalMessage) => {
       const { type, payload, senderId } = signal;
 
-      // --- 1. 로컬 스트림 미준비 시 Offer/Answer 무시 (ICE는 통과) ---
+      // --- 로컬 스트림 미준비 시 Offer/Answer 무시 (ICE는 통과) ---
       const currentLocalStream = localStreamRef.current;
       if (!currentLocalStream && (type === "offer" || type === "answer")) {
         console.warn(
-          `[WebRTC] Local stream not ready. Ignoring signal type: ${type}`
+          `[WebRTC DEBUG] Local stream이 아직 준비되지 않음. 해당 signal type 무시: ${type}`
         );
         return;
       }
 
-      // --- 2. ICE Candidate 수신 처리 (가장 먼저 처리) ---
-      // 💡 [핵심 수정]
-      // 'pc'가 있든 없든, 'iceCandidate'는 먼저 큐에 저장합니다.
-      // 롤백(Rollback) 중에 'pc'가 일시적으로 undefined여도 캔디데이트가 유실되는 것을 방지합니다.
+      // --- ICE Candidate 수신 처리 (가장 먼저 처리) ---
+      // 'pc'가 있든 없든, 'iceCandidate'는 먼저 큐에 저장
+      // 롤백(Rollback) 중에 'pc'가 일시적으로 undefined여도 캔디데이트가 유실되는 것을 방지
       if (type === "iceCandidate") {
         if (payload && payload.candidate) {
           const candidate = new RTCIceCandidate({
@@ -211,7 +206,7 @@ export const useWebRTC = (
 
           iceCandidateQueueRef.current[senderId].push(candidate);
           console.log(
-            `[WebRTC] Queued ICE candidate from ${senderId}. (Queue size: ${iceCandidateQueueRef.current[senderId].length})`
+            `[WebRTC DEBUG] Queued ICE candidate from ${senderId}. (Queue size: ${iceCandidateQueueRef.current[senderId].length})`
           );
         }
 
@@ -225,13 +220,13 @@ export const useWebRTC = (
               iceCandidateQueueRef.current[senderId].shift();
             if (queuedCandidate) {
               console.log(
-                `[WebRTC] Adding queued ICE candidate from ${senderId} (Immediate)`
+                `[WebRTC DEBUG] Adding queued ICE candidate from ${senderId} (Immediate)`
               );
               await pc.addIceCandidate(queuedCandidate);
             }
           }
         }
-        return; // ICE 처리는 여기서 종료
+        return;
       }
 
       // --- 유틸리티: ICE 큐 처리 함수 ---
@@ -259,7 +254,7 @@ export const useWebRTC = (
         }
       };
 
-      // --- 3. Offer / Answer 수신 처리 ---
+      // --- Offer / Answer 수신 처리 ---
       let pc: RTCPeerConnection | undefined =
         peerConnectionRefs.current[senderId];
 
@@ -299,7 +294,7 @@ export const useWebRTC = (
             receiverId: senderId,
           });
 
-          // 💡 [수정] Offer/Answer 교환 완료 후 큐 처리
+          // Offer/Answer 교환 완료 후 큐 처리
           await processIceQueue(pc, senderId);
         } else if (pc && type === "answer" && payload.sdp) {
           // Answer 수신 시
@@ -323,11 +318,10 @@ export const useWebRTC = (
               );
             }
 
-            // 💡 [수정] Offer/Answer 교환 완료 후 큐 처리
+            // Offer/Answer 교환 완료 후 큐 처리
             await processIceQueue(pc, senderId);
           }
         }
-        // 'iceCandidate' 처리는 이미 위에서 끝났음
       } catch (err) {
         console.error(
           "수신된 시그널 처리 중 치명적인 오류 발생. PC 정리 시작:",
@@ -358,15 +352,14 @@ export const useWebRTC = (
       sendSignal,
       setPendingOfferIds,
       pendingOfferIds,
-      setRemoteStream, // 💡 [추가] setRemoteStream 의존성
+      setRemoteStream,
     ]
   );
 
-  // 4. 새로운 참여자에게 연결 시작 (Offer 생성) 함수
+  // 새로운 참여자에게 연결 시작 (Offer 생성) 함수
   const connectToPeer = useCallback(
     async (targetUserId: number) => {
       if (isCoolingDown) {
-        // 👈 이 로직이 최신 state를 참조
         console.log(
           `[WebRTC] Cooldown in progress. Skipping Offer to ${targetUserId}.`
         );
@@ -403,10 +396,9 @@ export const useWebRTC = (
       const pc = createPeerConnection(targetUserId, currentLocalStream);
       const offer = await pc.createOffer();
 
-      // 💡 [핵심 수정]
-      // setLocalDescription을 호출하기 전에 'signalingState'를 확인합니다.
+      // setLocalDescription을 호출하기 전에 'signalingState'를 확인
       // 'stable'이 아니면 (즉, handleSignal이 이미 offer를 처리 중이면)
-      // 이 함수(Offerer)는 물러나고 handleSignal(Answerer)에게 양보합니다.
+      // 이 함수(Offerer)는 물러나고 handleSignal(Answerer)에게 양보
       if (pc.signalingState !== "stable") {
         console.warn(
           `[WebRTC] Race condition detected in connectToPeer for ${targetUserId}. ` +
@@ -430,11 +422,11 @@ export const useWebRTC = (
       memberId,
       sendSignal,
       setPendingOfferIds,
-      isCoolingDown, // 💡 [수정] 의존성 추가
+      isCoolingDown,
     ]
   );
 
-  // 5. Force Offer 함수 (변경 없음)
+  // Force Offer 함수
   const connectToPeerForceOffer = useCallback(
     async (targetUserId: number) => {
       if (isCoolingDown) {
@@ -462,8 +454,7 @@ export const useWebRTC = (
       const pc = createPeerConnection(targetUserId, currentLocalStream);
       const offer = await pc.createOffer();
 
-      // 💡 [핵심 수정]
-      // setLocalDescription을 호출하기 전에 'signalingState'를 확인합니다.
+      // setLocalDescription을 호출하기 전에 'signalingState'를 확인
       if (pc.signalingState !== "stable") {
         console.warn(
           `[WebRTC] Race condition detected in connectToPeerForceOffer for ${targetUserId}. ` +
@@ -485,7 +476,7 @@ export const useWebRTC = (
     [createPeerConnection, memberId, sendSignal, isCoolingDown]
   );
 
-  // 6. 미디어 및 STOMP 연결 로직 (초기화)
+  // 미디어 및 STOMP 연결 로직 (초기화)
   useEffect(() => {
     if (!roomId || !memberId) return;
 
@@ -539,7 +530,7 @@ export const useWebRTC = (
     };
   }, [roomId, memberId, handleSignal]); // handleSignal은 useCallback으로 감싸져 있으므로 안전함
 
-  // 7. 연결 해제 함수
+  // 연결 해제 함수
   const disconnectWebRTC = useCallback(() => {
     console.log("[WebRTC] 명시적 연결 해제 시작.");
 

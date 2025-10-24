@@ -59,22 +59,22 @@ function StudyRoomPage() {
       return "grid-cols-1";
     }
     if (count === 2) {
-      // 2명일 때는 세로로 쌓거나(모바일), 가로로 2칸(데스크탑)을 만듭니다.
+      // 2명일 때는 가로로 2칸(데스크탑)
       return "grid-cols-1 lg:grid-cols-2";
     }
     if (count <= 4) {
-      // 3~4명일 때는 2x2 그리드를 만듭니다.
+      // 3~4명일 때는 2x2 그리드
       return "grid-cols-2";
     }
     if (count <= 9) {
-      // 5~9명일 때는 3x3 그리드를 만듭니다.
+      // 5~9명일 때는 3x3 그리드
       return "grid-cols-3";
     }
-    // 10명 이상일 때는 4열 그리드를 만듭니다.
+    // 10명 이상일 때는 4열 그리드
     return "grid-cols-4";
   };
 
-  // 💡 [새로운 useEffect] Offer 재시도 로직 실행 (상태 변화에만 반응)
+  // Offer 재시도 로직 실행 (상태 변화에만 반응)
   useEffect(() => {
     // ✅ Cooldown 중이 아니고 미디어가 준비되었을 때만 실행
     if (isMediaReady && !isCoolingDown) {
@@ -84,11 +84,11 @@ function StudyRoomPage() {
         connectToPeerForceOffer(targetId);
       });
     }
-  }, [isMediaReady, pendingOfferIds, connectToPeerForceOffer, isCoolingDown]); // ✅ isCoolingDown 의존성 추가!
+  }, [isMediaReady, pendingOfferIds, connectToPeerForceOffer, isCoolingDown]);
 
   // onlineParticipants 목록이 변경될 때마다 새로운 참여자에게 연결 시도
   useEffect(() => {
-    // ✅ Cooldown 중이 아니고 미디어가 준비되었을 때만 실행
+    // Cooldown 중이 아니고 미디어가 준비되었을 때만 실행
     if (isMediaReady && !isCoolingDown && memberId) {
       console.log("[RoomPage] Media Ready. Checking for new peers.");
 
@@ -117,8 +117,8 @@ function StudyRoomPage() {
     connectToPeer,
     isMediaReady,
     isCoolingDown,
-    remoteStream, // 💡 [수정] remoteStream 의존성 추가
-    pendingOfferIds, // 💡 [수정] pendingOfferIds 의존성 추가
+    remoteStream,
+    pendingOfferIds,
   ]);
 
   const gridClass = getGridClass(onlineParticipants.length);
@@ -143,7 +143,7 @@ function StudyRoomPage() {
         <main
           className={`flex-1 bg-gray-200 p-4 grid gap-4 overflow-y-auto ${gridClass}`}
         >
-          {/* 1. 내 비디오 화면 (localStream) */}
+          {/* 내 비디오 화면 (localStream) */}
           {localStream && ( // localStream이 있을 때만 렌더링
             <div
               key="local" // 고유한 key 부여
@@ -167,7 +167,7 @@ function StudyRoomPage() {
             </div>
           )}
 
-          {/* 2. 다른 참여자 비디오 화면 (remoteStreams) */}
+          {/* 다른 참여자 비디오 화면 (remoteStreams) */}
           {onlineParticipants
             // 나 자신은 제외
             .filter((p) => p.userId !== memberId)
@@ -194,10 +194,10 @@ function StudyRoomPage() {
                   ) : (
                     // stream이 없을 때 (연결 중 상태)
                     <div className="flex flex-col items-center justify-center text-white space-y-3">
-                      {/* 1. 아바타 (식별용) */}
+                      {/* 아바타 (식별용) */}
                       <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
                         <span className="text-xl text-white">
-                          {/* 💡 [수정 1] 닉네임이 undefined일 때 크래시 방지 */}
+                          {/* 닉네임이 undefined일 때 크래시 방지 */}
                           {p.nickname?.charAt(0) || "?"}
                         </span>
                       </div>
@@ -228,7 +228,7 @@ function StudyRoomPage() {
                       </div>
                     </div>
                   )}
-                  {/* 💡 [수정 2] 하단 닉네임 오버레이도 보호 */}
+                  {/* 하단 닉네임 오버레이도 보호 */}
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
                     {p.nickname || "참가자..."}
                   </div>
