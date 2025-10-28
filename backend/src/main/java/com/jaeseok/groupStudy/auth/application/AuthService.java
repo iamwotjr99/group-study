@@ -4,12 +4,18 @@ import com.jaeseok.groupStudy.auth.application.dto.LoginInfo;
 import com.jaeseok.groupStudy.auth.application.dto.LoginQuery;
 import com.jaeseok.groupStudy.auth.application.dto.SignUpCommand;
 import com.jaeseok.groupStudy.auth.application.dto.SignUpInfo;
+import com.jaeseok.groupStudy.auth.infrastructure.jwt.persistence.RefreshTokenRepository;
+import com.jaeseok.groupStudy.auth.infrastructure.jwt.persistence.entity.RefreshToken;
 import com.jaeseok.groupStudy.auth.presentation.dto.LoginResponse;
 import com.jaeseok.groupStudy.member.domain.Member;
 import com.jaeseok.groupStudy.member.domain.MemberRepository;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
+import java.time.Instant;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -24,17 +30,34 @@ public class AuthService {
     private final TokenProvider tokenProvider;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public LoginInfo login(LoginQuery query) {
+    public LoginInfo login(LoginQuery query, HttpServletResponse response) {
         Authentication authenticationToken = new UsernamePasswordAuthenticationToken(
                 query.email(), query.rawPassword());
 
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
 
-        String accessToken = tokenProvider.generateToken(authentication);
+        String accessToken = tokenProvider.generateAccessToken(authentication);
+        String refreshToken = tokenProvider.generateRefreshToken(authentication);
+        Instant refreshTokenExpiry = tokenProvider.getRefreshTokenExpiryAsInstant();
 
         Member member = memberRepository.findByEmail(query.email())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 유저입니다."));
+
+        refreshTokenRepository.findByMemberEntity_Id(member.getId())
+                .ifPresentOrElse(
+                        (existingToken) -> existingToken.updateToken(refreshToken, refreshTokenExpiry),
+                        () -> refreshTokenRepository.save(new RefreshToken(member, refreshToken, refreshTokenExpiry))
+                );
+
+        ResponseCookie cookie = ResponseCookie.from("refreshToken", refreshToken)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(tokenProvider.getRefreshTokenValidityInMilliSec() / 1000)
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return new LoginInfo(accessToken, member.getId(), member.getUserInfoNickname());
     }

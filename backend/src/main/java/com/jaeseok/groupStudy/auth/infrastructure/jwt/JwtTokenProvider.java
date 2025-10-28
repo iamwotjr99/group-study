@@ -10,6 +10,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SecurityException;
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +26,7 @@ public class JwtTokenProvider implements TokenProvider {
 
     private final Key key;
     private final long accessTokenValidationInMilliSec;
+    private final long refreshTokenValidationInMilliSec;
     private final UserDetailsService userDetailsService;
     private final LoadUserPrincipalService loadUserPrincipalService;
 
@@ -32,17 +34,20 @@ public class JwtTokenProvider implements TokenProvider {
             @Value("${jwt.secret}") String secretKey,
             @Value("${jwt.access-token-validation-in-seconds}")
             long accessTokenValidationInSeconds,
+            @Value("${jwt.refresh_token_validation-in-seconds}")
+            long refreshTokenValidationInSeconds,
             UserDetailsService userDetailsService, LoadUserPrincipalService loadUserPrincipalService
     ) {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidationInMilliSec = accessTokenValidationInSeconds * 1000;
+        this.refreshTokenValidationInMilliSec = refreshTokenValidationInSeconds * 1000;
         this.userDetailsService = userDetailsService;
         this.loadUserPrincipalService = loadUserPrincipalService;
     }
 
     @Override
-    public String generateToken(Authentication authentication) {
+    public String generateAccessToken(Authentication authentication) {
         UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
         Long userId = userDetails.userId();
 
@@ -52,6 +57,21 @@ public class JwtTokenProvider implements TokenProvider {
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .expiration(accessTokenExpiresIn)
+                .signWith(this.key)
+                .compact();
+    }
+
+    @Override
+    public String generateRefreshToken(Authentication authentication) {
+        UserPrincipal userDetails = (UserPrincipal) authentication.getPrincipal();
+        Long userId = userDetails.userId();
+
+        long now = new Date().getTime();
+        Date refreshTokenExpiresIn = new Date(now + this.refreshTokenValidationInMilliSec);
+
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .expiration(refreshTokenExpiresIn)
                 .signWith(this.key)
                 .compact();
     }
@@ -88,5 +108,17 @@ public class JwtTokenProvider implements TokenProvider {
         }
 
         return false;
+    }
+
+    // Refresh Token 만료 시간 (Instant) 반환 (DB 저장용)
+    @Override
+    public Instant getRefreshTokenExpiryAsInstant() {
+        return Instant.now().plusMillis(this.refreshTokenValidationInMilliSec);
+    }
+
+    // long 값 반환 (쿠키 MaxAge 저장용)
+    @Override
+    public long getRefreshTokenValidityInMilliSec() {
+        return this.refreshTokenValidationInMilliSec;
     }
 }
