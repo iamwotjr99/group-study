@@ -171,6 +171,9 @@ class SignalingIntegrationTest {
         assertThat(receiveMessage.type()).isEqualTo("offer");
         assertThat(receiveMessage.receiverId()).isEqualTo(receiver.getId());
         assertThat(receiveMessage.senderId()).isEqualTo(sender.getId());
+
+        senderSession.disconnect();
+        receiverSession.disconnect();
     }
 
     @Test
@@ -198,6 +201,9 @@ class SignalingIntegrationTest {
         SignalMessage receiveMessage = receiveMessageQueue.poll(10, TimeUnit.SECONDS);
 
         assertThat(receiveMessage).isNotNull();
+
+        senderSession.disconnect();
+        receiverSession.disconnect();
     }
 
     private StompSession createStompSession(String token, StompSessionHandler sessionHandler) throws Exception {
