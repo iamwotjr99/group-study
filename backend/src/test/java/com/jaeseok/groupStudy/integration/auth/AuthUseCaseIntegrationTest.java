@@ -17,6 +17,7 @@ import jakarta.persistence.EntityNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -62,6 +63,11 @@ class AuthUseCaseIntegrationTest extends IntegrationTestSupport {
         Member member = Member.createMember(TEST_USER_NICKNAME, TEST_USER_EMAIL,
                 passwordEncoder.encode(TEST_USER_PASSWORD));
         memberRepository.save(member);
+    }
+
+    @AfterEach
+    void tearDown() {
+        memberRepository.deleteAll();
     }
 
     @Test

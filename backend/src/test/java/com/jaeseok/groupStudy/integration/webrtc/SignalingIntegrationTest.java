@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -134,6 +135,12 @@ class SignalingIntegrationTest {
         stompClient = initWebSocketStompClient();
 
         this.url = "ws://localhost:" + port + "/ws/chat";
+    }
+
+    @AfterEach
+    void tearDown() {
+        memberRepository.deleteAll();
+        studyGroupRepository.deleteAll();
     }
 
     @Test
