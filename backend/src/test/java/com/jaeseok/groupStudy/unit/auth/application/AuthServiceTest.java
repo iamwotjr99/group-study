@@ -127,7 +127,7 @@ class AuthServiceTest {
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(mockAuthenticationObj);
-        when(tokenProvider.generateToken(mockAuthenticationObj)).thenReturn("access-token");
+        when(tokenProvider.generateAccessToken(mockAuthenticationObj)).thenReturn("access-token");
         when(memberRepository.findByEmail(query.email())).thenReturn(Optional.of(validMember));
 
         // when
@@ -139,7 +139,7 @@ class AuthServiceTest {
 
         verify(authenticationManager, times(1))
                 .authenticate(any(UsernamePasswordAuthenticationToken.class));
-        verify(tokenProvider, times(1)).generateToken(mockAuthenticationObj);
+        verify(tokenProvider, times(1)).generateAccessToken(mockAuthenticationObj);
     }
 
     @Test
@@ -159,6 +159,6 @@ class AuthServiceTest {
                 .isInstanceOf(UsernameNotFoundException.class)
                 .hasMessage("존재하지 않는 유저입니다.");
 
-        verify(tokenProvider, never()).generateToken(any());
+        verify(tokenProvider, never()).generateAccessToken(any());
     }
 }

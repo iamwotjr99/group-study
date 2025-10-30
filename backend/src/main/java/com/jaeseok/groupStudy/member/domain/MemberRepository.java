@@ -8,4 +8,5 @@ public interface MemberRepository {
     Optional<Member> findByEmail(String email);
     boolean existByNickname(String nickname);
     boolean existByEmail(String email);
+    void deleteAll();
 }

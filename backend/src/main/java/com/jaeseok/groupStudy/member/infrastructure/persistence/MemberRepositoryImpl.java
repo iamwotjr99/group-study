@@ -38,4 +38,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     public boolean existByEmail(String email) {
         return jpaMemberRepository.existsByMemberInfoEntity_Email(email);
     }
+
+    @Override
+    public void deleteAll() {
+        jpaMemberRepository.deleteAll();
+    }
 }

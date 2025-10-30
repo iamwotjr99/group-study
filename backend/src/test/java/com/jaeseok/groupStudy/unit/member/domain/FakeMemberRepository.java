@@ -54,4 +54,9 @@ public class FakeMemberRepository implements MemberRepository {
         return store.values().stream()
                 .anyMatch(m -> m.getUserInfoEmail().equals(email));
     }
+
+    @Override
+    public void deleteAll() {
+        store.clear();
+    }
 }

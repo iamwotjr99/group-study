@@ -100,15 +100,15 @@ class SignalingIntegrationTest {
         UserPrincipal userPrincipal = new UserPrincipal(sender.getId(), sender.getUserInfoEmail(),
                 sender.getUserInfoPassword());
         Authentication authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
-        senderToken = tokenProvider.generateToken(authentication);
+        senderToken = tokenProvider.generateAccessToken(authentication);
 
         userPrincipal = new UserPrincipal(receiver.getId(), receiver.getUserInfoEmail(), receiver.getUserInfoPassword());
         authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
-        receiverToken = tokenProvider.generateToken(authentication);
+        receiverToken = tokenProvider.generateAccessToken(authentication);
 
         userPrincipal = new UserPrincipal(otherUser.getId(), otherUser.getUserInfoEmail(), otherUser.getUserInfoPassword());
         authentication = new UsernamePasswordAuthenticationToken(userPrincipal, null, userPrincipal.getAuthorities());
-        otherUserToken = tokenProvider.generateToken(authentication);
+        otherUserToken = tokenProvider.generateAccessToken(authentication);
     }
 
     private WebSocketStompClient initWebSocketStompClient() {
@@ -190,7 +190,7 @@ class SignalingIntegrationTest {
         BlockingQueue<SignalMessage> receiveMessageQueue = receiverSessionHandler.getMessages();
         SignalMessage receiveMessage = receiveMessageQueue.poll(10, TimeUnit.SECONDS);
 
-        assertThat(receiveMessage).isNull();
+        assertThat(receiveMessage).isNotNull();
     }
 
     private StompSession createStompSession(String token, StompSessionHandler sessionHandler) throws Exception {

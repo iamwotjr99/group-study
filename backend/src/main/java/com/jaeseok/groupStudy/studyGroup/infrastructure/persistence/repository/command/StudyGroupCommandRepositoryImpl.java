@@ -46,7 +46,7 @@ public class StudyGroupCommandRepositoryImpl implements StudyGroupCommandReposit
     }
 
     @Override
-    public void deleteById(Long id) {
-        jpaStudyGroupCommandRepository.deleteById(id);
+    public void deleteAll() {
+        jpaStudyGroupCommandRepository.deleteAll();
     }
 }
