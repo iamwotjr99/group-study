@@ -2,9 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    build:
-      context: ./backend
-    image: study-link-backend
+    image: iamwotjr99/study-link-backend:latest
     container_name: study-link-backend
     ports: -"8080:8080"
     environment:
@@ -16,9 +14,7 @@ services:
     restart: always
 
   frontend:
-    build:
-      context: ./frontend
-    image: study-link-frontend
+    image: iamwotjr99/study-link-frontend:latest
     container_name: study-link-frontend
     ports:
       - "80:80"
