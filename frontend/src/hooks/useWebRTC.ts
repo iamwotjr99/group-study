@@ -4,7 +4,7 @@ import SockJS from "sockjs-client";
 import type { SignalMessage } from "../types/webRTC";
 
 const STUN_SERVER = "stun:stun.l.google.com:19302";
-const WEBSOCKET_URL = "http://localhost:8080/ws/chat";
+const WEBSOCKET_URL = "/ws/chat";
 
 interface PeerConnectionMap {
   [userId: number]: RTCPeerConnection;

@@ -42,7 +42,7 @@ export const useChat = (
 
     // STOMP Client 생성
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws/chat"),
+      webSocketFactory: () => new SockJS("/ws/chat"),
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },

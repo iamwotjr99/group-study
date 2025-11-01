@@ -3,9 +3,7 @@ import api from "./instance";
 
 export const fetchChatHistoryAPI = async (roomId: string) => {
   try {
-    const response = await api.get(
-      `/api/chat/history/${roomId}?page=0&size=50`
-    );
+    const response = await api.get(`/chat/history/${roomId}?page=0&size=50`);
 
     return response.data.content as ReceivedMessage[];
   } catch (err) {

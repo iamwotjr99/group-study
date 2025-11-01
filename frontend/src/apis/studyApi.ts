@@ -13,7 +13,7 @@ export const fetchStudiesAPI = async (
   size = 5
 ): Promise<Page<StudySummary>> => {
   try {
-    const response = await api.get("/api/study-groups", {
+    const response = await api.get("/study-groups", {
       params: { page, size },
     });
     return response.data;
@@ -28,7 +28,7 @@ export const fetchStudyDetailAPI = async (
   studyGroupId: number
 ): Promise<StudyDetail> => {
   try {
-    const response = await api.get(`/api/study-groups/${studyGroupId}`);
+    const response = await api.get(`/study-groups/${studyGroupId}`);
     return response.data;
   } catch (err) {
     console.error(`Fetch Study Detail API Error (ID: ${studyGroupId}):`, err);
@@ -42,7 +42,7 @@ export const createStudyGroupAPI = async (
   studyGroupData: CreateStudyGroupData
 ): Promise<{ studyGroupId: number }> => {
   try {
-    const response = await api.post("/api/study-groups", studyGroupData);
+    const response = await api.post("/study-groups", studyGroupData);
     return response.data;
   } catch (err) {
     console.error("Create StudyGroup API Error: ", err);
@@ -55,7 +55,7 @@ export const startStudyGroupAPI = async (
   studyGroupId: number
 ): Promise<{ message: string }> => {
   try {
-    const response = await api.post(`api/study-groups/${studyGroupId}/start`);
+    const response = await api.post(`/study-groups/${studyGroupId}/start`);
     return response.data;
   } catch (err) {
     console.error("Start StudyGroup API Error : ", err);
@@ -68,7 +68,7 @@ export const closeStudyGroupAPI = async (
   studyGroupId: number
 ): Promise<{ message: string }> => {
   try {
-    const response = await api.post(`api/study-groups/${studyGroupId}/close`);
+    const response = await api.post(`/study-groups/${studyGroupId}/close`);
     return response.data;
   } catch (err) {
     console.error("Close StudyGroup API Error : ", err);
@@ -84,7 +84,7 @@ export const approveApplicantAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.post(
-      `/api/study-groups/${studyGroupId}/applicants/${applicantId}/approve`
+      `/study-groups/${studyGroupId}/applicants/${applicantId}/approve`
     );
     return response.data;
   } catch (err) {
@@ -100,7 +100,7 @@ export const rejectApplicantAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.delete(
-      `/api/study-groups/${studyGroupId}/applicants/${applicantId}/reject`
+      `/study-groups/${studyGroupId}/applicants/${applicantId}/reject`
     );
     return response.data;
   } catch (err) {
@@ -116,7 +116,7 @@ export const kickParticipantAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.delete(
-      `/api/study-groups/${studyGroupId}/participants/${participantId}/kick`
+      `/study-groups/${studyGroupId}/participants/${participantId}/kick`
     );
     return response.data;
   } catch (err) {
@@ -132,7 +132,7 @@ export const applyStudyGroupAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.post(
-      `/api/study-groups/${studyGroupId}/applicants/apply`
+      `/study-groups/${studyGroupId}/applicants/apply`
     );
     return response.data;
   } catch (err) {
@@ -147,7 +147,7 @@ export const cancleStudyGroupApplyAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.delete(
-      `/api/study-groups/${studyGroupId}/applicants/cancel`
+      `/study-groups/${studyGroupId}/applicants/cancel`
     );
     return response.data;
   } catch (err) {
@@ -162,7 +162,7 @@ export const leaveStudyGroupAPI = async (
 ): Promise<{ message: string }> => {
   try {
     const response = await api.delete(
-      `/api/study-groups/${studyGroupId}/participants/leave`
+      `/study-groups/${studyGroupId}/participants/leave`
     );
     return response.data;
   } catch (err) {

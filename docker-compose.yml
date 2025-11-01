@@ -4,7 +4,8 @@ services:
   backend:
     image: iamwotjr99/study-link-backend:latest
     container_name: study-link-backend
-    ports: -"8080:8080"
+    ports:
+      - "8080:8080"
     environment:
       - SPRING_DATASOURCE_URL: ${DB_URL}
       - SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
@@ -17,7 +18,13 @@ services:
     image: iamwotjr99/study-link-frontend:latest
     container_name: study-link-frontend
     ports:
+      # 4. HTTPS를 위해 443 포트도 열어줌
       - "80:80"
+      - "443:443"
     depends_on:
       - backend
     restart: always
+
+    # 5. [추가] 인증서 폴더를 컨테이너에 연결
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro # 'ro'는 read-only(읽기 전용)

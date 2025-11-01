@@ -3,7 +3,7 @@ import type { UserLoginInfo, UserSignupInfo } from "../types/user";
 
 export const loginAPI = async (loginInfo: UserLoginInfo) => {
   try {
-    const response = await api.post("/api/auth/login", loginInfo);
+    const response = await api.post("/auth/login", loginInfo);
     return response.data;
   } catch (err) {
     console.log("Login API error: ", err);
@@ -13,7 +13,7 @@ export const loginAPI = async (loginInfo: UserLoginInfo) => {
 
 export const signupAPI = async (signupInfo: UserSignupInfo) => {
   try {
-    const response = await api.post("/api/auth/signup", signupInfo);
+    const response = await api.post("/auth/signup", signupInfo);
     return response.data;
   } catch (err) {
     console.log("Signup API error: ", err);
@@ -23,9 +23,7 @@ export const signupAPI = async (signupInfo: UserSignupInfo) => {
 
 export const checkNicknameAPI = async (nickname: string) => {
   try {
-    const response = await api.get(
-      `/api/auth/check-nickname?nickname=${nickname}`
-    );
+    const response = await api.get(`/auth/check-nickname?nickname=${nickname}`);
     return response.data;
   } catch (err) {
     console.log("Check nickname API error: ", err);
@@ -35,7 +33,7 @@ export const checkNicknameAPI = async (nickname: string) => {
 
 export const checkEmailAPI = async (email: string) => {
   try {
-    const response = await api.get(`/api/auth/check-email?email=${email}`);
+    const response = await api.get(`/auth/check-email?email=${email}`);
     return response.data;
   } catch (err) {
     console.log("Check email API error: ", err);
