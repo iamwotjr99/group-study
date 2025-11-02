@@ -7,20 +7,21 @@ import { ko } from "date-fns/locale";
 import { useUserStore } from "../store/userStore";
 import { useStudyDetail } from "../hooks/useStudyDetail";
 import { useWebRTC } from "../hooks/useWebRTC";
+import ChatForm from "../components/chat/ChatForm";
+import VideoStreamPlayer from "../components/study/VideoStreamPlayer";
 
 function StudyRoomPage() {
   const navigate = useNavigate();
   const { studyGroupId } = useParams<{ studyGroupId: string }>();
   const id = studyGroupId ? parseInt(studyGroupId, 10) : undefined;
 
-  const [newMessage, setNewMessage] = useState("");
   const memberId = useUserStore((state) => state.userInfo?.memberId);
 
   const { studyGroupData } = useStudyDetail(id);
   const approvedParticipants =
     studyGroupData?.participants.filter((p) => p.status === "APPROVED") || [];
 
-  const { messages, onlineParticipants, sendMessage, disconnect } = useChat(
+  const { messages, onlineParticipants, sendMessage } = useChat(
     studyGroupId,
     memberId
   );
@@ -37,7 +38,6 @@ function StudyRoomPage() {
     isMediaReady,
     connectToPeer,
     connectToPeerForceOffer,
-    disconnectWebRTC,
     pendingOfferIds,
     isCoolingDown,
     startScreenShare,
@@ -46,17 +46,7 @@ function StudyRoomPage() {
 
   const onlineUserIds = new Set(onlineParticipants.map((p) => p.userId));
 
-  const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (newMessage.trim() != "") {
-      sendMessage(newMessage);
-      setNewMessage("");
-    }
-  };
-
   const handleLeaveRoom = () => {
-    disconnectWebRTC();
-    disconnect();
     navigate(-1);
   };
 
@@ -167,92 +157,67 @@ function StudyRoomPage() {
         <main
           className={`flex-1 bg-gray-200 p-4 grid gap-4 overflow-y-auto ${gridClass}`}
         >
-          {/* 내 비디오 화면 (localStream) */}
-          {localStream && ( // localStream이 있을 때만 렌더링
-            <div
-              key="local" // 고유한 key 부여
-              className="relative bg-black rounded-lg aspect-video flex items-center justify-center overflow-hidden"
-            >
-              <video
-                ref={(video) => {
-                  // 비디오 요소가 생성되면 srcObject에 localStream 연결
-                  if (video) {
-                    video.srcObject = localStream;
-                  }
-                }}
-                className="w-full h-full object-cover" // 비디오가 영역을 꽉 채우도록
-                autoPlay
-                muted // 내 소리는 내가 듣지 않도록 음소거
-                playsInline
-              />
-              <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
-                나 (You)
-              </div>
-            </div>
+          {/* 👇 [수정] 내 비디오 화면 (localStream) */}
+          {localStream && (
+            <VideoStreamPlayer
+              key="local"
+              stream={localStream}
+              nickname="나 (You)"
+              isMuted={true} // 내 화면은 음소거
+            />
           )}
 
-          {/* 다른 참여자 비디오 화면 (remoteStreams) */}
+          {/* 👇 [수정] 다른 참여자 비디오 화면 (remoteStreams) */}
           {onlineParticipants
-            // 나 자신은 제외
             .filter((p) => p.userId !== memberId)
             .map((p) => {
-              // 해당 참여자의 remoteStream 찾기
               const stream = remoteStream[p.userId];
-
-              return (
+              return stream ? (
+                // 스트림이 있을 때: VideoStreamPlayer 렌더링
+                <VideoStreamPlayer
+                  key={p.userId}
+                  stream={stream}
+                  nickname={p.nickname || "참가자..."}
+                  isMuted={false}
+                />
+              ) : (
+                // 스트림이 없을 때: "연결 중..." UI 렌더링
                 <div
-                  key={p.userId} // 참여자의 userId를 key로 사용
+                  key={p.userId}
                   className="relative bg-black rounded-lg aspect-video flex items-center justify-center overflow-hidden"
                 >
-                  {stream ? ( // remoteStream이 있으면 비디오 렌더링
-                    <video
-                      ref={(video) => {
-                        if (video) {
-                          video.srcObject = stream;
-                        }
-                      }}
-                      className="w-full h-full object-cover"
-                      autoPlay
-                      playsInline
-                    />
-                  ) : (
-                    // stream이 없을 때 (연결 중 상태)
-                    <div className="flex flex-col items-center justify-center text-white space-y-3">
-                      {/* 아바타 (식별용) */}
-                      <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
-                        <span className="text-xl text-white">
-                          {/* 닉네임이 undefined일 때 크래시 방지 */}
-                          {p.nickname?.charAt(0) || "?"}
-                        </span>
-                      </div>
-
-                      {/* 2. 스피너 및 텍스트 */}
-                      <div className="flex items-center space-x-2">
-                        <svg
-                          className="animate-spin h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        <span className="text-sm font-medium">연결 중...</span>
-                      </div>
+                  {/* ... (기존의 "연결 중..." 로딩 스피너 UI) ... */}
+                  <div className="flex flex-col items-center justify-center text-white space-y-3">
+                    <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center">
+                      <span className="text-xl text-white">
+                        {p.nickname?.charAt(0) || "?"}
+                      </span>
                     </div>
-                  )}
-                  {/* 하단 닉네임 오버레이도 보호 */}
+                    <div className="flex items-center space-x-2">
+                      <svg
+                        className="animate-spin h-4 w-4 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      <span className="text-sm font-medium">연결 중...</span>
+                    </div>
+                  </div>
+                  {/* ... */}
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-sm px-2 py-1 rounded">
                     {p.nickname || "참가자..."}
                   </div>
@@ -357,24 +322,7 @@ function StudyRoomPage() {
         </div>
 
         {/* --- 메시지 입력 폼 --- */}
-        <form
-          className="p-4 border-t border-gray-200 flex"
-          onSubmit={handleSendMessage}
-        >
-          <input
-            type="text"
-            className="flex-1 border border-gray-300 rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="메시지 입력..."
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white px-4 rounded-r-md hover:bg-indigo-700"
-          >
-            전송
-          </button>
-        </form>
+        <ChatForm onSendMessage={sendMessage} />
       </aside>
     </div>
   );

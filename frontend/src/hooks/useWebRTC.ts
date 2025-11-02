@@ -613,6 +613,11 @@ export const useWebRTC = (
     return () => {
       // 로컬 스트림 정리
       localStreamRef.current?.getTracks().forEach((track) => track.stop());
+
+      // 화면 공유 정리
+      screenStreamRef.current?.getTracks().forEach((track) => track.stop());
+      screenStreamRef.current = null;
+
       // 피어 연결 종료
       Object.values(peerConnectionRefs.current).forEach((pc) => pc.close());
       peerConnectionRefs.current = {}; // 맵 초기화
@@ -627,6 +632,10 @@ export const useWebRTC = (
     console.log("[WebRTC] 명시적 연결 해제 시작.");
 
     localStreamRef.current?.getTracks().forEach((track) => track.stop());
+
+    screenStreamRef.current?.getTracks().forEach((track) => track.stop());
+    screenStreamRef.current = null;
+
     Object.values(peerConnectionRefs.current).forEach((pc) => pc.close());
     peerConnectionRefs.current = {};
     stompClientRef.current?.deactivate();
